@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -286,7 +287,7 @@ esp_err_t espnow_ctrl_responder_bind(uint32_t wait_ms, int8_t rssi, espnow_ctrl_
     espnow_load_bindlist();
 
     g_bind_cb   = cb;
-    g_timestamp = esp_log_timestamp() + wait_ms;
+    g_timestamp = (wait_ms == UINT32_MAX) ? UINT32_MAX : esp_log_timestamp() + wait_ms;
     g_rssi      = rssi;
 
     espnow_set_config_for_data_type(ESPNOW_DATA_TYPE_CONTROL_BIND, true, espnow_ctrl_responder_bind_process);

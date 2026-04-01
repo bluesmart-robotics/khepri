@@ -16,7 +16,7 @@ extern "C" {
 #include <stdint.h>
 
 /* ─── Couleurs thème (du HTML CSS) ─── */
-#define BSR_COL_BG          lv_color_hex(0x1A1C22)
+#define BSR_COL_BG          lv_color_hex(0x000000)  /* noir pur = pixel AMOLED eteint */
 #define BSR_COL_CARD        lv_color_hex(0x22252E)
 #define BSR_COL_CARD2       lv_color_hex(0x2A2D38)
 #define BSR_COL_TEXT        lv_color_hex(0xF2F4F8)
@@ -99,7 +99,8 @@ typedef struct {
 
     /* PAGE 1 : DRIVE */
     struct {
-        lv_obj_t *lbl_batt_pct;
+        lv_obj_t *bar_batt_local;
+        lv_obj_t *lbl_batt_charge;   /* eclair quand en charge */
         lv_obj_t *lbl_arm_badge;
         lv_obj_t *arc_effort;
         lv_obj_t *lbl_speed_dir;
@@ -107,7 +108,7 @@ typedef struct {
         lv_obj_t *lbl_effort_pct;
         lv_obj_t *lbl_mode_badge;
         lv_obj_t *lbl_batt_big;
-        lv_obj_t *lbl_batt_range;
+
         lv_obj_t *bar_batt;
         lv_obj_t *alarm_panel;
         lv_obj_t *lbl_alarm_text;
@@ -160,7 +161,20 @@ typedef struct {
         lv_obj_t *lbl_rssi;
         lv_obj_t *lbl_latency;
         lv_obj_t *lbl_pkt_loss;
+        lv_obj_t *btn_ota;
+        lv_obj_t *btn_wifi;
+        lv_obj_t *lbl_wifi_status;
     } connection;
+
+    /* ECRAN WIFI CONFIG (overlay) */
+    struct {
+        lv_obj_t *screen;
+        lv_obj_t *ta_ssid;
+        lv_obj_t *ta_pass;
+        lv_obj_t *kb;
+        lv_obj_t *btn_save;
+        lv_obj_t *btn_back;
+    } wifi_cfg;
 } bsr_ui_t;
 
 /* ─── Variables globales ─── */
@@ -183,6 +197,21 @@ void bsr_register_settings_changed_cb(bsr_settings_cb_t cb);
 /* Callbacks pour bind/unbind depuis les boutons écran */
 typedef void (*bsr_bind_action_cb_t)(bool bind); /* true=bind, false=unbind */
 void bsr_register_bind_action_cb(bsr_bind_action_cb_t cb);
+
+/* Callback pour le bouton OTA */
+typedef void (*bsr_ota_action_cb_t)(void);
+void bsr_register_ota_action_cb(bsr_ota_action_cb_t cb);
+
+/* Callback pour la sauvegarde WiFi */
+typedef void (*bsr_wifi_save_cb_t)(const char *ssid, const char *password);
+void bsr_register_wifi_save_cb(bsr_wifi_save_cb_t cb);
+
+/* Ouvre/ferme l'ecran de config WiFi */
+void bsr_wifi_config_screen_open(void);
+void bsr_wifi_config_screen_close(void);
+
+/* Met a jour l'indicateur WiFi sur la page connexion */
+void bsr_update_wifi_status(const char *ssid);
 
 /* Naviguer vers la page connexion avec retour auto après delay_ms */
 void bsr_show_connection_page(int delay_ms);

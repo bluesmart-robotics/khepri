@@ -222,8 +222,16 @@ L’idée est de filtrer par type de trafic (ack, data, debug, OTA, etc.) pour n
 
 #include "bsr_esp_now_control.h"
 #include "bsr_screen.h"
+#include "bsr_ota.h"
+#include "bsr_wifi_config.h"
+#include "controller_app.h"
+#include "esp_netif.h"
 
 static const char *TAG = "BSR_ESPNOW_DEMO";
+
+/* Handles boutons pour pouvoir les supprimer dans controller_app_stop() */
+static button_handle_t s_button_handles[6] = {0};
+static bool s_controller_running = false;
 
 // Global variable to store the current status of the ESP‑NOW control, which is used to determine whether the initiator can send control data to the responder or not.
 // The initiator can only send control data to the responder when the devices are in bound status, which means the binding process has been completed successfully.
@@ -280,9 +288,16 @@ static char *bind_error_to_string(espnow_ctrl_bind_error_t bind_error)
  * @param[out] None
  * @return None
  ***********************************************************************************/
+static bool s_netif_inited = false;
+
 static void app_wifi_init()
 {
-    esp_event_loop_create_default();
+    /* Note : esp_event_loop_create_default() est appele une seule fois dans main.c */
+    if (!s_netif_inited) {
+        ESP_ERROR_CHECK(esp_netif_init());
+        esp_netif_create_default_wifi_sta();
+        s_netif_inited = true;
+    }
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 
@@ -291,6 +306,26 @@ static void app_wifi_init()
     ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
     ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
     ESP_ERROR_CHECK(esp_wifi_start());
+
+    /* TX Power max : 20 dBm (valeur API = dBm * 4 = 80) */
+    ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(80));
+
+    /* Protocole 802.11 b/g/n — meilleure portee et debit pour ESP-NOW */
+    ESP_ERROR_CHECK(esp_wifi_set_protocol(WIFI_IF_STA,
+        WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N));
+
+    /* Bande passante HT20 — bon compromis portee/fiabilite pour ESP-NOW */
+    ESP_ERROR_CHECK(esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20));
+
+    int8_t tx_power = 0;
+    esp_wifi_get_max_tx_power(&tx_power);
+    ESP_LOGI(TAG, "WiFi TX power = %d (%.1f dBm)", tx_power, tx_power / 4.0);
+}
+
+static void app_wifi_deinit(void)
+{
+    esp_wifi_stop();
+    esp_wifi_deinit();
 }
 
 /***********************************************************************************
@@ -582,13 +617,13 @@ static void app_driver_init(void)
     };
 
 
-    // 6 buttons are implemented in this demo, but you can implement more buttons by using different bits of the "status" parameter in the callback functions.
+    // 6 buttons — handles stockes dans s_button_handles[] pour cleanup
+    button_handle_t button_handle_A = NULL;
+    button_handle_t button_handle_B = NULL;
+    button_handle_t button_handle_C = NULL;
+    button_handle_t button_handle_0 = NULL;
     button_handle_t button_handle_1 = NULL;
     button_handle_t button_handle_F = NULL;
-    button_handle_t button_handle_0 = NULL;
-    button_handle_t button_handle_B = NULL;
-    button_handle_t button_handle_A = NULL;
-    button_handle_t button_handle_C = NULL;
 
     // Creates 6 button devices for 6 buttons in this demo, but you can create more button devices for more buttons by using different GPIOs and different button handles.
     ESP_LOGI(TAG, "Creates gpio device A");
@@ -603,29 +638,45 @@ static void app_driver_init(void)
     err = iot_button_new_gpio_device(&button_config, &gpio_config_B, &button_handle_B);
     ESP_LOGI(TAG, "ret B = %s", esp_err_to_name(err));
 
-    ESP_LOGI(TAG, "Creates gpio device 0");
-    err = iot_button_new_gpio_device(&button_config, &gpio_config_0, &button_handle_0);
-    ESP_LOGI(TAG, "ret 0 = %s", esp_err_to_name(err));
+    if (CONTROL_KEY_GPIO_0 != GPIO_NUM_NC) {
+        ESP_LOGI(TAG, "Creates gpio device 0");
+        err = iot_button_new_gpio_device(&button_config, &gpio_config_0, &button_handle_0);
+        ESP_LOGI(TAG, "ret 0 = %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "Button 0 disabled (GPIO_NUM_NC)");
+    }
 
     ESP_LOGI(TAG, "Creates gpio device F");
     err = iot_button_new_gpio_device(&button_config, &gpio_config_F, &button_handle_F);
     ESP_LOGI(TAG, "ret F = %s", esp_err_to_name(err));
 
-    ESP_LOGI(TAG, "Creates gpio device 1");
-    err = iot_button_new_gpio_device(&button_config, &gpio_config_1, &button_handle_1);
-    ESP_LOGI(TAG, "ret 1 = %s", esp_err_to_name(err));
+    if (CONTROL_KEY_GPIO_1 != GPIO_NUM_NC) {
+        ESP_LOGI(TAG, "Creates gpio device 1");
+        err = iot_button_new_gpio_device(&button_config, &gpio_config_1, &button_handle_1);
+        ESP_LOGI(TAG, "ret 1 = %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "Button 1 disabled (GPIO_NUM_NC)");
+    }
 
     ESP_LOGI(TAG, "Registers gpio callbacks");
     iot_button_register_cb(button_handle_A, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_A, NULL);
     iot_button_register_cb(button_handle_C, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_C, NULL);
     iot_button_register_cb(button_handle_B, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_B_short, NULL);
-    iot_button_register_cb(button_handle_0, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_0, NULL);
-    iot_button_register_cb(button_handle_1, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_1, NULL);
+    if (button_handle_0) iot_button_register_cb(button_handle_0, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_0, NULL);
+    if (button_handle_1) iot_button_register_cb(button_handle_1, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_1, NULL);
     iot_button_register_cb(button_handle_F, BUTTON_SINGLE_CLICK, NULL, app_initiator_send_press_cb_F, NULL);
 
     iot_button_register_cb(button_handle_A, BUTTON_DOUBLE_CLICK, NULL, app_initiator_bind_press_cb, NULL);          // Button A is used for bind and unbind in this demo, but you can use other buttons for bind and unbind, and you can also use other button events (such as long press, triple click, etc.) for bind and unbind.
     iot_button_register_cb(button_handle_A, BUTTON_LONG_PRESS_START, NULL, app_initiator_unbind_press_cb, NULL);    // Button A is used for bind and unbind in this demo, but you can use other buttons for bind and unbind, and you can also use other button events (such as single click, triple click, etc.) for bind and unbind.
     iot_button_register_cb(button_handle_B, BUTTON_LONG_PRESS_START, NULL, app_initiator_send_press_cb_B_long,  NULL); //Button B is used for activate/desactivate front light
+
+    /* Sauvegarder les handles pour cleanup dans controller_app_stop() */
+    s_button_handles[0] = button_handle_A;
+    s_button_handles[1] = button_handle_B;
+    s_button_handles[2] = button_handle_C;
+    s_button_handles[3] = button_handle_0;
+    s_button_handles[4] = button_handle_1;
+    s_button_handles[5] = button_handle_F;
 }
 
 /***********************************************************************************
@@ -707,7 +758,7 @@ static void app_responder_ctrl_data_cb(espnow_attribute_t initiator_attribute,
  ***********************************************************************************/
 static void app_responder_init(void)
 {
-    ESP_ERROR_CHECK(espnow_ctrl_responder_bind(30 * 1000, -55, NULL));
+    ESP_ERROR_CHECK(espnow_ctrl_responder_bind(UINT32_MAX, -55, NULL));
     espnow_ctrl_responder_data(app_responder_ctrl_data_cb);
 }
 
@@ -887,42 +938,159 @@ void on_settings_changed(bsr_drive_mode_t mode, const bsr_data_t *data)
  * @param[out] None
  * @return None
  ***********************************************************************************/
+/* ══════════════════════════════════════════════
+ *  Ancienne fonction conservee pour compatibilite
+ * ══════════════════════════════════════════════ */
 void bsr_espnow_init(void)
 {
-    espnow_storage_init();
+    controller_app_start();
+}
 
+/* ══════════════════════════════════════════════
+ *  OTA — lance la mise a jour dans une tache dediee
+ * ══════════════════════════════════════════════ */
+static bool s_ota_running = false;
+
+static void ota_task(void *arg)
+{
+    ESP_LOGI("BSR_CTRL", "OTA task demarree");
+    bsr_ota_start();  /* ne retourne pas si succes (reboot) */
+    ESP_LOGE("BSR_CTRL", "OTA echouee");
+    s_ota_running = false;
+    vTaskDelete(NULL);
+}
+
+static void on_ota_btn_pressed(void)
+{
+    if (s_ota_running) {
+        ESP_LOGW("BSR_CTRL", "OTA deja en cours, appui ignore");
+        return;
+    }
+    s_ota_running = true;
+    xTaskCreate(ota_task, "ota", 8192, NULL, 5, NULL);
+}
+
+/* ══════════════════════════════════════════════
+ *  WiFi config — sauvegarde les identifiants en NVS
+ * ══════════════════════════════════════════════ */
+static void on_wifi_save(const char *ssid, const char *password)
+{
+    ESP_LOGI("BSR_CTRL", "Sauvegarde WiFi: SSID='%s'", ssid);
+    bsr_wifi_config_save(ssid, password);
+    bsr_update_wifi_status(ssid);
+}
+
+/* ══════════════════════════════════════════════
+ *  controller_app_start / controller_app_stop
+ * ══════════════════════════════════════════════ */
+void controller_app_start(void)
+{
+    if (s_controller_running) {
+        ESP_LOGW(TAG, "controller_app deja en cours");
+        return;
+    }
+    ESP_LOGI(TAG, ">>> controller_app_start()");
+
+    /* NVS + WiFi */
+    espnow_storage_init();
     app_wifi_init();
 
+    /* Boutons physiques */
     app_driver_init();
 
-    // Configure ESP‑NOW with the default settings, which can be customized by modifying the fields of the espnow_config structure before calling espnow_init.
-    // The espnow_config structure contains various configuration parameters for ESP‑NOW, such as forwarding behavior, security settings, queue size, retry numbers, timeouts, and receive filters.
-    // You can modify these parameters according to your application needs before initializing ESP‑NOW.
-    // For example, to enable forwarding and allow channel switching for forwarding, you can set the following fields of espnow_config:
-    //      espnow_config.forward_enable = 1;
-    //      espnow_config.forward_switch_channel = 1;
-    // To enable security and set a PMK, you can set the following fields of espnow_config:
-    //      espnow_config.sec_enable = 1;
-    //      espnow_config.pmk = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10};
+    /* ESP-NOW */
     espnow_config_t espnow_config = ESPNOW_INIT_CONFIG_DEFAULT();
-
-    // For this demo, we use the default configuration of ESP‑NOW, which is suitable for a simple point‑to‑point communication scenario without forwarding or security. You can modify the configuration parameters as needed for your application.
     espnow_init(&espnow_config);
 
-    // Register the event handler for ESP‑NOW events, which will be called when certain events related to ESP‑NOW occur, such as bind, unbind, bind error, etc. The event handler can be used to process these events and perform actions accordingly.
-    esp_event_handler_register(ESP_EVENT_ESPNOW, ESP_EVENT_ANY_ID, app_espnow_event_handler, NULL);
-
-    // Initialize the responder, which will set up the responder role for ESP‑NOW and register the callback to process control data received from the initiator. The responder will be able to receive control data sent by the initiator and execute the corresponding actions based on the received data.
+    esp_event_handler_register(ESP_EVENT_ESPNOW, ESP_EVENT_ANY_ID,
+                               app_espnow_event_handler, NULL);
     app_responder_init();
 
+    /* UI LVGL telecommande (rotation 180° car ecran monte a l'envers) */
+    extern bool bsr_lvgl_lock(int timeout_ms);
+    extern void bsr_lvgl_unlock(void);
+    extern void bsr_set_rotation(int deg);
+    if (bsr_lvgl_lock(-1)) {
+        bsr_set_rotation(180);
+        bsr_screen_init();
+        bsr_lvgl_unlock();
+    }
+
+    /* Enregistrer les callbacks ecran → ESP-NOW */
     bsr_register_settings_changed_cb(on_settings_changed);
     bsr_register_bind_action_cb(on_screen_bind_action);
+    bsr_register_ota_action_cb(on_ota_btn_pressed);
+    bsr_register_wifi_save_cb(on_wifi_save);
 
-    // Print the current Wi-Fi channel and PHY information for debugging purposes, which can help you verify that the devices are on the same channel and have the correct Wi-Fi configuration for ESP‑NOW communication.
+    /* Si pas de config WiFi en NVS, sauver les identifiants par defaut */
+    if (!bsr_wifi_config_exists()) {
+        ESP_LOGI(TAG, "Premier boot: sauvegarde WiFi par defaut");
+        bsr_wifi_config_save("Livebox-4E20", "WMhA7xGmoXiZFFS2Km");
+    }
+
+    /* Afficher le SSID sauvegarde */
+    {
+        char ssid[BSR_WIFI_SSID_MAX] = {0};
+        char pass[BSR_WIFI_PASS_MAX] = {0};
+        if (bsr_wifi_config_load(ssid, sizeof(ssid), pass, sizeof(pass))) {
+            bsr_update_wifi_status(ssid);
+        }
+    }
+
+    /* Debug Wi-Fi */
     print_wifi_channel();
-
-    // Print the current Wi-Fi PHY information for debugging purposes.
     print_wifi_phy_info();
 
+    s_controller_running = true;
+    s_espnow_ctrl_status = APP_ESPNOW_CTRL_INIT;
+
     ESP_LOGI(TAG, "=== BSR Telecommande ready ===");
+}
+
+void controller_app_stop(void)
+{
+    if (!s_controller_running) {
+        ESP_LOGW(TAG, "controller_app pas en cours");
+        return;
+    }
+    ESP_LOGI(TAG, ">>> controller_app_stop()");
+
+    /* 1. Deregistrer le handler ESP-NOW */
+    esp_event_handler_unregister(ESP_EVENT_ESPNOW, ESP_EVENT_ANY_ID,
+                                 app_espnow_event_handler);
+
+    /* 2. Deinit ESP-NOW puis WiFi */
+    espnow_deinit();
+    app_wifi_deinit();
+
+    /* 3. Supprimer les boutons */
+    for (int i = 0; i < 6; i++) {
+        if (s_button_handles[i]) {
+            iot_button_delete(s_button_handles[i]);
+            s_button_handles[i] = NULL;
+        }
+    }
+
+    /* 4. Supprimer l'ecran LVGL telecommande.
+     * IMPORTANT : charger un ecran noir temporaire AVANT de supprimer
+     * l'ecran actif, sinon la tache LVGL crash (act_scr dangling). */
+    extern bool bsr_lvgl_lock(int timeout_ms);
+    extern void bsr_lvgl_unlock(void);
+    if (bsr_lvgl_lock(-1)) {
+        if (bsr_ui.screen) {
+            lv_obj_t *blank = lv_obj_create(NULL);
+            lv_obj_set_style_bg_color(blank, lv_color_black(), 0);
+            lv_obj_set_style_bg_opa(blank, LV_OPA_COVER, 0);
+            lv_scr_load(blank);
+            lv_obj_del(bsr_ui.screen);
+            bsr_ui.screen = NULL;
+        }
+        bsr_lvgl_unlock();
+    }
+
+    s_controller_running = false;
+    s_espnow_ctrl_status = APP_ESPNOW_CTRL_INIT;
+    bsr_data.connected = false;
+
+    ESP_LOGI(TAG, "=== BSR Telecommande arretee ===");
 }

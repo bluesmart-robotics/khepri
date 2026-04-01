@@ -66,11 +66,11 @@
 
 // GPIO definitions for the buttons used in this demo, which can be modified according to the actual hardware design and button connections.
 // Each button is assigned a unique GPIO number, which is used to initialize the button and register the corresponding callback for sending control data to the responder when the button is pressed.
-#define CONTROL_KEY_GPIO_A      GPIO_NUM_18
-#define CONTROL_KEY_GPIO_C      GPIO_NUM_2   /* GPIO_NUM_14 conflicts with LCD QSPI DATA3 — reassigned to GPIO 2 */
-#define CONTROL_KEY_GPIO_B      GPIO_NUM_17
-#define CONTROL_KEY_GPIO_0      GPIO_NUM_16
-#define CONTROL_KEY_GPIO_1      GPIO_NUM_4
-#define CONTROL_KEY_GPIO_F      GPIO_NUM_NC  /* GPIO_NUM_12 conflicts with LCD QSPI DATA1 — reassign to a free pin */
+#define CONTROL_KEY_GPIO_A      GPIO_NUM_15
+#define CONTROL_KEY_GPIO_C      GPIO_NUM_17
+#define CONTROL_KEY_GPIO_B      GPIO_NUM_8
+#define CONTROL_KEY_GPIO_0      GPIO_NUM_NC  /* pas de GPIO attribue */
+#define CONTROL_KEY_GPIO_1      GPIO_NUM_NC  /* pas de GPIO attribue */
+#define CONTROL_KEY_GPIO_F      GPIO_NUM_7
 
 void bsr_espnow_init(void);
