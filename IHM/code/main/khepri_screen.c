@@ -31,7 +31,7 @@ static struct {
     lv_obj_t *knob_arc; /* indicateur de molette sur le pourtour */
 
     struct {
-        lv_obj_t *ring, *over, *pct, *kw, *axes, *vib[2];
+        lv_obj_t *ring, *over, *cmd, *pct, *cmd_txt, *vib[2];
     } mot;
     struct {
         lv_obj_t *arc[2], *g, *unit, *isc[2], *tc[2], *air, *hdr[2];
@@ -44,7 +44,7 @@ static struct {
             *lbl_lum, *mac;
     } sys;
     struct {
-        lv_obj_t *root, *ring, *title, *node, *val, *rpm, *hint;
+        lv_obj_t *root, *ring, *title, *node, *val, *hint;
     } al;
     struct {
         lv_obj_t *state, *info, *list, *btn_scan, *lbl_scan, *btn_forget, *ota, *ota2;
@@ -161,6 +161,7 @@ static void tile_base(lv_obj_t *t, kh_page_t p)
     lv_obj_set_style_bg_color(t, KH_COL_BG, 0);
     lv_obj_set_style_bg_opa(t, LV_OPA_COVER, 0);
     lv_obj_clear_flag(t, LV_OBJ_FLAG_SCROLLABLE);
+    if (p == KH_PAGE_MOTORS) return; /* page principale : la jauge se suffit */
     lv_obj_t *title = label(t, &kh_font_18, KH_COL_TEXT_DIM, PAGE_TITLE[p]);
     lv_obj_set_style_text_letter_space(title, 3, 0);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 58);
@@ -184,47 +185,60 @@ static lv_obj_t *button(lv_obj_t *par, const char *txt, int w, lv_obj_t **lbl_ou
 }
 
 /* ------------------------------------------------------------------ pages */
-/* Jauge unique de poussée : anneau vert sur tout le pourtour, départ en bas, sens horaire.
- * 100 % = puissance de référence (3,5 kW par défaut). Au-delà, un second tour ambre recouvre le
- * premier : 150 % = un tour vert complet + un demi-tour ambre. */
-static lv_obj_t *ring_arc(lv_obj_t *par, lv_color_t c, bool with_track)
+/* Jauge unique de régime, sur tout le pourtour, dans le sens horaire :
+ *   0 %   à 20° après le bas de l'écran,
+ *   100 % à 45° avant le bas (295° de course),
+ *   au-delà, la jauge continue en ambre dans la zone restante, jusqu'à ≈ 122 %.
+ * Angles LVGL : 0° à droite, sens horaire ; le bas de l'écran est à 90°. */
+#define RING_START 110 /* 90 + 20 */
+#define RING_SPAN 295  /* 360 − 20 − 45 */
+#define RING_OVER_PM ((RING_SPAN_REST * 1000) / RING_SPAN)
+#define RING_SPAN_REST (360 - RING_SPAN) /* 65° = zone de dépassement */
+#define CMD_DOT 12   /* repère de consigne : pastille juste à l'intérieur de la jauge */
+#define CMD_R 190
+
+static lv_obj_t *ring_arc(lv_obj_t *par, int size, int width, lv_color_t c, int rot, int span, int range, bool track)
 {
     lv_obj_t *a = lv_arc_create(par);
-    lv_obj_set_size(a, 446, 446);
+    lv_obj_set_size(a, size, size);
     lv_obj_center(a);
-    lv_arc_set_rotation(a, 90); /* 0 = en bas */
-    lv_arc_set_bg_angles(a, 0, 360);
-    lv_arc_set_range(a, 0, 1000);
+    lv_arc_set_rotation(a, rot);
+    lv_arc_set_bg_angles(a, 0, span);
+    lv_arc_set_range(a, 0, range);
     lv_arc_set_value(a, 0);
     lv_obj_remove_style(a, NULL, LV_PART_KNOB);
     lv_obj_clear_flag(a, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_arc_width(a, 22, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(a, 22, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(a, width, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(a, width, LV_PART_INDICATOR);
     lv_obj_set_style_arc_color(a, KH_COL_CARD, LV_PART_MAIN);
-    lv_obj_set_style_arc_opa(a, with_track ? LV_OPA_COVER : LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_arc_opa(a, track ? LV_OPA_COVER : LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_arc_color(a, c, LV_PART_INDICATOR);
     lv_obj_set_style_arc_rounded(a, true, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(a, true, LV_PART_MAIN);
     return a;
 }
 
 static void build_motors(lv_obj_t *t)
 {
     tile_base(t, KH_PAGE_MOTORS);
-    ui.mot.ring = ring_arc(t, KH_COL_GREEN, true);
-    ui.mot.over = ring_arc(t, KH_COL_AMBER, false);
+    ui.mot.ring = ring_arc(t, 446, 22, KH_COL_GREEN, RING_START, RING_SPAN, 1000, true);
+    ui.mot.over = ring_arc(t, 446, 22, KH_COL_AMBER, (RING_START + RING_SPAN) % 360, RING_SPAN_REST, RING_OVER_PM, false);
+    /* consigne : petit repère blanc juste à l'intérieur de la jauge */
+    ui.mot.cmd = lv_obj_create(t);
+    lv_obj_remove_style_all(ui.mot.cmd);
+    lv_obj_set_size(ui.mot.cmd, CMD_DOT, CMD_DOT);
+    lv_obj_set_style_radius(ui.mot.cmd, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_opa(ui.mot.cmd, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(ui.mot.cmd, KH_COL_TEXT, 0);
+    lv_obj_clear_flag(ui.mot.cmd, LV_OBJ_FLAG_CLICKABLE);
 
-    lv_obj_t *cap = label(t, &kh_font_14, KH_COL_TEXT_DIM, "POUSSÉE");
-    lv_obj_set_style_text_letter_space(cap, 3, 0);
-    lv_obj_align(cap, LV_ALIGN_CENTER, 0, -86);
     ui.mot.pct = label(t, &kh_font_64, KH_COL_TEXT, "---");
-    lv_obj_align(ui.mot.pct, LV_ALIGN_CENTER, 0, -34);
-    ui.mot.kw = label(t, &kh_font_18, KH_COL_TEXT_MID, "");
-    lv_obj_align(ui.mot.kw, LV_ALIGN_CENTER, 0, 22);
-    ui.mot.axes = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_align(ui.mot.axes, LV_ALIGN_CENTER, 0, 50);
+    lv_obj_align(ui.mot.pct, LV_ALIGN_CENTER, 0, -6);
+    ui.mot.cmd_txt = label(t, &kh_font_18, KH_COL_TEXT_MID, "");
+    lv_obj_align(ui.mot.cmd_txt, LV_ALIGN_CENTER, 0, 52);
     for (int k = 0; k < 2; k++) {
         ui.mot.vib[k] = label(t, &kh_font_18, KH_COL_TEXT_DIM, "");
-        lv_obj_align(ui.mot.vib[k], LV_ALIGN_CENTER, k == 0 ? -66 : 66, 122);
+        lv_obj_align(ui.mot.vib[k], LV_ALIGN_CENTER, k == 0 ? -66 : 66, 112);
     }
 }
 
@@ -637,11 +651,10 @@ static void build_alarm(void)
     lv_obj_align(ui.al.node, LV_ALIGN_CENTER, 0, -66);
     ui.al.val = label(r, &kh_font_64, KH_COL_RED, "--- mg");
     lv_obj_align(ui.al.val, LV_ALIGN_CENTER, 0, -6);
-    ui.al.rpm = label(r, &kh_font_18, KH_COL_TEXT_MID, "");
-    lv_obj_align(ui.al.rpm, LV_ALIGN_CENTER, 0, 56);
-    ui.al.hint = label(r, &kh_font_18, KH_COL_TEXT_DIM, "Toucher ou PWR\npour acquitter");
+
+    ui.al.hint = label(r, &kh_font_18, KH_COL_TEXT_DIM, "Toucher, pousser ou PWR\npour acquitter");
     lv_obj_set_style_text_align(ui.al.hint, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(ui.al.hint, LV_ALIGN_CENTER, 0, 118);
+    lv_obj_align(ui.al.hint, LV_ALIGN_CENTER, 0, 96);
     lv_obj_add_flag(r, LV_OBJ_FLAG_HIDDEN);
 }
 
@@ -750,6 +763,18 @@ void kh_screen_knob_step(int steps)
     kh_screen_show_page((kh_page_t)p, true);
 }
 
+/* Poussée de l'écran vers l'arrière (futur appui du bouton) : acquitte l'alerte, sinon page suivante */
+void kh_screen_push(void)
+{
+    if (!lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN)) {
+        if (s_cb.on_ack) s_cb.on_ack();
+        return;
+    }
+    kh_screen_knob_step(1);
+}
+
+bool kh_screen_alarm_visible(void) { return !lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN); }
+
 void kh_screen_button(void)
 {
     if (!lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN)) {
@@ -785,13 +810,14 @@ static void set_arc(lv_obj_t *a, bool ok, int v, lv_color_t c)
 
 static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t now)
 {
-    char b[64], v1[16], v2[16];
+    char b[48];
     float w = 0;
     const float ref = loc->thrust_ref_w > 0 ? loc->thrust_ref_w : 3500.0f;
     bool ok = kh_power_total(m, now, &w);
     if (w < 0) w = 0; /* régénération : jauge à zéro */
     int pm = ok ? (int)lroundf(w / ref * 1000.0f) : 0; /* pour mille */
-    int main_v = pm > 1000 ? 1000 : pm, over_v = pm > 1000 ? (pm - 1000 > 1000 ? 1000 : pm - 1000) : 0;
+    int main_v = pm > 1000 ? 1000 : pm;
+    int over_v = pm > 1000 ? (pm - 1000 > RING_OVER_PM ? RING_OVER_PM : pm - 1000) : 0;
     if (lv_arc_get_value(ui.mot.ring) != main_v) lv_arc_set_value(ui.mot.ring, main_v);
     if (lv_arc_get_value(ui.mot.over) != over_v) lv_arc_set_value(ui.mot.over, over_v);
     set_arc_color(ui.mot.ring, ok ? KH_COL_GREEN : KH_COL_TEXT_DIM, LV_PART_INDICATOR);
@@ -801,31 +827,25 @@ static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t no
     set_text(ui.mot.pct, b);
     set_text_color(ui.mot.pct, !ok ? KH_COL_TEXT_DIM : pm > 1000 ? KH_COL_AMBER : KH_COL_TEXT, 0);
 
-    if (ok) {
-        fmt_dec(v1, sizeof v1, w / 1000.0f, 2);
-        fmt_dec(v2, sizeof v2, ref / 1000.0f, 1);
-        snprintf(b, sizeof b, "%s kW / %s kW", v1, v2);
-    } else {
-        snprintf(b, sizeof b, "puissance inconnue");
-    }
-    set_text(ui.mot.kw, b);
+    /* repère de consigne sur la même échelle que la jauge */
+    float c = loc->throttle_pct;
+    if (c < 0) c = 0;
+    float cmax = 100.0f * 360.0f / RING_SPAN;
+    if (c > cmax) c = cmax;
+    float a = (RING_START + c / 100.0f * RING_SPAN) * 0.0174533f; /* 0 = droite, sens horaire */
+    lv_coord_t x = (lv_coord_t)lroundf(CMD_R * cosf(a)), y = (lv_coord_t)lroundf(CMD_R * sinf(a));
+    if (lv_obj_get_x_aligned(ui.mot.cmd) != x || lv_obj_get_y_aligned(ui.mot.cmd) != y)
+        lv_obj_align(ui.mot.cmd, LV_ALIGN_CENTER, x, y);
+    /* la valeur de consigne s'affiche seulement pendant qu'on la règle */
+    if (loc->throttle_adjust_ms && now - loc->throttle_adjust_ms < 2000) snprintf(b, sizeof b, "consigne %d %%", (int)lroundf(loc->throttle_pct));
+    else b[0] = 0;
+    set_text(ui.mot.cmd_txt, b);
 
-    char ax[2][16];
-    for (int k = 0; k < 2; k++) {
-        if (kh_fresh(m->t_power[k], now, KH_STALE_MS)) {
-            fmt_dec(v1, sizeof v1, kh_power_axis(m, k) / 1000.0f, 2);
-            snprintf(ax[k], sizeof ax[k], "%s", v1);
-        } else {
-            snprintf(ax[k], sizeof ax[k], "---");
-        }
-    }
-    snprintf(b, sizeof b, "M0 %s · M1 %s kW", ax[0], ax[1]);
-    set_text(ui.mot.axes, b);
-
+    /* on ne signale que les problèmes */
     for (int k = 0; k < 2; k++) {
         int lvl = kh_vib_level(&m->node[k], now);
-        static const char *TXT[] = {"---", "OK", "VIB", "ALARME"};
-        snprintf(b, sizeof b, "Ch.%d %s", k, TXT[lvl + 1]);
+        if (lvl >= 1) snprintf(b, sizeof b, "Ch.%d %s", k, lvl == 2 ? "ALARME" : "VIB");
+        else b[0] = 0;
         set_text(ui.mot.vib[k], b);
         set_text_color(ui.mot.vib[k], level_color(lvl), 0);
     }
@@ -1007,8 +1027,7 @@ static void update_status(const kh_model_t *m, const kh_local_t *loc, int64_t no
         set_text(ui.status, "SIMULATION");
         set_text_color(ui.status, KH_COL_AMBER, 0);
     } else if (kh_link_ok(m, now)) {
-        set_text(ui.status, "LIAISON OK");
-        set_text_color(ui.status, KH_COL_GREEN, 0);
+        set_text(ui.status, ""); /* tout va bien : rien à dire */
     } else {
         set_text(ui.status, loc->bound ? LV_SYMBOL_WARNING " LIAISON PERDUE" : "NON APPAIRÉ");
         set_text_color(ui.status, loc->bound ? KH_COL_RED : KH_COL_TEXT_DIM, 0);
@@ -1025,16 +1044,12 @@ static void update_alarm(const kh_model_t *m)
         }
         return;
     }
-    char b[64], v1[16], v2[16];
+    char b[64], v1[16];
     snprintf(b, sizeof b, "Chaussette %u", m->alarm_node);
     set_text(ui.al.node, b);
     fmt_int(v1, sizeof v1, m->alarm_last.rms_mg);
     snprintf(b, sizeof b, "%s mg", v1);
     set_text(ui.al.val, b);
-    fmt_int(v1, sizeof v1, m->alarm_last.rpm[0]);
-    fmt_int(v2, sizeof v2, m->alarm_last.rpm[1]);
-    snprintf(b, sizeof b, "M0 %s · M1 %s tr/min", v1, v2);
-    set_text(ui.al.rpm, b);
     if (!shown) {
         lv_obj_clear_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
         lv_obj_move_foreground(ui.al.root);
@@ -1044,21 +1059,8 @@ static void update_alarm(const kh_model_t *m)
 
 static void update_knob(const kh_knob_view_t *k)
 {
-    if (!k || !k->valid) {
-        if (!lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
-        return;
-    }
-    if (lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_clear_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
-    /* LVGL : 0° à droite, sens horaire ; molette : 0° en haut. Pas de 3° : pas de redessin sur le bruit */
-    int a = ((int)lroundf(k->angle_deg / 3.0f)) * 3 + 270;
-    a %= 360;
-    if (a < 0) a += 360;
-    static int last = -1;
-    if (a != last) {
-        last = a;
-        lv_arc_set_angles(ui.knob_arc, (uint16_t)((a + 360 - 7) % 360), (uint16_t)((a + 7) % 360));
-    }
-    set_arc_color(ui.knob_arc, k->tilt_mode ? KH_COL_AMBER : KH_COL_TEXT_MID, LV_PART_INDICATOR);
+    (void)k; /* la molette règle la consigne : son repère est sur la page principale */
+    if (!lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
 }
 
 void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_view_t *knob, int64_t now)

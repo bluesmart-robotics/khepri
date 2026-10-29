@@ -11,30 +11,32 @@ ESP-NOW avec appairage par bouton et commandes 32 bits.
 
 | Page | Contenu |
 |---|---|
-| MOTEURS | Jauge unique de poussée sur tout le pourtour, départ en bas : 100 % = 3,5 kW électriques (M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, second tour ambre. Puissance totale et par moteur, état vibratoire des chaussettes |
+| Principale | Une seule jauge verte sur le pourtour, sens horaire : 0 % à 20° après le bas, 100 % à 45° avant le bas (100 % = 3,5 kW électriques M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, la jauge continue en ambre jusqu'à ≈ 122 %. Au centre, le pourcentage seul. Pastille blanche = consigne de régime ; « consigne NN % » s'affiche 2 s pendant le réglage. Les chaussettes n'apparaissent qu'en cas de vibration anormale |
 | SOLAIRE | Ensoleillement moyen (W/m²) ; Isc et température de cellule par chaussette ; air extérieur |
 | VIBRATIONS | RMS vectoriel par chaussette, repères 3 000 / 6 000 mg, amplitudes 1P M0 · M1 |
 | SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité |
 | WI-FI | Réseaux à portée (balayage), saisie du mot de passe au clavier tactile, réseau mémorisé, OUBLIER ; version et état des mises à jour |
-| Alerte | Plein écran rouge sur trame ALARME niveau 2 ; acquittée au toucher ou au bouton PWR, puis 30 s de silence pour cette chaussette |
+| Alerte | Plein écran rouge sur trame ALARME niveau 2 ; acquittée au toucher, par une poussée ou au bouton PWR, puis 30 s de silence pour cette chaussette |
 
-Une donnée plus vieille que 3 s s'affiche `---`. Le bandeau du haut indique LIAISON OK,
-LIAISON PERDUE, NON APPAIRÉ ou SIMULATION.
+Une donnée plus vieille que 3 s s'affiche `---`. Principe : on ne dit rien quand tout va bien. Le bandeau du haut
+reste vide si la liaison est bonne et n'indique que LIAISON PERDUE, NON APPAIRÉ ou SIMULATION.
 
 ## Entrées
 
 - **Tactile** : glisser entre les pages, boutons de la page SYSTÈME.
 - **Bouton PWR** (TCA9554 P4) : acquitte l'alerte, sinon revient à MOTEURS. Un appui long reste
   géré par l'AXP2101 (extinction).
-- **Molette provisoire par l'accéléromètre QMI8658** (`main/knob.c`), en attendant le moteur BLDC
-  encodeur :
-  - carte tenue debout : tourner la carte comme un bouton, un cran tous les 20° → page suivante ou
-    précédente ;
-  - carte à plat : l'accéléromètre ne voit pas la rotation autour de la verticale, on passe en
-    manette : incliner à droite ou à gauche de plus de 15° fait un cran, puis répète.
-  Un petit trait sur le pourtour montre la position de la molette (ambre en mode manette).
-  C'est une approximation : en vol, les accélérations de l'avion la perturbent. L'encodeur BLDC
-  n'aura qu'à appeler `kh_screen_knob_step()` à la place.
+- **Gestes à l'accéléromètre QMI8658** (`main/knob.c`, 100 Hz), en attendant le bouton haptique
+  (moteur BLDC). Repère, écran face à soi : Z sort de l'écran vers le pilote, X vers le haut, Y vers
+  la droite.
+  - **petit coup vers l'arrière** (l'écran part vers −Z) → page suivante, ou acquittement de
+    l'alerte affichée ; simule l'appui du futur bouton. Seuil 350 mg, 0,6 s de temps mort ;
+  - **rouler l'écran vers la droite / la gauche** (rotation dans son plan, autour de Z) → la consigne
+    de régime monte / descend, de 0 à 122 %. Zone morte 8°, vitesse croissante jusqu'à 40 %/s à 40° ;
+    revenir droit garde la consigne. Actif seulement sur la page principale, hors alerte.
+  La consigne pilote la simulation et part vers le maître (commande `KHN_CMD_THROTTLE`, ‰ 0-1220,
+  5 Hz au plus). L'écran doit être tenu à peu près debout pour lire le roulis. En vol, les
+  accélérations de l'avion perturbent ces gestes : c'est une solution d'atelier.
 
 ## Wi-Fi et mises à jour OTA
 
@@ -119,7 +121,8 @@ Le premier flash par USB est obligatoire (nouvelle table de partitions OTA) ; en
 jour passent par le Wi-Fi.
 
 Réglages (`idf.py menuconfig` → « KHEPRI - ecran pilote ») : canal ESP-NOW, simulation au
-démarrage, angle d'un cran et sens de la molette, nœuds CANSimple des moteurs.
+démarrage, seuil de poussée, zone morte / plage / vitesse et sens du roulis, nœuds CANSimple des
+moteurs.
 
 ## Tests et aperçus sur PC
 
@@ -133,7 +136,7 @@ make -C tools/preview && ./tools/preview/preview docs/apercus
 ```
 main/                 écran : main.c (CO5300, LVGL, tâches), khepri_screen.c (UI),
                       khepri_link.c (ESP-NOW), kh_wifi.c (Wi-Fi), kh_ota.c (mises à jour),
-                      knob.c (molette), kh_board.c (CST9217, TCA9554)
+                      knob.c (gestes), kh_board.c (CST9217, TCA9554)
 release/              binaires publiés : version.json (manifeste OTA), image OTA, images complètes 0x0
 components/
   khepri_proto/       protocole ESP-NOW, trames CAN, modèle, simulation (C pur)
@@ -149,4 +152,4 @@ tests/, tools/preview/, tools/publier_maj.py
 Tout compile sans avertissement et les tests PC passent, mais rien n'a encore tourné sur la carte.
 Points à contrôler au premier essai : affichage (pilote SH8601 utilisé avec les commandes
 d'initialisation du CO5300, décalage de 6 colonnes), sens du tactile, sens et signes de
-l'accéléromètre (`KHEPRI_KNOB_INVERT`), lecture du bouton PWR par le TCA9554.
+l'accéléromètre (`KHEPRI_ROLL_INVERT`, `KHEPRI_PUSH_INVERT`), lecture du bouton PWR par le TCA9554.

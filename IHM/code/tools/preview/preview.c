@@ -82,6 +82,8 @@ int main(int argc, char **argv)
     kh_local_t loc = {.thrust_ref_w = 3500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
     kh_knob_view_t knob = {.valid = true, .angle_deg = 35.0f};
     int64_t t = 0;
+    loc.throttle_pct = 80;
+    kh_demo_set_throttle(loc.throttle_pct);
 
     step(&m, &t, 20000, &loc, &knob);
     const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_solaire", "3_vibrations", "4_systeme", "5_wifi"};
@@ -127,12 +129,24 @@ int main(int argc, char **argv)
     lv_timer_handler();
     dump(dir, "8_wifi_mot_de_passe");
     kh_screen_debug_open_password(NULL, NULL);
-    /* poussée faible (vers t = 64 s, la simulation est au creux) */
+    /* régime réduit au roulis : consigne 45 %, affichée pendant le réglage */
     kh_screen_show_page(KH_PAGE_MOTORS, false);
     step(&m, &t, 64500 - (int)t, &loc, &knob);
+    loc.throttle_pct = 45;
+    kh_demo_set_throttle(45);
+    step(&m, &t, 4000, &loc, &knob);
+    loc.throttle_adjust_ms = t - 300;
     kh_model_ack_alarm(&m, t);
     step(&m, &t, 200, &loc, &knob);
     dump(dir, "1b_moteurs_croisiere");
+    /* dépassement : consigne 112 % */
+    loc.throttle_pct = 112;
+    loc.throttle_adjust_ms = 0;
+    kh_demo_set_throttle(112);
+    step(&m, &t, 5000, &loc, &knob);
+    dump(dir, "1c_moteurs_depassement");
+    loc.throttle_pct = 80;
+    kh_demo_set_throttle(80);
     /* liaison perdue */
     kh_model_ack_alarm(&m, t);
     kh_screen_show_page(KH_PAGE_MOTORS, false);

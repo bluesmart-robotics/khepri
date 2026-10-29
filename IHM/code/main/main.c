@@ -74,7 +74,6 @@ static esp_lcd_panel_io_handle_t s_io;
 static kh_model_t s_model;
 static kh_local_t s_local;
 static knob_t s_knob;
-static kh_knob_view_t s_knob_view;
 
 /* ══════════════════════════════════════════════
  *  LVGL (même schéma que la télécommande BSR)
@@ -86,7 +85,12 @@ static kh_model_t s_snap_model;
 static kh_local_t s_snap_local;
 static bool s_snap_new;
 static portMUX_TYPE s_in_lock = portMUX_INITIALIZER_UNLOCKED;
-static int s_in_steps, s_in_clicks;
+static int s_in_pushes, s_in_clicks;
+/* Consigne de régime réglée au roulis [%] ; le roulis n'agit que sur la page principale, hors alerte */
+static float s_throttle;
+static int64_t s_throttle_ms;
+static volatile bool s_roll_enabled = true;
+#define THROTTLE_MAX_PCT 122.0f
 
 static bool notify_flush_ready(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_data_t *ed, void *ctx)
 {
@@ -131,11 +135,12 @@ static void lvgl_task(void *arg)
     int64_t last = 0;
     for (;;) {
         portENTER_CRITICAL(&s_in_lock);
-        int steps = s_in_steps, clicks = s_in_clicks;
-        s_in_steps = s_in_clicks = 0;
+        int pushes = s_in_pushes, clicks = s_in_clicks;
+        s_in_pushes = s_in_clicks = 0;
         portEXIT_CRITICAL(&s_in_lock);
-        if (steps) kh_screen_knob_step(steps);
+        if (pushes) kh_screen_push();
         if (clicks) kh_screen_button();
+        s_roll_enabled = kh_screen_page() == KH_PAGE_MOTORS && !kh_screen_alarm_visible();
 
         int64_t t = esp_timer_get_time() / 1000;
         if (t - last >= 100) {
@@ -150,7 +155,7 @@ static void lvgl_task(void *arg)
                 xSemaphoreGive(s_snap_mux);
             }
             if (have) {
-                kh_knob_view_t knob = s_knob_view;
+                kh_knob_view_t knob = {0};
                 kh_screen_update(&model, &local, &knob, t);
             }
         }
@@ -332,6 +337,22 @@ static void ui_task(void *arg)
         snap = s_model;
         xSemaphoreGive(s_model_mux);
 
+        /* consigne de régime : vers la simulation, et vers le maître (5 Hz au plus, et à chaque changement) */
+        portENTER_CRITICAL(&s_in_lock);
+        float thr = s_throttle;
+        int64_t thr_ms = s_throttle_ms;
+        portEXIT_CRITICAL(&s_in_lock);
+        s_local.throttle_pct = thr;
+        s_local.throttle_adjust_ms = thr_ms;
+        kh_demo_set_throttle(thr);
+        static uint32_t sent_pm = UINT32_MAX;
+        static int64_t sent_t;
+        uint32_t pm = (uint32_t)lroundf(thr * 10.0f);
+        if (pm != sent_pm && t - sent_t >= 200 && s_local.bound && !s_local.demo && !kh_wifi_scanning()) {
+            if (khepri_link_send_cmd(KHN_CMD_THROTTLE, pm)) sent_pm = pm;
+            sent_t = t;
+        }
+
         s_local.bound = khepri_link_bound();
         s_local.binding = khepri_link_binding();
         kh_wifi_get_status(&s_local.wifi);
@@ -346,41 +367,44 @@ static void ui_task(void *arg)
     }
 }
 
-/* 50 Hz : molette (accéléromètre) et bouton PWR */
+/* 100 Hz : gestes à l'accéléromètre (poussée → page, roulis → régime) et bouton PWR */
 static void input_task(void *arg)
 {
-    knob_cfg_t kc = {.detent_deg = CONFIG_KHEPRI_KNOB_DETENT_DEG,
-                     .tilt_on_deg = 15,
-                     .tilt_off_deg = 8,
-                     .repeat_ms = 450,
-#ifdef CONFIG_KHEPRI_KNOB_INVERT
-                     .invert = true,
-#else
-                     .invert = false,
+    knob_cfg_t kc = {.push_mg = CONFIG_KHEPRI_PUSH_MG,
+                     .push_dead_ms = 600,
+                     .roll_dead_deg = CONFIG_KHEPRI_ROLL_DEAD_DEG,
+                     .roll_full_deg = CONFIG_KHEPRI_ROLL_FULL_DEG,
+                     .rate_max_pct_s = CONFIG_KHEPRI_ROLL_RATE_PCT_S,
+#ifdef CONFIG_KHEPRI_ROLL_INVERT
+                     .invert_roll = true,
+#endif
+#ifdef CONFIG_KHEPRI_PUSH_INVERT
+                     .invert_push = true,
 #endif
     };
     knob_init(&s_knob, &kc);
     bool imu = qmi8658_init();
-    if (!imu) ESP_LOGW(TAG, "QMI8658 absent : pas de molette");
+    if (!imu) ESP_LOGW(TAG, "QMI8658 absent : pas de gestes");
     bool btn_prev = false;
     TickType_t last = xTaskGetTickCount();
     for (;;) {
-        vTaskDelayUntil(&last, pdMS_TO_TICKS(20));
-        int steps = 0;
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(10));
+        knob_evt_t e = {0};
         qmi8658_accel_t a;
-        if (imu && qmi8658_read_accel(&a)) {
-            steps = knob_update(&s_knob, a.ax, a.ay, a.az, 20);
-            s_knob_view.valid = knob_valid(&s_knob);
-            s_knob_view.tilt_mode = s_knob.tilt_mode;
-            s_knob_view.angle_deg = s_knob.angle_deg;
-        }
+        if (imu && qmi8658_read_accel(&a)) knob_update(&s_knob, a.ax, a.ay, a.az, 10, &e);
         bool btn = kh_pwr_pressed();
         bool click = btn && !btn_prev;
         btn_prev = btn;
-        if (steps || click) {
+        float d = s_roll_enabled ? e.dthrottle_pct : 0;
+        if (e.push || click || d != 0) {
             portENTER_CRITICAL(&s_in_lock);
-            s_in_steps += steps;
+            s_in_pushes += e.push;
             s_in_clicks += click;
+            if (d != 0) {
+                float v = s_throttle + d;
+                s_throttle = v < 0 ? 0 : v > THROTTLE_MAX_PCT ? THROTTLE_MAX_PCT : v;
+                s_throttle_ms = esp_timer_get_time() / 1000;
+            }
             portEXIT_CRITICAL(&s_in_lock);
         }
     }

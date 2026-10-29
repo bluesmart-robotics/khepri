@@ -60,7 +60,9 @@ typedef struct {
     int brightness_pct;
     uint8_t espnow_channel;  /* canal attendu par le maître */
     char reset_text[64];     /* cause du dernier redémarrage (page SYSTÈME) */
-    float thrust_ref_w;      /* puissance correspondant à 100 % de poussée (page MOTEURS) */
+    float thrust_ref_w;      /* puissance correspondant à 100 % (page principale) */
+    float throttle_pct;      /* consigne de régime [% de thrust_ref_w] */
+    int64_t throttle_adjust_ms; /* dernier réglage de la consigne (affichage temporaire) */
     kh_wifi_status_t wifi;  /* page WI-FI */
     kh_ota_status_t ota;    /* mises à jour depuis GitHub */
 } kh_local_t;
@@ -82,6 +84,9 @@ void kh_screen_init(const kh_screen_cb_t *cb);
 void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_view_t *knob, int64_t now_ms);
 /* Molette : un cran (+1 / −1) → page suivante / précédente ; sur l'alerte, un cran l'acquitte */
 void kh_screen_knob_step(int steps);
+/* Petit coup vers l'arrière : acquitte l'alerte affichée, sinon page suivante */
+void kh_screen_push(void);
+bool kh_screen_alarm_visible(void);
 /* Bouton PWR (appui court) : acquitte l'alerte, sinon revient à la page MOTEURS */
 void kh_screen_button(void);
 void kh_screen_show_page(kh_page_t p, bool anim);

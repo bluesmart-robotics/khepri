@@ -78,7 +78,7 @@ bool qmi8658_init(void)
     /* CTRL1: address auto-increment enable */
     qmi_write_reg(REG_CTRL1, 0x40);
 
-    /* CTRL2: Accel ±2g, ODR 31.25 Hz (low power) */
+    /* CTRL2: Accel ±2g, ODR 250 Hz (aODR = 0101) : lu à 100 Hz pour les gestes */
     /* bits[6:4]=000 (±2g), bits[3:0]=0101 (31.25 Hz) */
     qmi_write_reg(REG_CTRL2, 0x05);
 

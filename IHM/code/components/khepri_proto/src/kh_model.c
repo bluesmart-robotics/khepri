@@ -144,6 +144,13 @@ static void put(khn_frame_t *f, uint16_t id, const uint8_t d[8])
     memcpy(f->data, d, 8);
 }
 
+#define DEMO_REF_W 3500.0f
+static float s_demo_cmd = 0.0f;  /* consigne [%] */
+static float s_demo_p = 0.0f;    /* puissance simulée totale [W] */
+static int64_t s_demo_t = 0;
+
+void kh_demo_set_throttle(float pct) { s_demo_cmd = pct < 0 ? 0 : pct; }
+
 int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
 {
     if (max < 15) return 0;
@@ -156,14 +163,22 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
     kp_sync_pack(d, &s);
     put(&out[n++], KP_ID_SYNC, d);
 
-    /* Régime : palier moteur, légère respiration, M1 un peu décalé */
-    float rpm[2] = {2350.0f + 180.0f * sinf(t * 0.21f), 2310.0f + 170.0f * sinf(t * 0.19f + 0.7f)};
+    /* Puissance : suit la consigne (premier ordre, ~1,5 s) ; régime ≈ racine cubique de la puissance */
+    float dt = s_demo_t ? (float)(now - s_demo_t) : 0.0f;
+    s_demo_t = now;
+    float target = s_demo_cmd / 100.0f * DEMO_REF_W;
+    float a1 = dt / 1500.0f;
+    s_demo_p += (target - s_demo_p) * (a1 > 1.0f ? 1.0f : a1);
+    float load = s_demo_p / DEMO_REF_W;
+    float rpm[2];
+    for (int k = 0; k < 2; k++)
+        rpm[k] = load > 0.01f ? 2400.0f * cbrtf(load) + 15.0f * sinf(t * 1.3f + k) : 0.0f;
     for (int k = 0; k < 2; k++) {
         kp_put_f32(d, t * rpm[k] / 60.0f);
         kp_put_f32(d + 4, rpm[k] / 60.0f);
         put(&out[n++], (uint16_t)KP_ODRV_ID(k, KP_ODRV_CMD_ENCODER_EST), d);
         /* Puissance : croisière vers 2,6 kW au total, montées au-delà de 3,5 kW (> 100 %) */
-        float p = 1350.0f + 540.0f * sinf(t * 0.07f + k * 0.4f) + 120.0f * sinf(t * 0.9f + k);
+        float p = s_demo_p * (k == 0 ? 0.51f : 0.49f) + (s_demo_p > 20.0f ? 15.0f * sinf(t * 0.9f + k) : 0.0f);
         float v = 47.5f - p * 0.0008f; /* 14S LFP, légère chute sous charge */
         kp_put_f32(d, v);
         kp_put_f32(d + 4, p / v);
@@ -177,7 +192,7 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
 
     for (uint8_t node = 0; node < 2; node++) {
         const float ph = node * 1.3f;
-        float base = node == 0 ? 1350.0f : 1550.0f;
+        float base = 250.0f + (node == 0 ? 1100.0f : 1300.0f) * load;
         if (node == 1 && warn1) base = alarm1 ? 6600.0f : 3600.0f;
 
         kp_vib_rms_t r = {.rms_mg = {(int16_t)(base * 0.55f + 90.0f * sinf(t * 1.7f + ph)),

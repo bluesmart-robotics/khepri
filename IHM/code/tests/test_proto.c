@@ -48,6 +48,7 @@ int main(void)
     /* modèle alimenté par la simulation, via le chemin radio complet */
     kh_model_t m;
     kh_model_init(&m);
+    kh_demo_set_throttle(80.0f);
     int alarms = 0;
     for (int64_t t = 1000; t < 100000; t += 100) {
         khn_frame_t df[KHN_MAX_FRAMES];
@@ -67,7 +68,9 @@ int main(void)
     }
     CHECK(alarms == 1); /* acquittée puis muette 30 s : une seule alerte pour la rafale */
     CHECK(m.lost_pkts > 0 && kh_loss_pct(&m) < 5.0f);
-    CHECK(fabsf(m.rpm[0] - 2350.0f) < 400.0f && fabsf(m.rpm[1] - 2310.0f) < 400.0f);
+    float w = 0;
+    CHECK(kh_power_total(&m, 99900, &w) && fabsf(w - 2800.0f) < 150.0f); /* 80 % de 3,5 kW */
+    CHECK(m.rpm[0] > 1500.0f && m.rpm[1] > 1500.0f);
     CHECK(m.node[0].pv.g_wm2 > 300 && m.node[0].pv.g_wm2 < 1100);
     CHECK(kh_vib_level(&m.node[0], 99900) == 0);
     CHECK(m.sync.flags == (KP_SYNC_UTC | KP_SYNC_PPS));

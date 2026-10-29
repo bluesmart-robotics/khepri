@@ -78,6 +78,8 @@ enum {
     KHN_CMD_MARK = 0x2,      /* arg : code de marqueur (16 bits) → « mark » sur les nœuds  */
     KHN_CMD_LOG = 0x3,       /* arg : 1 démarre, 0 arrête l'enregistrement des chaussettes */
     KHN_CMD_HEARTBEAT = 0x4, /* arg : compteur (16 bits), 1 Hz — l'écran est vivant         */
+    KHN_CMD_THROTTLE = 0x5,  /* arg : consigne de régime en ‰ de la puissance de référence   */
+                             /*       (0 à 1220) ; le maître décide s'il l'applique          */
 };
 static inline uint32_t khn_cmd(uint8_t code, uint32_t arg) { return ((uint32_t)(code & 0xFu) << 28) | (arg & 0x0FFFFFFFu); }
 static inline uint8_t khn_cmd_code(uint32_t v) { return (uint8_t)(v >> 28); }

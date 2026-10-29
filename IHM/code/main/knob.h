@@ -1,18 +1,17 @@
 /*
- * knob.h — Molette virtuelle à partir de l'accéléromètre QMI8658.
+ * knob.h — gestes à l'accéléromètre QMI8658, en attendant le bouton haptique (moteur BLDC).
  *
- * En attendant le PCB où un moteur BLDC servira d'encodeur rotatif, on lit la gravité :
+ * Repère de la carte, écran face au pilote : X vers le haut, Y vers la droite, Z sort de l'écran
+ * vers le pilote. Au repos, l'accéléromètre lit +1 g sur l'axe tourné vers le haut.
  *
- *  - Carte tenue debout (écran face au pilote, |g| dans le plan de l'écran > 0,6 g) :
- *    l'angle de la gravité dans le plan de l'écran donne la position d'une molette.
- *    Tourner la carte comme un bouton fait défiler les pages, un cran tous les
- *    CONFIG_KHEPRI_KNOB_DETENT_DEG degrés.
- *  - Carte à plat (< 0,45 g dans le plan) : la rotation autour de la verticale est invisible
- *    pour un accéléromètre. On passe en « manette » : incliner la carte à droite ou à gauche
- *    de plus de 15° fait un cran, puis répète tant qu'on reste incliné.
+ *  - POUSSÉE : un petit coup qui pousse l'écran vers l'arrière (vers −Z) → page suivante.
+ *    Détection d'une impulsion sur Z, filtrée de la gravité (passe-haut), avec temps mort.
+ *    Simule l'appui du futur bouton.
+ *  - ROULIS : écran tourné dans son plan (autour de Z), vers la droite (sens horaire vu par le
+ *    pilote) → la consigne de régime augmente ; vers la gauche → elle diminue. Au-delà d'une zone
+ *    morte, la vitesse de variation croît avec l'angle ; revenir à plat garde la consigne.
+ *    Roulis = atan2(−ay, ax) : il faut tenir l'écran à peu près debout.
  *
- * Ce n'est qu'une approximation : l'avion lui-même accélère et s'incline. L'interface
- * knob_update() ne dépend pas du capteur ; l'encodeur BLDC la remplacera sans toucher à l'UI.
  * Sans dépendance ESP-IDF (testé sur PC).
  */
 #pragma once
@@ -25,28 +24,33 @@ extern "C" {
 #endif
 
 typedef struct {
-    float detent_deg;    /* angle d'un cran en mode molette */
-    float tilt_on_deg;   /* inclinaison déclenchant un cran en mode manette */
-    float tilt_off_deg;  /* retour au neutre */
-    uint32_t repeat_ms;  /* répétition en mode manette */
-    bool invert;         /* inverse le sens */
+    float push_mg;          /* seuil de l'impulsion vers l'arrière [mg] */
+    uint32_t push_dead_ms;  /* temps mort après une poussée */
+    float roll_dead_deg;    /* zone morte du roulis */
+    float roll_full_deg;    /* roulis donnant la vitesse maximale */
+    float rate_max_pct_s;   /* vitesse maximale de variation de la consigne [%/s] */
+    bool invert_roll;       /* inverse droite / gauche */
+    bool invert_push;       /* inverse le sens de la poussée sur Z */
 } knob_cfg_t;
 
 typedef struct {
+    bool push;              /* une poussée vient d'être détectée */
+    bool roll_valid;        /* écran assez debout pour lire le roulis */
+    float roll_deg;         /* roulis, + = vers la droite */
+    float dthrottle_pct;    /* variation de consigne à appliquer [%] */
+} knob_evt_t;
+
+typedef struct {
     knob_cfg_t cfg;
-    bool init, tilt_mode, tilt_held;
-    float ax, ay, az;    /* accélération filtrée [mg] */
-    float anchor_deg;    /* angle du dernier cran */
-    float angle_deg;     /* angle courant (molette) ou inclinaison ×4 (manette) */
-    uint32_t repeat_left;
-    int tilt_dir;
+    bool init;
+    float ax, ay, az;       /* accélération filtrée (≈ gravité) [mg] */
+    float zfast;            /* Z peu filtré */
+    uint32_t dead_left;
 } knob_t;
 
 void knob_init(knob_t *k, const knob_cfg_t *cfg);
-/* Une mesure (mg) toutes les dt_ms ; retourne le nombre de crans depuis l'appel précédent. */
-int knob_update(knob_t *k, float ax_mg, float ay_mg, float az_mg, uint32_t dt_ms);
-/* Molette utilisable (mode debout), ou mode manette */
-bool knob_valid(const knob_t *k);
+/* Une mesure (mg) toutes les dt_ms */
+void knob_update(knob_t *k, float ax_mg, float ay_mg, float az_mg, uint32_t dt_ms, knob_evt_t *out);
 
 #ifdef __cplusplus
 }

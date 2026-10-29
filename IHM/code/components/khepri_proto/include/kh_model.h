@@ -89,6 +89,8 @@ float kh_loss_pct(const kh_model_t *m);
  * l'écran, par la passerelle de simulation et par les aperçus. Retourne le nombre de trames.
  */
 int kh_demo_frames(int64_t now_ms, khn_frame_t *out, int max);
+/* Consigne de régime simulée [% de 3,5 kW] : la puissance simulée la suit avec un retard */
+void kh_demo_set_throttle(float pct);
 
 #ifdef __cplusplus
 }
