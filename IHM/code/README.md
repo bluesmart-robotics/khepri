@@ -30,9 +30,9 @@ reste vide si la liaison est bonne et n'indique que LIAISON PERDUE, NON APPAIRÉ
   (moteur BLDC). Repère, écran face à soi : Z sort de l'écran vers le pilote, X vers le haut, Y vers
   la droite.
   - **petit coup vers l'arrière** (l'écran part vers −Z) → page suivante, ou acquittement de
-    l'alerte affichée ; simule l'appui du futur bouton. Seuil 350 mg, 0,6 s de temps mort ;
+    l'alerte affichée ; simule l'appui du futur bouton. Seuil 120 mg, 0,6 s de temps mort ;
   - **rouler l'écran vers la droite / la gauche** (rotation dans son plan, autour de Z) → la consigne
-    de régime monte / descend, de 0 à 122 %. Zone morte 8°, vitesse croissante jusqu'à 40 %/s à 40° ;
+    de régime monte / descend, de 0 à 122 %. Zone morte 3°, vitesse croissante jusqu'à 40 %/s à 13° ;
     revenir droit garde la consigne. Actif seulement sur la page principale, hors alerte.
   La consigne pilote la simulation et part vers le maître (commande `KHN_CMD_THROTTLE`, ‰ 0-1220,
   5 Hz au plus). L'écran doit être tenu à peu près debout pour lire le roulis. En vol, les

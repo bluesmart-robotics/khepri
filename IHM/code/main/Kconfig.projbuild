@@ -17,8 +17,8 @@ menu "KHEPRI - ecran pilote"
 
     config KHEPRI_PUSH_MG
         int "Geste : seuil du petit coup vers l'arriere (mg)"
-        range 100 2000
-        default 350
+        range 50 2000
+        default 120
 
     config KHEPRI_PUSH_INVERT
         bool "Geste : inverser le sens de la poussee (axe Z)"
@@ -27,12 +27,12 @@ menu "KHEPRI - ecran pilote"
     config KHEPRI_ROLL_DEAD_DEG
         int "Roulis : zone morte (degres)"
         range 0 45
-        default 8
+        default 3
 
     config KHEPRI_ROLL_FULL_DEG
         int "Roulis : angle donnant la vitesse maximale (degres)"
-        range 10 90
-        default 40
+        range 5 90
+        default 13
 
     config KHEPRI_ROLL_RATE_PCT_S
         int "Roulis : vitesse maximale de variation du regime (%/s)"
