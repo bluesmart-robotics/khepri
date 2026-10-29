@@ -62,7 +62,7 @@ static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
     if (base == WIFI_EVENT && id == WIFI_EVENT_SCAN_DONE) {
         uint16_t n = KH_WIFI_MAX_AP;
-        wifi_ap_record_t rec[KH_WIFI_MAX_AP];
+        static wifi_ap_record_t rec[KH_WIFI_MAX_AP]; /* hors pile : la tâche d'événements est petite */
         if (esp_wifi_scan_get_ap_records(&n, rec) != ESP_OK) n = 0;
         lock();
         int k = 0;

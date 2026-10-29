@@ -59,6 +59,7 @@ typedef struct {
     uint32_t heartbeat_ok;  /* commandes acceptées par la pile radio */
     int brightness_pct;
     uint8_t espnow_channel;  /* canal attendu par le maître */
+    char reset_text[64];     /* cause du dernier redémarrage (page SYSTÈME) */
     kh_wifi_status_t wifi;  /* page WI-FI */
     kh_ota_status_t ota;    /* mises à jour depuis GitHub */
 } kh_local_t;

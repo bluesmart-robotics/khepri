@@ -19,6 +19,7 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_sh8601.h"
 #include "esp_log.h"
+#include "esp_system.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
@@ -141,6 +142,48 @@ static void set_brightness(int pct)
     uint8_t v = (uint8_t)(pct * 255 / 100);
     esp_lcd_panel_io_tx_param(s_io, (0x02 << 24) | (0x51 << 8), &v, 1);
     s_local.brightness_pct = pct;
+}
+
+/* ══════════════════════════════════════════════
+ *  Diagnostic : cause du dernier redémarrage, compteur de redémarrages anormaux
+ * ══════════════════════════════════════════════ */
+static const char *reset_name(esp_reset_reason_t r)
+{
+    switch (r) {
+    case ESP_RST_POWERON: return "mise sous tension";
+    case ESP_RST_SW: return "logiciel";
+    case ESP_RST_PANIC: return "PLANTAGE";
+    case ESP_RST_INT_WDT: return "CHIEN DE GARDE INT";
+    case ESP_RST_TASK_WDT: return "CHIEN DE GARDE TACHE";
+    case ESP_RST_WDT: return "CHIEN DE GARDE";
+    case ESP_RST_BROWNOUT: return "BAISSE DE TENSION";
+    case ESP_RST_DEEPSLEEP: return "réveil";
+    case ESP_RST_USB: return "USB";
+    case ESP_RST_EXT: return "bouton reset";
+    default: return "autre";
+    }
+}
+
+static void boot_diag(void)
+{
+    esp_reset_reason_t r = esp_reset_reason();
+    bool bad = r == ESP_RST_PANIC || r == ESP_RST_INT_WDT || r == ESP_RST_TASK_WDT || r == ESP_RST_WDT ||
+               r == ESP_RST_BROWNOUT;
+    uint32_t n = 0;
+    nvs_handle_t h;
+    if (nvs_open("khepri", NVS_READWRITE, &h) == ESP_OK) {
+        nvs_get_u32(h, "bad_boots", &n);
+        if (bad) {
+            n++;
+            nvs_set_u32(h, "bad_boots", n);
+            nvs_commit(h);
+        }
+        nvs_close(h);
+    }
+    snprintf(s_local.reset_text, sizeof s_local.reset_text, "%s · %lu anomalie(s)", reset_name(r),
+             (unsigned long)n);
+    if (bad) ESP_LOGE(TAG, "redémarrage anormal : %s (%lu au total)", reset_name(r), (unsigned long)n);
+    else ESP_LOGI(TAG, "démarrage : %s", reset_name(r));
 }
 
 /* ══════════════════════════════════════════════
@@ -339,6 +382,7 @@ void app_main(void)
     ESP_ERROR_CHECK(ret);
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     settings_load();
+    boot_diag();
 
     /* ── PARTIE 1 : écran AMOLED CO5300 en QSPI ── */
     ESP_LOGI(TAG, "Bus QSPI de l'écran");
@@ -423,9 +467,9 @@ void app_main(void)
     /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
     kh_wifi_init();
     kh_ota_init(ota_can_update);
-    xTaskCreate(ui_task, "ui", 8 * 1024, NULL, 4, NULL);
-    xTaskCreate(input_task, "input", 4 * 1024, NULL, 4, NULL);
-    xTaskCreate(link_task, "link", 4 * 1024, NULL, 2, NULL);
+    xTaskCreate(ui_task, "ui", 12 * 1024, NULL, 4, NULL);
+    xTaskCreate(input_task, "input", 8 * 1024, NULL, 4, NULL);
+    xTaskCreate(link_task, "link", 6 * 1024, NULL, 2, NULL);
 
     ESP_LOGI(TAG, "=== KHÉPRI écran pilote prêt (simulation %s) ===", s_local.demo ? "ACTIVE" : "inactive");
 }

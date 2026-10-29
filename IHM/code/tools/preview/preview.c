@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     kh_screen_init(NULL);
     kh_model_t m;
     kh_model_init(&m);
-    kh_local_t loc = {.bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
+    kh_local_t loc = {.reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
     kh_knob_view_t knob = {.valid = true, .angle_deg = 35.0f};
     int64_t t = 0;
 

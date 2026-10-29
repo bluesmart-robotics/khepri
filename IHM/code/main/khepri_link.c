@@ -59,7 +59,7 @@ static void wifi_init(void)
     ESP_ERROR_CHECK(esp_wifi_set_channel(CONFIG_KHEPRI_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
     ESP_ERROR_CHECK(esp_wifi_set_protocol(WIFI_IF_STA, WIFI_PROTOCOL_11B | WIFI_PROTOCOL_11G | WIFI_PROTOCOL_11N));
     ESP_ERROR_CHECK(esp_wifi_set_bandwidth(WIFI_IF_STA, WIFI_BW_HT20));
-    esp_wifi_set_max_tx_power(80); /* 20 dBm */
+    esp_wifi_set_max_tx_power(60); /* 15 dBm : assez pour un cockpit, appels de courant réduits */
 }
 
 /* ------------------------------------------------------------------ réception de la télémétrie */

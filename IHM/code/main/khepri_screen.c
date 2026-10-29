@@ -271,7 +271,8 @@ static void build_system(lv_obj_t *t)
     ui.sys.btn_lum = button(t, LV_SYMBOL_IMAGE " 100 %", 112, &ui.sys.lbl_lum);
     lv_obj_align(ui.sys.btn_lum, LV_ALIGN_CENTER, 60, 124);
     ui.sys.mac = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 172);
+    lv_obj_set_style_text_align(ui.sys.mac, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 166);
 }
 
 
@@ -906,7 +907,14 @@ static void update_system(const kh_model_t *m, const kh_local_t *loc, int64_t no
                  loc->master_mac[2], loc->master_mac[3], loc->master_mac[4], loc->master_mac[5]);
     else
         b[0] = 0;
-    lv_label_set_text(ui.sys.mac, b);
+    if (loc->reset_text[0]) {
+        char t[160];
+        snprintf(t, sizeof t, "%s\n%s", b, loc->reset_text);
+        lv_label_set_text(ui.sys.mac, t);
+    } else {
+        lv_label_set_text(ui.sys.mac, b);
+    }
+    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 166);
 }
 
 static void update_status(const kh_model_t *m, const kh_local_t *loc, int64_t now)
