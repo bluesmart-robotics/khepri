@@ -66,7 +66,6 @@ static const sh8601_lcd_init_cmd_t lcd_init_cmds[] = {
     {0x29, NULL, 0, 0},
 };
 
-static SemaphoreHandle_t s_lvgl_mux;
 static SemaphoreHandle_t s_model_mux;
 static esp_lcd_panel_io_handle_t s_io;
 
@@ -78,12 +77,14 @@ static kh_knob_view_t s_knob_view;
 /* ══════════════════════════════════════════════
  *  LVGL (même schéma que la télécommande BSR)
  * ══════════════════════════════════════════════ */
-bool kh_lvgl_lock(int timeout_ms)
-{
-    const TickType_t t = timeout_ms < 0 ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
-    return xSemaphoreTakeRecursive(s_lvgl_mux, t) == pdTRUE;
-}
-void kh_lvgl_unlock(void) { xSemaphoreGiveRecursive(s_lvgl_mux); }
+/* LVGL n'est pas réentrant : une seule tâche, lvgl_task, l'appelle. Les autres tâches lui
+ * déposent un instantané des données (s_snap_*) et les crans de molette / clics (s_in_*). */
+static SemaphoreHandle_t s_snap_mux;
+static kh_model_t s_snap_model;
+static kh_local_t s_snap_local;
+static bool s_snap_new;
+static portMUX_TYPE s_in_lock = portMUX_INITIALIZER_UNLOCKED;
+static int s_in_steps, s_in_clicks;
 
 static bool notify_flush_ready(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_data_t *ed, void *ctx)
 {
@@ -122,13 +123,38 @@ static void lvgl_tick_cb(void *arg) { lv_tick_inc(LVGL_TICK_MS); }
 
 static void lvgl_task(void *arg)
 {
-    uint32_t delay = LVGL_TASK_MAX_DELAY_MS;
+    static kh_model_t model;
+    static kh_local_t local;
+    static bool have;
+    int64_t last = 0;
     for (;;) {
-        if (kh_lvgl_lock(-1)) {
-            delay = lv_timer_handler();
-            kh_lvgl_unlock();
+        portENTER_CRITICAL(&s_in_lock);
+        int steps = s_in_steps, clicks = s_in_clicks;
+        s_in_steps = s_in_clicks = 0;
+        portEXIT_CRITICAL(&s_in_lock);
+        if (steps) kh_screen_knob_step(steps);
+        if (clicks) kh_screen_button();
+
+        int64_t t = esp_timer_get_time() / 1000;
+        if (t - last >= 100) {
+            last = t;
+            if (xSemaphoreTake(s_snap_mux, 0) == pdTRUE) { /* jamais bloquant */
+                if (s_snap_new) {
+                    model = s_snap_model;
+                    local = s_snap_local;
+                    s_snap_new = false;
+                    have = true;
+                }
+                xSemaphoreGive(s_snap_mux);
+            }
+            if (have) {
+                kh_knob_view_t knob = s_knob_view;
+                kh_screen_update(&model, &local, &knob, t);
+            }
         }
-        if (delay > LVGL_TASK_MAX_DELAY_MS) delay = LVGL_TASK_MAX_DELAY_MS;
+
+        uint32_t delay = lv_timer_handler();
+        if (delay > 20) delay = 20; /* revenir assez souvent pour les mises à jour et la molette */
         if (delay < LVGL_TASK_MIN_DELAY_MS) delay = LVGL_TASK_MIN_DELAY_MS;
         vTaskDelay(pdMS_TO_TICKS(delay));
     }
@@ -309,10 +335,12 @@ static void ui_task(void *arg)
         kh_wifi_get_status(&s_local.wifi);
         kh_ota_get_status(&s_local.ota);
         khepri_link_master_mac(s_local.master_mac);
-        if (kh_lvgl_lock(-1)) { /* attendre : sinon l'écran peut ne jamais être rafraîchi */
-            kh_screen_update(&snap, &s_local, &s_knob_view, t);
-            kh_lvgl_unlock();
-        }
+        /* instantané pour la tâche d'affichage (aucun appel LVGL ici) */
+        xSemaphoreTake(s_snap_mux, portMAX_DELAY);
+        s_snap_model = snap;
+        s_snap_local = s_local;
+        s_snap_new = true;
+        xSemaphoreGive(s_snap_mux);
     }
 }
 
@@ -347,10 +375,11 @@ static void input_task(void *arg)
         bool btn = kh_pwr_pressed();
         bool click = btn && !btn_prev;
         btn_prev = btn;
-        if ((steps || click) && kh_lvgl_lock(-1)) {
-            if (steps) kh_screen_knob_step(steps);
-            if (click) kh_screen_button();
-            kh_lvgl_unlock();
+        if (steps || click) {
+            portENTER_CRITICAL(&s_in_lock);
+            s_in_steps += steps;
+            s_in_clicks += click;
+            portEXIT_CRITICAL(&s_in_lock);
         }
     }
 }
@@ -442,7 +471,7 @@ void app_main(void)
     indev_drv.read_cb = lvgl_touch_cb;
     lv_indev_drv_register(&indev_drv);
 
-    s_lvgl_mux = xSemaphoreCreateRecursiveMutex();
+    s_snap_mux = xSemaphoreCreateMutex();
     s_model_mux = xSemaphoreCreateMutex();
     kh_model_init(&s_model);
     s_model.odrv_node[0] = CONFIG_KHEPRI_ODRV_NODE_M0;
