@@ -136,7 +136,8 @@ void kh_ota_init(kh_ota_can_update_cb_t can_update)
     const esp_partition_t *p = esp_ota_get_running_partition();
     ESP_LOGI(TAG, "firmware %s sur la partition %s ; manifeste %s toutes les %d s", s_st.running, p ? p->label : "?",
              CONFIG_KHEPRI_OTA_MANIFEST_URL, CONFIG_KHEPRI_OTA_PERIOD_S);
-    xTaskCreate(ota_task, "kh_ota", 8192, NULL, 3, &s_task);
+    if (xTaskCreate(ota_task, "kh_ota", 6144, NULL, 3, &s_task) != pdPASS)
+        ESP_LOGE(TAG, "tâche OTA non créée : mémoire insuffisante");
 }
 
 void kh_ota_check_now(void)

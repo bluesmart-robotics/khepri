@@ -24,6 +24,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
+#include "freertos/idf_additions.h"
+#include "esp_heap_caps.h"
 #include "i2c_bsp.h"
 #include "kh_board.h"
 #include "kh_model.h"
@@ -41,7 +43,7 @@
 static const char *TAG = "khepri_main";
 
 #define LCD_HOST SPI2_HOST
-#define LVGL_BUF_LINES (LCD_H / 8)
+#define LVGL_BUF_LINES 36 /* 2 × 466 × 36 × 2 o ≈ 67 Ko de DMA interne */
 #define LVGL_TICK_MS 2
 #define LVGL_TASK_MAX_DELAY_MS 500
 #define LVGL_TASK_MIN_DELAY_MS 1
@@ -395,6 +397,22 @@ static void link_task(void *arg)
     }
 }
 
+/* Création de tâche vérifiée : un échec (mémoire) ne doit plus passer inaperçu.
+ * Les tâches qui n'écrivent jamais en flash peuvent avoir leur pile en PSRAM. */
+static void start_task(TaskFunction_t fn, const char *name, uint32_t stack, UBaseType_t prio, BaseType_t core,
+                       bool psram_stack)
+{
+    BaseType_t ok;
+    if (psram_stack)
+        ok = xTaskCreatePinnedToCoreWithCaps(fn, name, stack, NULL, prio, NULL, core, MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
+    else
+        ok = xTaskCreatePinnedToCore(fn, name, stack, NULL, prio, NULL, core);
+    if (ok != pdPASS) {
+        ESP_LOGE(TAG, "IMPOSSIBLE de créer la tâche %s (%lu o) : mémoire insuffisante", name, (unsigned long)stack);
+        abort(); /* redémarrage visible (compteur d'anomalies) plutôt qu'un écran figé */
+    }
+}
+
 /* ══════════════════════════════════════════════
  *  APP_MAIN
  * ══════════════════════════════════════════════ */
@@ -488,7 +506,7 @@ void app_main(void)
                                .on_ota_check = ui_on_ota_check};
     kh_screen_init(&cb);
     set_brightness(s_local.brightness_pct);
-    xTaskCreatePinnedToCore(lvgl_task, "lvgl", 16 * 1024, NULL, 5, NULL, 1);
+    start_task(lvgl_task, "lvgl", 12 * 1024, 5, 1, false); /* NVS (réglages) : pile interne */
 
     /* ── PARTIE 3 : radio, entrées, rafraîchissement ── */
     s_local.espnow_channel = CONFIG_KHEPRI_ESPNOW_CHANNEL;
@@ -496,9 +514,14 @@ void app_main(void)
     /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
     kh_wifi_init();
     kh_ota_init(ota_can_update);
-    xTaskCreate(ui_task, "ui", 12 * 1024, NULL, 4, NULL);
-    xTaskCreate(input_task, "input", 8 * 1024, NULL, 4, NULL);
-    xTaskCreate(link_task, "link", 6 * 1024, NULL, 2, NULL);
+    start_task(ui_task, "ui", 12 * 1024, 4, tskNO_AFFINITY, true);
+    start_task(input_task, "input", 8 * 1024, 4, tskNO_AFFINITY, true);
+    start_task(link_task, "link", 6 * 1024, 2, tskNO_AFFINITY, false); /* écrit l'otadata : pile interne */
+
+    ESP_LOGI(TAG, "mémoire libre : interne %u o (plus grand bloc %u o), PSRAM %u o",
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_INTERNAL),
+             (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL),
+             (unsigned)heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
     ESP_LOGI(TAG, "=== KHÉPRI écran pilote prêt (simulation %s) ===", s_local.demo ? "ACTIVE" : "inactive");
 }

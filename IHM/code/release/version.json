@@ -1,6 +1,6 @@
 {
-  "version": "1.1.4",
+  "version": "1.1.5",
   "url": "https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/khepri_ecran_app.bin",
-  "size": 1513664,
-  "sha256": "606296dbf3989c4be7f903661a2cc376e3935664fcf69f0da61b20db70c4af94"
+  "size": 1513344,
+  "sha256": "e1b4458ac2435c3d139765c5aecc71eea44647536cdcc91cebc3a1aeb18ef827"
 }

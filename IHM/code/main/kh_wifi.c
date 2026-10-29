@@ -8,6 +8,8 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/idf_additions.h"
+#include "esp_heap_caps.h"
 #include "nvs.h"
 #include "sdkconfig.h"
 
@@ -103,7 +105,9 @@ void kh_wifi_init(void)
     s_mux = xSemaphoreCreateMutex();
     esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_event, NULL);
     esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_event, NULL);
-    xTaskCreate(scan_task, "kh_scan", 4096, NULL, 3, &s_scan_task);
+    if (xTaskCreatePinnedToCoreWithCaps(scan_task, "kh_scan", 4096, NULL, 3, &s_scan_task, tskNO_AFFINITY,
+                                        MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT) != pdPASS)
+        ESP_LOGE(TAG, "tâche de balayage non créée : mémoire insuffisante");
     char ssid[33] = {0};
     if (creds_load(ssid, sizeof ssid, s_pass, sizeof s_pass)) {
         lock();
