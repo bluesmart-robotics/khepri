@@ -309,7 +309,7 @@ static void ui_task(void *arg)
         kh_wifi_get_status(&s_local.wifi);
         kh_ota_get_status(&s_local.ota);
         khepri_link_master_mac(s_local.master_mac);
-        if (kh_lvgl_lock(50)) {
+        if (kh_lvgl_lock(-1)) { /* attendre : sinon l'écran peut ne jamais être rafraîchi */
             kh_screen_update(&snap, &s_local, &s_knob_view, t);
             kh_lvgl_unlock();
         }
@@ -347,7 +347,7 @@ static void input_task(void *arg)
         bool btn = kh_pwr_pressed();
         bool click = btn && !btn_prev;
         btn_prev = btn;
-        if ((steps || click) && kh_lvgl_lock(100)) {
+        if ((steps || click) && kh_lvgl_lock(-1)) {
             if (steps) kh_screen_knob_step(steps);
             if (click) kh_screen_button();
             kh_lvgl_unlock();

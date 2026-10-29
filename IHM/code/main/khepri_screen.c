@@ -87,6 +87,33 @@ static void fmt_dec(char *b, size_t n, float v, int dec)
         if (*p == '.') *p = ',';
 }
 
+/* ------------------------------------------------------------------ écritures sans redessin inutile
+ * Réécrire un texte ou une couleur identique force LVGL à redessiner la zone ; à 10 Hz sur toute
+ * l'interface, la tâche d'affichage ne s'arrêtait plus. On ne touche qu'à ce qui change. */
+static bool set_text(lv_obj_t *l, const char *t)
+{
+    const char *cur = lv_label_get_text(l);
+    if (cur && !strcmp(cur, t)) return false;
+    lv_label_set_text(l, t);
+    return true;
+}
+static void set_text_color(lv_obj_t *o, lv_color_t c, lv_style_selector_t sel)
+{
+    if (lv_obj_get_style_text_color(o, sel).full != c.full) lv_obj_set_style_text_color(o, c, sel);
+}
+static void set_bg_color(lv_obj_t *o, lv_color_t c, lv_style_selector_t sel)
+{
+    if (lv_obj_get_style_bg_color(o, sel).full != c.full) lv_obj_set_style_bg_color(o, c, sel);
+}
+static void set_arc_color(lv_obj_t *o, lv_color_t c, lv_style_selector_t sel)
+{
+    if (lv_obj_get_style_arc_color(o, sel).full != c.full) lv_obj_set_style_arc_color(o, c, sel);
+}
+static void set_bar(lv_obj_t *b, int v)
+{
+    if (lv_bar_get_value(b) != v) lv_bar_set_value(b, v, LV_ANIM_OFF);
+}
+
 /* ------------------------------------------------------------------ fabrique de widgets */
 static lv_obj_t *label(lv_obj_t *par, const lv_font_t *f, lv_color_t c, const char *txt)
 {
@@ -470,21 +497,21 @@ static void update_wifi(const kh_local_t *loc, int64_t now)
     switch (w->state) {
     case KH_WIFI_CONNECTED:
         snprintf(b, sizeof b, LV_SYMBOL_WIFI " %s", w->ssid);
-        lv_obj_set_style_text_color(ui.wifi.state, KH_COL_GREEN, 0);
+        set_text_color(ui.wifi.state, KH_COL_GREEN, 0);
         break;
     case KH_WIFI_CONNECTING:
         snprintf(b, sizeof b, "Connexion à %s…", w->ssid);
-        lv_obj_set_style_text_color(ui.wifi.state, KH_COL_AMBER, 0);
+        set_text_color(ui.wifi.state, KH_COL_AMBER, 0);
         break;
     case KH_WIFI_FAILED:
         snprintf(b, sizeof b, "Échec : %s", w->ssid);
-        lv_obj_set_style_text_color(ui.wifi.state, KH_COL_RED, 0);
+        set_text_color(ui.wifi.state, KH_COL_RED, 0);
         break;
     default:
         snprintf(b, sizeof b, "Non connecté");
-        lv_obj_set_style_text_color(ui.wifi.state, KH_COL_TEXT_MID, 0);
+        set_text_color(ui.wifi.state, KH_COL_TEXT_MID, 0);
     }
-    lv_label_set_text(ui.wifi.state, b);
+    set_text(ui.wifi.state, b);
 
     if (w->state == KH_WIFI_CONNECTED) {
         if (loc->espnow_channel && w->channel != loc->espnow_channel)
@@ -495,13 +522,13 @@ static void update_wifi(const kh_local_t *loc, int64_t now)
     } else {
         snprintf(b, sizeof b, w->scanning ? "Recherche des réseaux…" : "Touchez un réseau pour vous connecter");
     }
-    lv_label_set_text(ui.wifi.info, b);
-    lv_obj_set_style_text_color(ui.wifi.info,
+    set_text(ui.wifi.info, b);
+    set_text_color(ui.wifi.info,
                                 w->state == KH_WIFI_CONNECTED && loc->espnow_channel && w->channel != loc->espnow_channel
                                     ? KH_COL_AMBER
                                     : KH_COL_TEXT_DIM,
                                 0);
-    lv_label_set_text(ui.wifi.lbl_scan, w->scanning ? LV_SYMBOL_REFRESH " …" : LV_SYMBOL_REFRESH " CHERCHER");
+    set_text(ui.wifi.lbl_scan, w->scanning ? LV_SYMBOL_REFRESH " …" : LV_SYMBOL_REFRESH " CHERCHER");
 
     if (w->scan_gen != ui.wifi.scan_gen) {
         ui.wifi.scan_gen = w->scan_gen;
@@ -523,18 +550,32 @@ static void update_wifi(const kh_local_t *loc, int64_t now)
     case KH_OTA_CHECK_FAIL: snprintf(b, sizeof b, "v%s · GitHub injoignable", o->running); break;
     default: snprintf(b, sizeof b, "v%s · MAJ auto avec Wi-Fi", o->running); break;
     }
-    lv_label_set_text(ui.wifi.ota, b);
-    lv_obj_set_style_text_color(ui.wifi.ota, o->state == KH_OTA_DOWNLOADING ? KH_COL_AMBER
+    set_text(ui.wifi.ota, b);
+    set_text_color(ui.wifi.ota, o->state == KH_OTA_DOWNLOADING ? KH_COL_AMBER
                                              : o->state == KH_OTA_FAILED  ? KH_COL_RED
                                                                           : KH_COL_TEXT_DIM,
                                 0);
     if (ago >= 0) snprintf(b, sizeof b, "GitHub vérifié il y a %ld s", ago);
     else b[0] = 0;
-    lv_label_set_text(ui.wifi.ota2, b);
+    set_text(ui.wifi.ota2, b);
 }
 
 /* ------------------------------------------------------------------ alerte */
 static void alarm_ring_anim(void *obj, int32_t v) { lv_obj_set_style_arc_opa(obj, (lv_opa_t)v, LV_PART_MAIN); }
+
+/* pulsation de l'anneau, seulement pendant que l'alerte est affichée */
+static void alarm_ring_start(void)
+{
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, ui.al.ring);
+    lv_anim_set_exec_cb(&a, alarm_ring_anim);
+    lv_anim_set_values(&a, LV_OPA_40, LV_OPA_COVER);
+    lv_anim_set_time(&a, 450);
+    lv_anim_set_playback_time(&a, 450);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&a);
+}
 
 static void alarm_cb(lv_event_t *e)
 {
@@ -565,15 +606,6 @@ static void build_alarm(void)
     lv_obj_set_style_arc_width(ring, 26, LV_PART_MAIN);
     lv_obj_set_style_arc_color(ring, KH_COL_RED, LV_PART_MAIN);
     ui.al.ring = ring;
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, ring);
-    lv_anim_set_exec_cb(&a, alarm_ring_anim);
-    lv_anim_set_values(&a, LV_OPA_40, LV_OPA_COVER);
-    lv_anim_set_time(&a, 450);
-    lv_anim_set_playback_time(&a, 450);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&a);
 
     ui.al.title = label(r, &kh_font_32, KH_COL_RED, LV_SYMBOL_WARNING " VIBRATIONS");
     lv_obj_align(ui.al.title, LV_ALIGN_CENTER, 0, -112);
@@ -724,7 +756,7 @@ static lv_color_t level_color(int lvl)
 static void set_arc(lv_obj_t *a, bool ok, int v, lv_color_t c)
 {
     lv_arc_set_value(a, ok ? v : 0);
-    lv_obj_set_style_arc_color(a, c, LV_PART_INDICATOR);
+    set_arc_color(a, c, LV_PART_INDICATOR);
 }
 
 static void update_motors(const kh_model_t *m, int64_t now)
@@ -735,17 +767,18 @@ static void update_motors(const kh_model_t *m, int64_t now)
         int rpm = ok ? (int)lroundf(fabsf(m->rpm[k])) : 0;
         if (ok) fmt_int(b, sizeof b, rpm);
         else snprintf(b, sizeof b, "---");
-        lv_label_set_text(ui.mot.val[k], b);
-        lv_obj_set_style_text_color(ui.mot.val[k], ok ? KH_COL_TEXT : KH_COL_TEXT_DIM, 0);
-        lv_obj_align(ui.mot.val[k], LV_ALIGN_CENTER, 12, k == 0 ? -46 : 30);
-        lv_obj_align_to(ui.mot.tag[k], ui.mot.val[k], LV_ALIGN_OUT_LEFT_MID, -10, 0);
+        if (set_text(ui.mot.val[k], b)) { /* recentrer seulement si la largeur du nombre change */
+            lv_obj_align(ui.mot.val[k], LV_ALIGN_CENTER, 12, k == 0 ? -46 : 30);
+            lv_obj_align_to(ui.mot.tag[k], ui.mot.val[k], LV_ALIGN_OUT_LEFT_MID, -10, 0);
+        }
+        set_text_color(ui.mot.val[k], ok ? KH_COL_TEXT : KH_COL_TEXT_DIM, 0);
         set_arc(ui.mot.arc[k], ok, rpm > RPM_MAX ? RPM_MAX : rpm, k == 0 ? KH_COL_ACCENT : KH_COL_BLUE);
 
         int lvl = kh_vib_level(&m->node[k], now);
         static const char *TXT[] = {"---", "OK", "VIB", "ALARME"};
         snprintf(b, sizeof b, "Ch.%d %s", k, TXT[lvl + 1]);
-        lv_label_set_text(ui.mot.vib[k], b);
-        lv_obj_set_style_text_color(ui.mot.vib[k], level_color(lvl), 0);
+        set_text(ui.mot.vib[k], b);
+        set_text_color(ui.mot.vib[k], level_color(lvl), 0);
     }
 }
 
@@ -767,24 +800,24 @@ static void update_solar(const kh_model_t *m, int64_t now)
             snprintf(b, sizeof b, "---");
             set_arc(ui.sol.arc[k], false, 0, KH_COL_SUN);
         }
-        lv_label_set_text(ui.sol.isc[k], b);
+        set_text(ui.sol.isc[k], b);
         if (ok && n->pv.tc_c100 != KP_I16_INVALID) {
             fmt_dec(v, sizeof v, n->pv.tc_c100 / 100.0f, 1);
             snprintf(b, sizeof b, "%s °C", v);
         } else {
             snprintf(b, sizeof b, "--- °C");
         }
-        lv_label_set_text(ui.sol.tc[k], b);
+        set_text(ui.sol.tc[k], b);
         if (ok && n->pv.tair_c100 != KP_I16_INVALID && isnan(air)) air = n->pv.tair_c100 / 100.0f;
     }
     if (gn) {
         int g = (int)lroundf(gsum / gn);
         fmt_int(b, sizeof b, g);
-        lv_label_set_text(ui.sol.g, b);
-        lv_obj_set_style_text_color(ui.sol.g, KH_COL_TEXT, 0);
+        set_text(ui.sol.g, b);
+        set_text_color(ui.sol.g, KH_COL_TEXT, 0);
     } else {
-        lv_label_set_text(ui.sol.g, "---");
-        lv_obj_set_style_text_color(ui.sol.g, KH_COL_TEXT_DIM, 0);
+        set_text(ui.sol.g, "---");
+        set_text_color(ui.sol.g, KH_COL_TEXT_DIM, 0);
     }
     if (!isnan(air)) {
         fmt_dec(v, sizeof v, air, 1);
@@ -792,7 +825,7 @@ static void update_solar(const kh_model_t *m, int64_t now)
     } else {
         snprintf(b, sizeof b, "Air extérieur --- °C");
     }
-    lv_label_set_text(ui.sol.air, b);
+    set_text(ui.sol.air, b);
 }
 
 static void update_vib(const kh_model_t *m, int64_t now)
@@ -806,16 +839,16 @@ static void update_vib(const kh_model_t *m, int64_t now)
         lv_color_t c = level_color(lvl);
         if (!isnan(vec)) {
             int iv = (int)lroundf(vec);
-            lv_bar_set_value(ui.vib.bar[k], iv > VIB_MAX ? VIB_MAX : iv, LV_ANIM_OFF);
+            set_bar(ui.vib.bar[k], iv > VIB_MAX ? VIB_MAX : iv);
             fmt_int(v1, sizeof v1, iv);
             snprintf(b, sizeof b, "%s", v1);
         } else {
-            lv_bar_set_value(ui.vib.bar[k], 0, LV_ANIM_OFF);
+            set_bar(ui.vib.bar[k], 0);
             snprintf(b, sizeof b, "---");
         }
-        lv_obj_set_style_bg_color(ui.vib.bar[k], c, LV_PART_INDICATOR);
-        lv_label_set_text(ui.vib.val[k], b);
-        lv_obj_set_style_text_color(ui.vib.val[k], lvl > 0 ? c : KH_COL_TEXT, 0);
+        set_bg_color(ui.vib.bar[k], c, LV_PART_INDICATOR);
+        set_text(ui.vib.val[k], b);
+        set_text_color(ui.vib.val[k], lvl > 0 ? c : KH_COL_TEXT, 0);
         if (kh_fresh(n->t_order, now, KH_STALE_MS)) {
             fmt_int(v1, sizeof v1, n->order.amp1p_mg[0]);
             fmt_int(v2, sizeof v2, n->order.amp1p_mg[1]);
@@ -823,7 +856,7 @@ static void update_vib(const kh_model_t *m, int64_t now)
         } else {
             b[0] = 0;
         }
-        lv_label_set_text(ui.vib.ord[k], b);
+        set_text(ui.vib.ord[k], b);
     }
 }
 
@@ -857,21 +890,21 @@ static void update_system(const kh_model_t *m, const kh_local_t *loc, int64_t no
     bool link = kh_link_ok(m, now);
     if (loc->demo) {
         snprintf(b, sizeof b, "Liaison : simulation locale");
-        lv_obj_set_style_text_color(ui.sys.link, KH_COL_AMBER, 0);
+        set_text_color(ui.sys.link, KH_COL_AMBER, 0);
     } else if (link) {
         snprintf(b, sizeof b, LV_SYMBOL_WIFI " Liaison OK  %d dBm", m->rssi);
-        lv_obj_set_style_text_color(ui.sys.link, KH_COL_GREEN, 0);
+        set_text_color(ui.sys.link, KH_COL_GREEN, 0);
     } else if (loc->binding) {
         snprintf(b, sizeof b, "Recherche du maître…");
-        lv_obj_set_style_text_color(ui.sys.link, KH_COL_AMBER, 0);
+        set_text_color(ui.sys.link, KH_COL_AMBER, 0);
     } else {
         snprintf(b, sizeof b, loc->bound ? "Liaison PERDUE" : "Non appairé");
-        lv_obj_set_style_text_color(ui.sys.link, loc->bound ? KH_COL_RED : KH_COL_TEXT_MID, 0);
+        set_text_color(ui.sys.link, loc->bound ? KH_COL_RED : KH_COL_TEXT_MID, 0);
     }
-    lv_label_set_text(ui.sys.link, b);
+    set_text(ui.sys.link, b);
     fmt_dec(v, sizeof v, kh_loss_pct(m), 1);
     snprintf(b, sizeof b, "%lu paquets · pertes %s %%", (unsigned long)m->rx_pkts, v);
-    lv_label_set_text(ui.sys.link2, b);
+    set_text(ui.sys.link2, b);
 
     if (kh_fresh(m->t_sync, now, KH_STALE_MS)) {
         bool utc = m->sync.flags & KP_SYNC_UTC, pps = m->sync.flags & KP_SYNC_PPS;
@@ -882,29 +915,29 @@ static void update_system(const kh_model_t *m, const kh_local_t *loc, int64_t no
         } else {
             snprintf(b, sizeof b, "GPS : pas d'heure");
         }
-        lv_obj_set_style_text_color(ui.sys.gps, utc ? (pps ? KH_COL_GREEN : KH_COL_AMBER) : KH_COL_AMBER, 0);
+        set_text_color(ui.sys.gps, utc ? (pps ? KH_COL_GREEN : KH_COL_AMBER) : KH_COL_AMBER, 0);
     } else {
         snprintf(b, sizeof b, "GPS : ---");
-        lv_obj_set_style_text_color(ui.sys.gps, KH_COL_TEXT_DIM, 0);
+        set_text_color(ui.sys.gps, KH_COL_TEXT_DIM, 0);
     }
-    lv_label_set_text(ui.sys.gps, b);
+    set_text(ui.sys.gps, b);
 
     for (int k = 0; k < 2; k++) {
         char t[80];
         lv_color_t c;
         node_text(&m->node[k], now, t, sizeof t, &c);
         snprintf(b, sizeof b, "Ch.%d : %s", k, t);
-        lv_label_set_text(ui.sys.node[k], b);
-        lv_obj_set_style_text_color(ui.sys.node[k], c, 0);
+        set_text(ui.sys.node[k], b);
+        set_text_color(ui.sys.node[k], c, 0);
     }
 
     ui.bound = loc->bound;
     ui.demo = loc->demo;
-    lv_label_set_text(ui.sys.lbl_bind, loc->bound ? LV_SYMBOL_CLOSE " DÉLIER" : LV_SYMBOL_WIFI " LIER");
-    lv_obj_set_style_bg_color(ui.sys.btn_demo, loc->demo ? KH_COL_AMBER : KH_COL_CARD2, 0);
-    lv_obj_set_style_text_color(ui.sys.lbl_demo, loc->demo ? KH_COL_BG : KH_COL_TEXT, 0);
+    set_text(ui.sys.lbl_bind, loc->bound ? LV_SYMBOL_CLOSE " DÉLIER" : LV_SYMBOL_WIFI " LIER");
+    set_bg_color(ui.sys.btn_demo, loc->demo ? KH_COL_AMBER : KH_COL_CARD2, 0);
+    set_text_color(ui.sys.lbl_demo, loc->demo ? KH_COL_BG : KH_COL_TEXT, 0);
     snprintf(b, sizeof b, LV_SYMBOL_IMAGE " %d %%", loc->brightness_pct);
-    lv_label_set_text(ui.sys.lbl_lum, b);
+    set_text(ui.sys.lbl_lum, b);
     if (loc->bound)
         snprintf(b, sizeof b, "maître %02X:%02X:%02X:%02X:%02X:%02X", loc->master_mac[0], loc->master_mac[1],
                  loc->master_mac[2], loc->master_mac[3], loc->master_mac[4], loc->master_mac[5]);
@@ -913,70 +946,84 @@ static void update_system(const kh_model_t *m, const kh_local_t *loc, int64_t no
     if (loc->reset_text[0]) {
         char t[160];
         snprintf(t, sizeof t, "%s\n%s", b, loc->reset_text);
-        lv_label_set_text(ui.sys.mac, t);
+        set_text(ui.sys.mac, t);
     } else {
-        lv_label_set_text(ui.sys.mac, b);
+        set_text(ui.sys.mac, b);
     }
-    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 166);
 }
 
 static void update_status(const kh_model_t *m, const kh_local_t *loc, int64_t now)
 {
     if (loc->demo || (m->simulated && kh_link_ok(m, now))) {
-        lv_label_set_text(ui.status, "SIMULATION");
-        lv_obj_set_style_text_color(ui.status, KH_COL_AMBER, 0);
+        set_text(ui.status, "SIMULATION");
+        set_text_color(ui.status, KH_COL_AMBER, 0);
     } else if (kh_link_ok(m, now)) {
-        lv_label_set_text(ui.status, "LIAISON OK");
-        lv_obj_set_style_text_color(ui.status, KH_COL_GREEN, 0);
+        set_text(ui.status, "LIAISON OK");
+        set_text_color(ui.status, KH_COL_GREEN, 0);
     } else {
-        lv_label_set_text(ui.status, loc->bound ? LV_SYMBOL_WARNING " LIAISON PERDUE" : "NON APPAIRÉ");
-        lv_obj_set_style_text_color(ui.status, loc->bound ? KH_COL_RED : KH_COL_TEXT_DIM, 0);
+        set_text(ui.status, loc->bound ? LV_SYMBOL_WARNING " LIAISON PERDUE" : "NON APPAIRÉ");
+        set_text_color(ui.status, loc->bound ? KH_COL_RED : KH_COL_TEXT_DIM, 0);
     }
 }
 
 static void update_alarm(const kh_model_t *m)
 {
+    const bool shown = !lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
     if (!m->alarm_pending) {
-        lv_obj_add_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
+        if (shown) {
+            lv_anim_del(ui.al.ring, alarm_ring_anim);
+            lv_obj_add_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
+        }
         return;
     }
     char b[64], v1[16], v2[16];
     snprintf(b, sizeof b, "Chaussette %u", m->alarm_node);
-    lv_label_set_text(ui.al.node, b);
+    set_text(ui.al.node, b);
     fmt_int(v1, sizeof v1, m->alarm_last.rms_mg);
     snprintf(b, sizeof b, "%s mg", v1);
-    lv_label_set_text(ui.al.val, b);
+    set_text(ui.al.val, b);
     fmt_int(v1, sizeof v1, m->alarm_last.rpm[0]);
     fmt_int(v2, sizeof v2, m->alarm_last.rpm[1]);
     snprintf(b, sizeof b, "M0 %s · M1 %s tr/min", v1, v2);
-    lv_label_set_text(ui.al.rpm, b);
-    lv_obj_clear_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_move_foreground(ui.al.root);
+    set_text(ui.al.rpm, b);
+    if (!shown) {
+        lv_obj_clear_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(ui.al.root);
+        alarm_ring_start();
+    }
 }
 
 static void update_knob(const kh_knob_view_t *k)
 {
     if (!k || !k->valid) {
-        lv_obj_add_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
+        if (!lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
         return;
     }
-    lv_obj_clear_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
-    /* LVGL : 0° à droite, sens horaire ; molette : 0° en haut */
-    int a = (int)lroundf(k->angle_deg) + 270;
+    if (lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_clear_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
+    /* LVGL : 0° à droite, sens horaire ; molette : 0° en haut. Pas de 3° : pas de redessin sur le bruit */
+    int a = ((int)lroundf(k->angle_deg / 3.0f)) * 3 + 270;
     a %= 360;
     if (a < 0) a += 360;
-    lv_arc_set_angles(ui.knob_arc, (uint16_t)((a + 360 - 7) % 360), (uint16_t)((a + 7) % 360));
-    lv_obj_set_style_arc_color(ui.knob_arc, k->tilt_mode ? KH_COL_AMBER : KH_COL_TEXT_MID, LV_PART_INDICATOR);
+    static int last = -1;
+    if (a != last) {
+        last = a;
+        lv_arc_set_angles(ui.knob_arc, (uint16_t)((a + 360 - 7) % 360), (uint16_t)((a + 7) % 360));
+    }
+    set_arc_color(ui.knob_arc, k->tilt_mode ? KH_COL_AMBER : KH_COL_TEXT_MID, LV_PART_INDICATOR);
 }
 
 void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_view_t *knob, int64_t now)
 {
     update_status(m, loc, now);
-    update_motors(m, now);
-    update_solar(m, now);
-    update_vib(m, now);
-    update_system(m, loc, now);
+    /* seule la page visible est mise à jour ; les autres le seront quand on y arrivera */
+    switch (kh_screen_page()) {
+    case KH_PAGE_MOTORS: update_motors(m, now); break;
+    case KH_PAGE_SOLAR: update_solar(m, now); break;
+    case KH_PAGE_VIB: update_vib(m, now); break;
+    case KH_PAGE_SYSTEM: update_system(m, loc, now); break;
+    case KH_PAGE_WIFI: update_wifi(loc, now); break;
+    default: break;
+    }
     update_alarm(m);
-    update_wifi(loc, now);
     update_knob(knob);
 }
