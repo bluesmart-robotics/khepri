@@ -17,7 +17,6 @@ LV_FONT_DECLARE(kh_font_24);
 LV_FONT_DECLARE(kh_font_32);
 LV_FONT_DECLARE(kh_font_64);
 
-#define RPM_MAX 4000
 #define G_MAX 1200
 #define VIB_MAX 8000
 
@@ -32,7 +31,7 @@ static struct {
     lv_obj_t *knob_arc; /* indicateur de molette sur le pourtour */
 
     struct {
-        lv_obj_t *arc[2], *val[2], *tag[2], *unit, *vib[2];
+        lv_obj_t *ring, *over, *pct, *kw, *axes, *vib[2];
     } mot;
     struct {
         lv_obj_t *arc[2], *g, *unit, *isc[2], *tc[2], *air, *hdr[2];
@@ -164,7 +163,7 @@ static void tile_base(lv_obj_t *t, kh_page_t p)
     lv_obj_clear_flag(t, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_t *title = label(t, &kh_font_18, KH_COL_TEXT_DIM, PAGE_TITLE[p]);
     lv_obj_set_style_text_letter_space(title, 3, 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 50);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 58);
 }
 
 static void btn_cb(lv_event_t *e);
@@ -185,22 +184,47 @@ static lv_obj_t *button(lv_obj_t *par, const char *txt, int w, lv_obj_t **lbl_ou
 }
 
 /* ------------------------------------------------------------------ pages */
+/* Jauge unique de poussée : anneau vert sur tout le pourtour, départ en bas, sens horaire.
+ * 100 % = puissance de référence (3,5 kW par défaut). Au-delà, un second tour ambre recouvre le
+ * premier : 150 % = un tour vert complet + un demi-tour ambre. */
+static lv_obj_t *ring_arc(lv_obj_t *par, lv_color_t c, bool with_track)
+{
+    lv_obj_t *a = lv_arc_create(par);
+    lv_obj_set_size(a, 446, 446);
+    lv_obj_center(a);
+    lv_arc_set_rotation(a, 90); /* 0 = en bas */
+    lv_arc_set_bg_angles(a, 0, 360);
+    lv_arc_set_range(a, 0, 1000);
+    lv_arc_set_value(a, 0);
+    lv_obj_remove_style(a, NULL, LV_PART_KNOB);
+    lv_obj_clear_flag(a, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_arc_width(a, 22, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(a, 22, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_color(a, KH_COL_CARD, LV_PART_MAIN);
+    lv_obj_set_style_arc_opa(a, with_track ? LV_OPA_COVER : LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_set_style_arc_color(a, c, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(a, true, LV_PART_INDICATOR);
+    return a;
+}
+
 static void build_motors(lv_obj_t *t)
 {
     tile_base(t, KH_PAGE_MOTORS);
-    ui.mot.arc[0] = half_arc(t, 430, 22, KH_COL_ACCENT, RPM_MAX, true);
-    ui.mot.arc[1] = half_arc(t, 430, 22, KH_COL_BLUE, RPM_MAX, false);
-    for (int k = 0; k < 2; k++) {
-        ui.mot.val[k] = label(t, &kh_font_64, KH_COL_TEXT, "---");
-        lv_obj_align(ui.mot.val[k], LV_ALIGN_CENTER, 12, k == 0 ? -46 : 30);
-        ui.mot.tag[k] = label(t, &kh_font_18, k == 0 ? KH_COL_ACCENT : KH_COL_BLUE, k == 0 ? "M0" : "M1");
-        lv_obj_align_to(ui.mot.tag[k], ui.mot.val[k], LV_ALIGN_OUT_LEFT_MID, -10, 0);
-    }
-    ui.mot.unit = label(t, &kh_font_18, KH_COL_TEXT_DIM, "tr/min");
-    lv_obj_align(ui.mot.unit, LV_ALIGN_CENTER, 0, 86);
+    ui.mot.ring = ring_arc(t, KH_COL_GREEN, true);
+    ui.mot.over = ring_arc(t, KH_COL_AMBER, false);
+
+    lv_obj_t *cap = label(t, &kh_font_14, KH_COL_TEXT_DIM, "POUSSÉE");
+    lv_obj_set_style_text_letter_space(cap, 3, 0);
+    lv_obj_align(cap, LV_ALIGN_CENTER, 0, -86);
+    ui.mot.pct = label(t, &kh_font_64, KH_COL_TEXT, "---");
+    lv_obj_align(ui.mot.pct, LV_ALIGN_CENTER, 0, -34);
+    ui.mot.kw = label(t, &kh_font_18, KH_COL_TEXT_MID, "");
+    lv_obj_align(ui.mot.kw, LV_ALIGN_CENTER, 0, 22);
+    ui.mot.axes = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
+    lv_obj_align(ui.mot.axes, LV_ALIGN_CENTER, 0, 50);
     for (int k = 0; k < 2; k++) {
         ui.mot.vib[k] = label(t, &kh_font_18, KH_COL_TEXT_DIM, "");
-        lv_obj_align(ui.mot.vib[k], LV_ALIGN_CENTER, k == 0 ? -66 : 66, 140);
+        lv_obj_align(ui.mot.vib[k], LV_ALIGN_CENTER, k == 0 ? -66 : 66, 122);
     }
 }
 
@@ -639,7 +663,7 @@ static void build_overlay(void)
     lv_obj_t *dots = lv_obj_create(ui.scr);
     lv_obj_remove_style_all(dots);
     lv_obj_set_size(dots, 150, 12);
-    lv_obj_align(dots, LV_ALIGN_BOTTOM_MID, 0, -26);
+    lv_obj_align(dots, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_set_flex_flow(dots, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(dots, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_pad_column(dots, 8, 0);
@@ -655,7 +679,7 @@ static void build_overlay(void)
     }
 
     ui.status = label(ui.scr, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_align(ui.status, LV_ALIGN_TOP_MID, 0, 24);
+    lv_obj_align(ui.status, LV_ALIGN_TOP_MID, 0, 36);
 
     lv_obj_t *k = lv_arc_create(top);
     lv_obj_set_size(k, 462, 462);
@@ -759,21 +783,46 @@ static void set_arc(lv_obj_t *a, bool ok, int v, lv_color_t c)
     set_arc_color(a, c, LV_PART_INDICATOR);
 }
 
-static void update_motors(const kh_model_t *m, int64_t now)
+static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t now)
 {
-    char b[32];
-    for (int k = 0; k < 2; k++) {
-        bool ok = kh_fresh(m->t_motor[k], now, KH_STALE_MS);
-        int rpm = ok ? (int)lroundf(fabsf(m->rpm[k])) : 0;
-        if (ok) fmt_int(b, sizeof b, rpm);
-        else snprintf(b, sizeof b, "---");
-        if (set_text(ui.mot.val[k], b)) { /* recentrer seulement si la largeur du nombre change */
-            lv_obj_align(ui.mot.val[k], LV_ALIGN_CENTER, 12, k == 0 ? -46 : 30);
-            lv_obj_align_to(ui.mot.tag[k], ui.mot.val[k], LV_ALIGN_OUT_LEFT_MID, -10, 0);
-        }
-        set_text_color(ui.mot.val[k], ok ? KH_COL_TEXT : KH_COL_TEXT_DIM, 0);
-        set_arc(ui.mot.arc[k], ok, rpm > RPM_MAX ? RPM_MAX : rpm, k == 0 ? KH_COL_ACCENT : KH_COL_BLUE);
+    char b[64], v1[16], v2[16];
+    float w = 0;
+    const float ref = loc->thrust_ref_w > 0 ? loc->thrust_ref_w : 3500.0f;
+    bool ok = kh_power_total(m, now, &w);
+    if (w < 0) w = 0; /* régénération : jauge à zéro */
+    int pm = ok ? (int)lroundf(w / ref * 1000.0f) : 0; /* pour mille */
+    int main_v = pm > 1000 ? 1000 : pm, over_v = pm > 1000 ? (pm - 1000 > 1000 ? 1000 : pm - 1000) : 0;
+    if (lv_arc_get_value(ui.mot.ring) != main_v) lv_arc_set_value(ui.mot.ring, main_v);
+    if (lv_arc_get_value(ui.mot.over) != over_v) lv_arc_set_value(ui.mot.over, over_v);
+    set_arc_color(ui.mot.ring, ok ? KH_COL_GREEN : KH_COL_TEXT_DIM, LV_PART_INDICATOR);
 
+    if (ok) snprintf(b, sizeof b, "%d %%", (pm + 5) / 10);
+    else snprintf(b, sizeof b, "---");
+    set_text(ui.mot.pct, b);
+    set_text_color(ui.mot.pct, !ok ? KH_COL_TEXT_DIM : pm > 1000 ? KH_COL_AMBER : KH_COL_TEXT, 0);
+
+    if (ok) {
+        fmt_dec(v1, sizeof v1, w / 1000.0f, 2);
+        fmt_dec(v2, sizeof v2, ref / 1000.0f, 1);
+        snprintf(b, sizeof b, "%s kW / %s kW", v1, v2);
+    } else {
+        snprintf(b, sizeof b, "puissance inconnue");
+    }
+    set_text(ui.mot.kw, b);
+
+    char ax[2][16];
+    for (int k = 0; k < 2; k++) {
+        if (kh_fresh(m->t_power[k], now, KH_STALE_MS)) {
+            fmt_dec(v1, sizeof v1, kh_power_axis(m, k) / 1000.0f, 2);
+            snprintf(ax[k], sizeof ax[k], "%s", v1);
+        } else {
+            snprintf(ax[k], sizeof ax[k], "---");
+        }
+    }
+    snprintf(b, sizeof b, "M0 %s · M1 %s kW", ax[0], ax[1]);
+    set_text(ui.mot.axes, b);
+
+    for (int k = 0; k < 2; k++) {
         int lvl = kh_vib_level(&m->node[k], now);
         static const char *TXT[] = {"---", "OK", "VIB", "ALARME"};
         snprintf(b, sizeof b, "Ch.%d %s", k, TXT[lvl + 1]);
@@ -1017,7 +1066,7 @@ void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_
     update_status(m, loc, now);
     /* seule la page visible est mise à jour ; les autres le seront quand on y arrivera */
     switch (kh_screen_page()) {
-    case KH_PAGE_MOTORS: update_motors(m, now); break;
+    case KH_PAGE_MOTORS: update_motors(m, loc, now); break;
     case KH_PAGE_SOLAR: update_solar(m, now); break;
     case KH_PAGE_VIB: update_vib(m, now); break;
     case KH_PAGE_SYSTEM: update_system(m, loc, now); break;

@@ -24,6 +24,14 @@ menu "KHEPRI - ecran pilote"
         bool "Molette : inverser le sens"
         default n
 
+    config KHEPRI_THRUST_REF_W
+        int "Puissance electrique totale (W) affichee comme 100 % de poussee"
+        range 500 20000
+        default 3500
+        help
+            Somme M0 + M1 de la puissance de bus (U x I) mesuree par le BSR Drive
+            (trame CANSimple Get_Bus_Voltage_Current, 0x017). L'affichage peut depasser 100 %.
+
     config KHEPRI_ODRV_NODE_M0
         int "Noeud CANSimple du BSR Drive pour le moteur M0"
         range 0 63

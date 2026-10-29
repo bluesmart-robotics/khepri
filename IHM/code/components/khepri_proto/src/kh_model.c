@@ -48,6 +48,17 @@ void kh_model_apply_frame(kh_model_t *m, uint16_t id, const uint8_t *d, uint8_t 
         }
         return;
     }
+    if (id < 0x040 && KP_ODRV_CMD(id) == KP_ODRV_CMD_BUS_VI && dlc >= 8) {
+        uint8_t ax = KP_ODRV_NODE(id);
+        for (int k = 0; k < 2; k++) {
+            if (ax == m->odrv_node[k]) {
+                m->vbus[k] = kp_get_f32(d);
+                m->ibus[k] = kp_get_f32(d + 4);
+                m->t_power[k] = now;
+            }
+        }
+        return;
+    }
     if (id < 0x040 && KP_ODRV_CMD(id) == KP_ODRV_CMD_ENCODER_EST && dlc >= 8) {
         uint8_t ax = KP_ODRV_NODE(id);
         for (int k = 0; k < 2; k++) {
@@ -103,6 +114,22 @@ int kh_vib_level(const kh_node_t *n, int64_t now)
     return v >= KH_VIB_ALARM_MG ? 2 : v >= KH_VIB_WARN_MG ? 1 : 0;
 }
 
+bool kh_power_total(const kh_model_t *m, int64_t now, float *w)
+{
+    float s = 0;
+    bool any = false;
+    for (int k = 0; k < 2; k++) {
+        if (!kh_fresh(m->t_power[k], now, KH_STALE_MS)) continue;
+        float p = kh_power_axis(m, k);
+        if (p == p) { /* pas NaN */
+            s += p;
+            any = true;
+        }
+    }
+    *w = s;
+    return any;
+}
+
 float kh_loss_pct(const kh_model_t *m)
 {
     uint32_t tot = m->rx_pkts + m->lost_pkts;
@@ -119,7 +146,7 @@ static void put(khn_frame_t *f, uint16_t id, const uint8_t d[8])
 
 int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
 {
-    if (max < 13) return 0;
+    if (max < 15) return 0;
     const float t = (float)now / 1000.0f;
     int n = 0;
     uint8_t d[8];
@@ -135,6 +162,12 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
         kp_put_f32(d, t * rpm[k] / 60.0f);
         kp_put_f32(d + 4, rpm[k] / 60.0f);
         put(&out[n++], (uint16_t)KP_ODRV_ID(k, KP_ODRV_CMD_ENCODER_EST), d);
+        /* Puissance : croisière vers 2,6 kW au total, montées au-delà de 3,5 kW (> 100 %) */
+        float p = 1350.0f + 540.0f * sinf(t * 0.07f + k * 0.4f) + 120.0f * sinf(t * 0.9f + k);
+        float v = 47.5f - p * 0.0008f; /* 14S LFP, légère chute sous charge */
+        kp_put_f32(d, v);
+        kp_put_f32(d + 4, p / v);
+        put(&out[n++], (uint16_t)KP_ODRV_ID(k, KP_ODRV_CMD_BUS_VI), d);
     }
 
     /* Alarme de démonstration : chaussette 1, 4 s toutes les 90 s */

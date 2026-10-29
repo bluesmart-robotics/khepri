@@ -510,6 +510,7 @@ void app_main(void)
 
     /* ── PARTIE 3 : radio, entrées, rafraîchissement ── */
     s_local.espnow_channel = CONFIG_KHEPRI_ESPNOW_CHANNEL;
+    s_local.thrust_ref_w = CONFIG_KHEPRI_THRUST_REF_W;
     khepri_link_init(on_rx);
     /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
     kh_wifi_init();

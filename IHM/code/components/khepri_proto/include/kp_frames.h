@@ -24,6 +24,7 @@ extern "C" {
 /* ------------------------------------------------------------------ BSR Drive (ODrive CANSimple) */
 #define KP_ODRV_CMD_HEARTBEAT   0x001u
 #define KP_ODRV_CMD_ENCODER_EST 0x009u /* float pos [tr], float vel [tr/s] */
+#define KP_ODRV_CMD_BUS_VI      0x017u /* float tension de bus [V], float courant de bus [A] (ODrive ≥ 0.6) */
 #define KP_ODRV_ID(node, cmd)   ((uint32_t)(((node) << 5) | (cmd)))
 #define KP_ODRV_NODE(id)        ((uint8_t)((id) >> 5))
 #define KP_ODRV_CMD(id)         ((uint8_t)((id) & 0x1Fu))

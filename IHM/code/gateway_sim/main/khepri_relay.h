@@ -8,7 +8,8 @@
  *   khepri_relay_push(KP_ID_SYNC, sync, 8);    // et pour la trame SYNC émise par le maître
  *
  * Le relais ne garde que les trames utiles à l'écran (SYNC, trames des chaussettes 0x601-0x63F
- * hors transfert de fichiers, Get_Encoder_Estimates des deux axes du BSR Drive), conserve la
+ * hors transfert de fichiers, Get_Encoder_Estimates et Get_Bus_Voltage_Current des deux axes du
+ * BSR Drive — à activer en émission cyclique sur le BSR Drive), conserve la
  * dernière valeur de chaque identifiant et les envoie à 10 Hz, en un seul paquet ESP-NOW, à
  * chaque écran appairé. Les alarmes vibratoires ne sont jamais fusionnées.
  */

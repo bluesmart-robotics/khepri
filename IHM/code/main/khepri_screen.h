@@ -60,6 +60,7 @@ typedef struct {
     int brightness_pct;
     uint8_t espnow_channel;  /* canal attendu par le maître */
     char reset_text[64];     /* cause du dernier redémarrage (page SYSTÈME) */
+    float thrust_ref_w;      /* puissance correspondant à 100 % de poussée (page MOTEURS) */
     kh_wifi_status_t wifi;  /* page WI-FI */
     kh_ota_status_t ota;    /* mises à jour depuis GitHub */
 } kh_local_t;

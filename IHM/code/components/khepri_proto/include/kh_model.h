@@ -39,6 +39,9 @@ typedef struct {
     uint8_t odrv_node[2]; /* nœuds CANSimple des axes M0 / M1 (0 et 1 par défaut) */
     int64_t t_motor[2];
     float rpm[2];
+    /* Puissance électrique des axes (Get_Bus_Voltage_Current) */
+    int64_t t_power[2];
+    float vbus[2], ibus[2];
 
     /* Heure commune du maître */
     int64_t t_sync;
@@ -73,6 +76,10 @@ static inline bool kh_link_ok(const kh_model_t *m, int64_t now_ms) { return kh_f
 float kh_vib_vec_mg(const kp_vib_rms_t *r);
 /* 0 normal, 1 avertissement, 2 alarme, −1 inconnu */
 int kh_vib_level(const kh_node_t *n, int64_t now_ms);
+/* Puissance électrique totale des deux axes [W] ; false si aucun axe n'a de mesure récente.
+ * Un axe sans mesure récente compte pour 0. */
+bool kh_power_total(const kh_model_t *m, int64_t now_ms, float *w);
+static inline float kh_power_axis(const kh_model_t *m, int k) { return m->vbus[k] * m->ibus[k]; }
 /* Pourcentage de paquets perdus depuis le démarrage */
 float kh_loss_pct(const kh_model_t *m);
 

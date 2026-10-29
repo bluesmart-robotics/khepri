@@ -13,7 +13,7 @@
 static const char *TAG = "khepri_relay";
 
 #define MAX_DISPLAYS 4
-#define SLOT_COUNT (1 + KP_MAX_NODES * 5 + 2) /* SYNC, 5 trames par chaussette, 2 axes */
+#define SLOT_COUNT (1 + KP_MAX_NODES * 5 + 4) /* SYNC, 5 trames par chaussette, 2 axes × (régime, puissance) */
 #define ALARM_Q 4
 
 typedef struct {
@@ -39,9 +39,10 @@ static int slot_of(uint32_t id)
         if (node >= KP_MAX_NODES || off < KP_O_VIB_RMS || off > KP_O_STATUS) return -1; /* ALARM traitée à part */
         return 1 + node * 5 + (off - KP_O_VIB_RMS);
     }
-    if (id < 0x040 && KP_ODRV_CMD(id) == KP_ODRV_CMD_ENCODER_EST) {
-        if (KP_ODRV_NODE(id) == s_cfg.odrv_node_m0) return 1 + KP_MAX_NODES * 5;
-        if (KP_ODRV_NODE(id) == s_cfg.odrv_node_m1) return 2 + KP_MAX_NODES * 5;
+    if (id < 0x040 && (KP_ODRV_CMD(id) == KP_ODRV_CMD_ENCODER_EST || KP_ODRV_CMD(id) == KP_ODRV_CMD_BUS_VI)) {
+        int base = 1 + KP_MAX_NODES * 5 + (KP_ODRV_CMD(id) == KP_ODRV_CMD_BUS_VI ? 2 : 0);
+        if (KP_ODRV_NODE(id) == s_cfg.odrv_node_m0) return base;
+        if (KP_ODRV_NODE(id) == s_cfg.odrv_node_m1) return base + 1;
     }
     return -1;
 }

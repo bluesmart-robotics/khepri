@@ -11,7 +11,7 @@ ESP-NOW avec appairage par bouton et commandes 32 bits.
 
 | Page | Contenu |
 |---|---|
-| MOTEURS | Régime M0 (demi-anneau gauche) et M1 (droite), 0–4 000 tr/min, état vibratoire des chaussettes |
+| MOTEURS | Jauge unique de poussée sur tout le pourtour, départ en bas : 100 % = 3,5 kW électriques (M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, second tour ambre. Puissance totale et par moteur, état vibratoire des chaussettes |
 | SOLAIRE | Ensoleillement moyen (W/m²) ; Isc et température de cellule par chaussette ; air extérieur |
 | VIBRATIONS | RMS vectoriel par chaussette, repères 3 000 / 6 000 mg, amplitudes 1P M0 · M1 |
 | SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité |
@@ -79,7 +79,7 @@ Bibliothèque `espressif/esp-now`, comme la télécommande BSR :
 2. **Télémétrie maître → écran** : paquets `ESPNOW_DATA_TYPE_DATA` de 10 Hz contenant les trames CAN
    telles quelles (en-tête `KH` de 8 octets, puis id/dlc/données, 20 trames au plus). L'écran
    décode les mêmes octets que sur le bus : SYNC 0x600, chaussettes 0x601-0x605 et 0x621-0x625,
-   `Get_Encoder_Estimates` des axes 0 et 1 du BSR Drive (`kp_frames.h` = sous-ensemble de `kp_can.h`).
+   `Get_Encoder_Estimates` (0x009) et `Get_Bus_Voltage_Current` (0x017, P = U·I) des axes 0 et 1 du BSR Drive (`kp_frames.h` = sous-ensemble de `kp_can.h`).
 3. **Commandes écran → maître** : mot de 32 bits, code dans le quartet de poids fort :
    `1` acquittement d'alarme (chaussette), `2` REPÈRE (n°), `3` enregistrement on/off,
    `4` battement de cœur 1 Hz.

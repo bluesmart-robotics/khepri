@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     kh_screen_init(NULL);
     kh_model_t m;
     kh_model_init(&m);
-    kh_local_t loc = {.reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
+    kh_local_t loc = {.thrust_ref_w = 3500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
     kh_knob_view_t knob = {.valid = true, .angle_deg = 35.0f};
     int64_t t = 0;
 
@@ -127,6 +127,12 @@ int main(int argc, char **argv)
     lv_timer_handler();
     dump(dir, "8_wifi_mot_de_passe");
     kh_screen_debug_open_password(NULL, NULL);
+    /* poussée faible (vers t = 64 s, la simulation est au creux) */
+    kh_screen_show_page(KH_PAGE_MOTORS, false);
+    step(&m, &t, 64500 - (int)t, &loc, &knob);
+    kh_model_ack_alarm(&m, t);
+    step(&m, &t, 200, &loc, &knob);
+    dump(dir, "1b_moteurs_croisiere");
     /* liaison perdue */
     kh_model_ack_alarm(&m, t);
     kh_screen_show_page(KH_PAGE_MOTORS, false);
