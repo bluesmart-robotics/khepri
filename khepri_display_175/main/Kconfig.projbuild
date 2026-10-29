@@ -1,0 +1,37 @@
+menu "KHEPRI - ecran pilote"
+
+    config KHEPRI_ESPNOW_CHANNEL
+        int "Canal Wi-Fi de la liaison ESP-NOW"
+        range 1 13
+        default 1
+        help
+            Doit etre identique sur l'ecran et sur le maitre (ou la passerelle de simulation).
+
+    config KHEPRI_DEMO_DEFAULT
+        bool "Simulation locale active au premier demarrage"
+        default y
+        help
+            L'ecran genere lui-meme des donnees plausibles (badge SIMULATION) tant qu'on ne
+            l'a pas desactivee depuis la page SYSTEME. Le choix est ensuite memorise en NVS.
+            A desactiver avant tout vol.
+
+    config KHEPRI_KNOB_DETENT_DEG
+        int "Molette : angle d'un cran (degres)"
+        range 5 90
+        default 20
+
+    config KHEPRI_KNOB_INVERT
+        bool "Molette : inverser le sens"
+        default n
+
+    config KHEPRI_ODRV_NODE_M0
+        int "Noeud CANSimple du BSR Drive pour le moteur M0"
+        range 0 63
+        default 0
+
+    config KHEPRI_ODRV_NODE_M1
+        int "Noeud CANSimple du BSR Drive pour le moteur M1"
+        range 0 63
+        default 1
+
+endmenu

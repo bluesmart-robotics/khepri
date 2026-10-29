@@ -1,0 +1,7 @@
+build/
+sdkconfig
+sdkconfig.old
+gateway_sim/build/
+gateway_sim/sdkconfig
+gateway_sim/sdkconfig.old
+dependencies.lock

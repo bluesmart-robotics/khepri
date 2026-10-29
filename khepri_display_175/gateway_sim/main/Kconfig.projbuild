@@ -1,0 +1,8 @@
+menu "KHEPRI - passerelle de simulation"
+    config KHEPRI_ESPNOW_CHANNEL
+        int "Canal Wi-Fi de la liaison ESP-NOW"
+        range 1 13
+        default 1
+        help
+            Doit etre identique sur l'ecran pilote.
+endmenu
