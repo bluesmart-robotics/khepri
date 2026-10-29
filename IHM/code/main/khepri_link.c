@@ -1,4 +1,5 @@
 #include "khepri_link.h"
+#include "kh_wifi.h"
 
 #include <string.h>
 
@@ -134,5 +135,6 @@ void khepri_link_tick(void)
         s_binding = false;
         ESP_LOGW(TAG, "aucun maître n'a répondu à LIER");
     }
-    if (s_bound) khepri_link_send_cmd(KHN_CMD_HEARTBEAT, s_hb++);
+    /* l'émission de commande parcourt les canaux : pas pendant un balayage Wi-Fi */
+    if (s_bound && !kh_wifi_scanning()) khepri_link_send_cmd(KHN_CMD_HEARTBEAT, s_hb++);
 }

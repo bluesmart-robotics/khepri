@@ -437,8 +437,11 @@ static void rebuild_ap_list(const kh_wifi_status_t *w)
     ui.wifi.ap_count = w->ap_count;
     memcpy(ui.wifi.ap, w->ap, sizeof ui.wifi.ap);
     if (!w->ap_count) {
-        lv_obj_t *l = label(ui.wifi.list, &kh_font_14, KH_COL_TEXT_DIM, w->scan_gen ? "Aucun réseau trouvé" : "");
-        (void)l;
+        char m[64];
+        if (!w->scan_gen) m[0] = 0;
+        else if (w->scan_err) snprintf(m, sizeof m, "Balayage impossible (erreur 0x%x)", w->scan_err);
+        else snprintf(m, sizeof m, "Aucun réseau trouvé");
+        label(ui.wifi.list, &kh_font_14, w->scan_err ? KH_COL_AMBER : KH_COL_TEXT_DIM, m);
         return;
     }
     for (int i = 0; i < w->ap_count; i++) {

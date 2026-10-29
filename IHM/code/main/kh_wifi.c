@@ -9,6 +9,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "nvs.h"
+#include "sdkconfig.h"
 
 static const char *TAG = "kh_wifi";
 
@@ -19,6 +20,9 @@ static SemaphoreHandle_t s_mux;
 static kh_wifi_status_t s_st;
 static char s_pass[65];
 static int s_retry;
+
+static TaskHandle_t s_scan_task;
+static void scan_task(void *arg);
 
 static void lock(void) { xSemaphoreTake(s_mux, portMAX_DELAY); }
 static void unlock(void) { xSemaphoreGive(s_mux); }
@@ -60,30 +64,7 @@ static void do_connect(void)
 
 static void on_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
-    if (base == WIFI_EVENT && id == WIFI_EVENT_SCAN_DONE) {
-        uint16_t n = KH_WIFI_MAX_AP;
-        static wifi_ap_record_t rec[KH_WIFI_MAX_AP]; /* hors pile : la tâche d'événements est petite */
-        if (esp_wifi_scan_get_ap_records(&n, rec) != ESP_OK) n = 0;
-        lock();
-        int k = 0;
-        for (int i = 0; i < n && k < KH_WIFI_MAX_AP; i++) {
-            if (!rec[i].ssid[0]) continue; /* réseaux masqués */
-            bool dup = false;
-            for (int j = 0; j < k; j++)
-                if (!strcmp(s_st.ap[j].ssid, (char *)rec[i].ssid)) dup = true;
-            if (dup) continue;
-            strlcpy(s_st.ap[k].ssid, (char *)rec[i].ssid, sizeof s_st.ap[k].ssid);
-            s_st.ap[k].rssi = rec[i].rssi;
-            s_st.ap[k].channel = rec[i].primary;
-            s_st.ap[k].secure = rec[i].authmode != WIFI_AUTH_OPEN;
-            k++;
-        }
-        s_st.ap_count = k;
-        s_st.scanning = false;
-        s_st.scan_gen++;
-        unlock();
-        ESP_LOGI(TAG, "balayage : %d réseaux", k);
-    } else if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
+    if (base == WIFI_EVENT && id == WIFI_EVENT_STA_DISCONNECTED) {
         lock();
         bool want = s_st.state == KH_WIFI_CONNECTING || s_st.state == KH_WIFI_CONNECTED;
         s_st.ip[0] = 0;
@@ -122,6 +103,7 @@ void kh_wifi_init(void)
     s_mux = xSemaphoreCreateMutex();
     esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, on_event, NULL);
     esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, on_event, NULL);
+    xTaskCreate(scan_task, "kh_scan", 4096, NULL, 3, &s_scan_task);
     char ssid[33] = {0};
     if (creds_load(ssid, sizeof ssid, s_pass, sizeof s_pass)) {
         lock();
@@ -133,21 +115,86 @@ void kh_wifi_init(void)
     }
 }
 
+/* Balayage bloquant dans une tâche dédiée : plus robuste que l'événement SCAN_DONE, et chaque
+ * échec est visible (journal + page WI-FI). Les émissions ESP-NOW qui changent de canal sont
+ * suspendues pendant le balayage (kh_wifi_scanning()). */
+
+static void scan_task(void *arg)
+{
+    static wifi_ap_record_t rec[KH_WIFI_MAX_AP * 2];
+    for (;;) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        wifi_scan_config_t sc = {
+            .show_hidden = false,
+            .scan_type = WIFI_SCAN_TYPE_ACTIVE,
+            .scan_time = {.active = {.min = 80, .max = 150}},
+        };
+        esp_err_t e = ESP_FAIL;
+        for (int attempt = 0; attempt < 3 && e != ESP_OK; attempt++) {
+            if (attempt) {
+                esp_wifi_scan_stop();
+                vTaskDelay(pdMS_TO_TICKS(300));
+            }
+            e = esp_wifi_scan_start(&sc, true); /* bloquant, ~2 s */
+            if (e == ESP_ERR_WIFI_STATE) {
+                /* connexion en cours vers un réseau injoignable : on l'interrompt pour balayer */
+                lock();
+                bool connected = s_st.state == KH_WIFI_CONNECTED;
+                unlock();
+                if (!connected) esp_wifi_disconnect();
+            }
+            if (e != ESP_OK) ESP_LOGW(TAG, "balayage refusé (%s), essai %d/3", esp_err_to_name(e), attempt + 1);
+        }
+        uint16_t total = 0, n = KH_WIFI_MAX_AP * 2;
+        if (e == ESP_OK) {
+            esp_wifi_scan_get_ap_num(&total);
+            if (esp_wifi_scan_get_ap_records(&n, rec) != ESP_OK) n = 0;
+        } else {
+            n = 0;
+        }
+        lock();
+        int k = 0;
+        for (int i = 0; i < n && k < KH_WIFI_MAX_AP; i++) {
+            if (!rec[i].ssid[0]) continue; /* réseaux masqués */
+            bool dup = false;
+            for (int j = 0; j < k; j++)
+                if (!strcmp(s_st.ap[j].ssid, (char *)rec[i].ssid)) dup = true;
+            if (dup) continue;
+            strlcpy(s_st.ap[k].ssid, (char *)rec[i].ssid, sizeof s_st.ap[k].ssid);
+            s_st.ap[k].rssi = rec[i].rssi;
+            s_st.ap[k].channel = rec[i].primary;
+            s_st.ap[k].secure = rec[i].authmode != WIFI_AUTH_OPEN;
+            k++;
+        }
+        s_st.ap_count = k;
+        s_st.scan_err = e;
+        s_st.scanning = false;
+        s_st.scan_gen++;
+        unlock();
+        ESP_LOGI(TAG, "balayage : %u point(s) d'accès vu(s), %d affiché(s) (%s)", total, k, esp_err_to_name(e));
+        /* la radio reste sur le canal ESP-NOW quand on n'est pas connecté */
+        lock();
+        bool idle = s_st.state != KH_WIFI_CONNECTED && s_st.state != KH_WIFI_CONNECTING;
+        unlock();
+        if (idle) esp_wifi_set_channel(CONFIG_KHEPRI_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE);
+    }
+}
+
 void kh_wifi_scan(void)
 {
     lock();
-    if (s_st.scanning) {
-        unlock();
-        return;
-    }
-    s_st.scanning = true;
+    bool busy = s_st.scanning;
+    if (!busy) s_st.scanning = true;
     unlock();
-    wifi_scan_config_t sc = {.show_hidden = false};
-    if (esp_wifi_scan_start(&sc, false) != ESP_OK) {
-        lock();
-        s_st.scanning = false;
-        unlock();
-    }
+    if (!busy && s_scan_task) xTaskNotifyGive(s_scan_task);
+}
+
+bool kh_wifi_scanning(void)
+{
+    lock();
+    bool b = s_st.scanning;
+    unlock();
+    return b;
 }
 
 void kh_wifi_connect(const char *ssid, const char *password)

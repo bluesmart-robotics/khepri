@@ -30,6 +30,10 @@ def main() -> int:
     if not app.exists():
         print("build/khepri_display_175.bin absent : lancer d'abord idf.py build")
         return 1
+    built = app.read_bytes()[48:80].split(b"\0")[0].decode(errors="replace")  # esp_app_desc_t.version
+    if built != ver:
+        print(f"build/ contient la version {built}, CMakeLists.txt annonce {ver} : relancer idf.py build")
+        return 1
     REL.mkdir(exist_ok=True)
     shutil.copy(app, REL / "khepri_ecran_app.bin")
     # image complète pour un premier flash par USB à l'adresse 0x0

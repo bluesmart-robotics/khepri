@@ -36,11 +36,14 @@ typedef struct {
     int ap_count;
     kh_wifi_ap_t ap[KH_WIFI_MAX_AP];
     uint32_t scan_gen;   /* incrémenté à chaque fin de balayage */
+    int scan_err;        /* 0 si le dernier balayage a abouti (esp_err_t) */
 } kh_wifi_status_t;
 
 /* À appeler après l'initialisation du Wi-Fi (khepri_link_init) ; se reconnecte au réseau mémorisé */
 void kh_wifi_init(void);
 void kh_wifi_scan(void);
+/* Balayage en cours : ne pas changer de canal pendant ce temps */
+bool kh_wifi_scanning(void);
 void kh_wifi_connect(const char *ssid, const char *password);
 void kh_wifi_forget(void);
 void kh_wifi_get_status(kh_wifi_status_t *out);
