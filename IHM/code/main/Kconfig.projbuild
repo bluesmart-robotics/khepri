@@ -43,6 +43,28 @@ menu "KHEPRI - ecran pilote"
         bool "Roulis : inverser droite / gauche"
         default n
 
+    config KHEPRI_BATT_WH
+        int "Autonomie : energie utile de la batterie pleine (Wh)"
+        range 100 20000
+        default 4480
+        help
+            Utilisee si le BMS ne donne que l'etat de charge. 2 x 7S5P EVE LFP = 4480 Wh.
+
+    config KHEPRI_PV_PEAK_W
+        int "Autonomie : puissance solaire crete installee (W)"
+        range 50 5000
+        default 980
+        help
+            100 % de la barre solaire, si le maitre ne la transmet pas. 288 cellules Maxeon Gen III.
+
+    config KHEPRI_LEVEL_POWER_W
+        int "Autonomie : puissance electrique du vol en palier (W)"
+        range 200 10000
+        default 2500
+        help
+            Heures de palier = energie restante / (cette puissance - production solaire).
+            Valeur provisoire, a recaler sur les essais.
+
     config KHEPRI_THRUST_REF_W
         int "Puissance electrique totale (W) affichee comme 100 % de poussee"
         range 500 20000

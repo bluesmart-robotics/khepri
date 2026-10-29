@@ -48,6 +48,16 @@ void kh_model_apply_frame(kh_model_t *m, uint16_t id, const uint8_t *d, uint8_t 
         }
         return;
     }
+    if (id == KP_ID_BATT && dlc >= 8) {
+        kp_batt_unpack(d, &m->batt);
+        m->t_batt = now;
+        return;
+    }
+    if (id == KP_ID_SOLAR && dlc >= 8) {
+        kp_solar_unpack(d, &m->solar);
+        m->t_solar = now;
+        return;
+    }
     if (id < 0x040 && KP_ODRV_CMD(id) == KP_ODRV_CMD_BUS_VI && dlc >= 8) {
         uint8_t ax = KP_ODRV_NODE(id);
         for (int k = 0; k < 2; k++) {
@@ -137,6 +147,31 @@ float kh_loss_pct(const kh_model_t *m)
 }
 
 /* ------------------------------------------------------------------ simulation */
+void kh_energy(const kh_model_t *m, int64_t now, const kh_energy_cfg_t *cfg, kh_energy_t *o)
+{
+    memset(o, 0, sizeof *o);
+    o->level_h = NAN;
+    o->full_h = NAN;
+    o->solar_ok = kh_fresh(m->t_solar, now, KH_STALE_MS);
+    if (o->solar_ok) {
+        o->solar_w = (float)m->solar.p_w[0] + (float)m->solar.p_w[1];
+        float peak = m->solar.installed_w ? (float)m->solar.installed_w : cfg->pv_peak_w;
+        o->solar_pct = peak > 0 ? 100.0f * o->solar_w / peak : 0;
+        if (o->solar_pct > 100.0f) o->solar_pct = 100.0f;
+    }
+    o->batt_ok = kh_fresh(m->t_batt, now, KH_STALE_MS) && m->batt.soc_pm <= 1000;
+    if (!o->batt_ok) return;
+    o->soc_pct = m->batt.soc_pm / 10.0f;
+    /* énergie restante : celle du BMS si elle est donnée, sinon SOC × capacité */
+    float e = m->batt.e_wh ? (float)m->batt.e_wh : o->soc_pct / 100.0f * cfg->batt_wh;
+    float full = o->soc_pct >= 5.0f && m->batt.e_wh ? e * 100.0f / o->soc_pct : cfg->batt_wh;
+    float sol = o->solar_ok ? o->solar_w : 0;
+    float need = cfg->level_w - sol; /* ce que la batterie doit fournir en palier */
+    o->level_h = need <= 0 ? INFINITY : e / need;
+    if (o->soc_pct >= 99.5f) o->full_h = 0;
+    else if (sol >= 5.0f) o->full_h = (full - e > 0 ? full - e : 0) / sol;
+}
+
 static void put(khn_frame_t *f, uint16_t id, const uint8_t d[8])
 {
     f->id = id;
@@ -148,12 +183,15 @@ static void put(khn_frame_t *f, uint16_t id, const uint8_t d[8])
 static float s_demo_cmd = 0.0f;  /* consigne [%] */
 static float s_demo_p = 0.0f;    /* puissance simulée totale [W] */
 static int64_t s_demo_t = 0;
+#define DEMO_BATT_WH 4480.0f   /* 2 × 7S5P EVE LFP */
+#define DEMO_PV_PEAK_W 980.0f  /* 288 cellules Maxeon Gen III ≈ 3,4 W */
+static float s_demo_e = 0.78f * DEMO_BATT_WH;
 
 void kh_demo_set_throttle(float pct) { s_demo_cmd = pct < 0 ? 0 : pct; }
 
 int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
 {
-    if (max < 15) return 0;
+    if (max < 17) return 0;
     const float t = (float)now / 1000.0f;
     int n = 0;
     uint8_t d[8];
@@ -185,6 +223,27 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
         put(&out[n++], (uint16_t)KP_ODRV_ID(k, KP_ODRV_CMD_BUS_VI), d);
     }
 
+    /* Énergie : le soleil (même ensoleillement que les cellules témoins) recharge, les moteurs vident */
+    float g[2];
+    for (int k = 0; k < 2; k++)
+        g[k] = 840.0f + 120.0f * sinf(t * 0.05f + k * 1.3f) - (fmodf(t + k * 7.0f, 45.0f) < 6.0f ? 380.0f : 0.0f);
+    float psol[2];
+    for (int k = 0; k < 2; k++) psol[k] = g[k] / 1000.0f * DEMO_PV_PEAK_W / 2.0f * 0.85f;
+    float net = psol[0] + psol[1] - s_demo_p; /* + = charge */
+    s_demo_e += net * dt / 3.6e6f;
+    if (s_demo_e > DEMO_BATT_WH) s_demo_e = DEMO_BATT_WH;
+    if (s_demo_e < 0) s_demo_e = 0;
+    float soc = s_demo_e / DEMO_BATT_WH;
+    float vb = 44.8f + 2.0f * soc - s_demo_p * 0.0008f;
+    kp_batt_t bt = {.soc_pm = (uint16_t)lroundf(soc * 1000.0f), .v_cv = (uint16_t)lroundf(vb * 100.0f),
+                    .i_da = (int16_t)lroundf(net / vb * 10.0f), .e_wh = (uint16_t)lroundf(s_demo_e)};
+    kp_batt_pack(d, &bt);
+    put(&out[n++], KP_ID_BATT, d);
+    kp_solar_t so = {.p_w = {(uint16_t)lroundf(psol[0]), (uint16_t)lroundf(psol[1])}, .installed_w = (uint16_t)DEMO_PV_PEAK_W,
+                     .flags = KP_SOL_MPPT0 | KP_SOL_MPPT1};
+    kp_solar_pack(d, &so);
+    put(&out[n++], KP_ID_SOLAR, d);
+
     /* Alarme de démonstration : chaussette 1, 4 s toutes les 90 s */
     const float cyc = fmodf(t, 90.0f);
     const bool alarm1 = cyc > 60.0f && cyc < 64.0f;
@@ -212,10 +271,9 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
         put(&out[n++], (uint16_t)kp_id(node, KP_O_VIB_ORDER), d);
 
         /* Soleil : nuages lents ; Isc = G × Isc_STC / 1000 (Isc_STC = 6,3 A) */
-        float g = 840.0f + 120.0f * sinf(t * 0.05f + ph) - (fmodf(t + node * 7.0f, 45.0f) < 6.0f ? 380.0f : 0.0f);
-        kp_pv_t pv = {.isc_ma = (int16_t)(g * 6.3f),
-                      .g_wm2 = (uint16_t)g,
-                      .tc_c100 = (int16_t)((38.0f + 0.012f * g + node * 1.5f) * 100.0f),
+        kp_pv_t pv = {.isc_ma = (int16_t)(g[node] * 6.3f),
+                      .g_wm2 = (uint16_t)g[node],
+                      .tc_c100 = (int16_t)((38.0f + 0.012f * g[node] + node * 1.5f) * 100.0f),
                       .tair_c100 = (int16_t)((16.5f + 0.4f * sinf(t * 0.01f)) * 100.0f)};
         kp_pv_pack(d, &pv);
         put(&out[n++], (uint16_t)kp_id(node, KP_O_PV), d);

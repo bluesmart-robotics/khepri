@@ -12,7 +12,7 @@ ESP-NOW avec appairage par bouton et commandes 32 bits.
 | Page | Contenu |
 |---|---|
 | Principale | Une seule jauge verte sur le pourtour, sens horaire : 0 % à 20° après le bas, 100 % à 45° avant le bas (100 % = 3,5 kW électriques M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, la jauge continue en ambre jusqu'à ≈ 122 %. Au centre, le pourcentage seul. Pastille blanche = consigne de régime ; « consigne NN % » s'affiche 2 s pendant le réglage. Les chaussettes n'apparaissent qu'en cas de vibration anormale |
-| SOLAIRE | Ensoleillement moyen (W/m²) ; Isc et température de cellule par chaussette ; air extérieur |
+| Autonomie | Deux barres verticales (rien de circulaire, pour ne pas confondre avec le moteur) : à gauche l'état de charge de la batterie (vert, ambre < 30 %, rouge < 15 %), à droite la production solaire (vide = rien, pleine = puissance crête installée, 980 W par défaut). Dessous : « X h de palier » = énergie restante / (puissance de palier − production solaire), « palier illimité » si le soleil suffit ; « pleine dans X h » = énergie manquante / production. Données : trames 0x680 (batterie) et 0x681 (solaire) émises par le maître |
 | VIBRATIONS | RMS vectoriel par chaussette, repères 3 000 / 6 000 mg, amplitudes 1P M0 · M1 |
 | SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité |
 | WI-FI | Réseaux à portée (balayage), saisie du mot de passe au clavier tactile, réseau mémorisé, OUBLIER ; version et état des mises à jour |
@@ -121,7 +121,8 @@ Le premier flash par USB est obligatoire (nouvelle table de partitions OTA) ; en
 jour passent par le Wi-Fi.
 
 Réglages (`idf.py menuconfig` → « KHEPRI - ecran pilote ») : canal ESP-NOW, simulation au
-démarrage, seuil de poussée, zone morte / plage / vitesse et sens du roulis, nœuds CANSimple des
+démarrage, énergie batterie (4 480 Wh), puissance solaire crête (980 W), puissance de palier
+(2 500 W, provisoire), seuil de poussée, zone morte / plage / vitesse et sens du roulis, nœuds CANSimple des
 moteurs.
 
 ## Tests et aperçus sur PC

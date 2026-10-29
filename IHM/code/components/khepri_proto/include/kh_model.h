@@ -43,6 +43,11 @@ typedef struct {
     int64_t t_power[2];
     float vbus[2], ibus[2];
 
+    /* Énergie (synthèse du maître) */
+    int64_t t_batt, t_solar;
+    kp_batt_t batt;
+    kp_solar_t solar;
+
     /* Heure commune du maître */
     int64_t t_sync;
     kp_sync_t sync;
@@ -79,6 +84,22 @@ int kh_vib_level(const kh_node_t *n, int64_t now_ms);
 /* Puissance électrique totale des deux axes [W] ; false si aucun axe n'a de mesure récente.
  * Un axe sans mesure récente compte pour 0. */
 bool kh_power_total(const kh_model_t *m, int64_t now_ms, float *w);
+
+/* Autonomie : réglages de l'avion et résultat */
+typedef struct {
+    float batt_wh;      /* énergie utile de la batterie pleine */
+    float pv_peak_w;    /* puissance solaire crête installée (si le maître ne la donne pas) */
+    float level_w;      /* puissance électrique nécessaire au vol en palier */
+} kh_energy_cfg_t;
+typedef struct {
+    bool batt_ok, solar_ok;
+    float soc_pct;      /* état de charge */
+    float solar_w;      /* puissance produite */
+    float solar_pct;    /* production / puissance installée */
+    float level_h;      /* heures de palier restantes ; INFINITY si le soleil suffit au palier */
+    float full_h;       /* heures pour une recharge complète au rythme actuel ; 0 si pleine, NAN si pas de production */
+} kh_energy_t;
+void kh_energy(const kh_model_t *m, int64_t now_ms, const kh_energy_cfg_t *cfg, kh_energy_t *out);
 static inline float kh_power_axis(const kh_model_t *m, int k) { return m->vbus[k] * m->ibus[k]; }
 /* Pourcentage de paquets perdus depuis le démarrage */
 float kh_loss_pct(const kh_model_t *m);

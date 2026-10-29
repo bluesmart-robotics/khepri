@@ -79,14 +79,14 @@ int main(int argc, char **argv)
     kh_screen_init(NULL);
     kh_model_t m;
     kh_model_init(&m);
-    kh_local_t loc = {.thrust_ref_w = 3500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
+    kh_local_t loc = {.thrust_ref_w = 3500, .batt_wh = 4480, .pv_peak_w = 980, .level_w = 2500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
     kh_knob_view_t knob = {.valid = true, .angle_deg = 35.0f};
     int64_t t = 0;
     loc.throttle_pct = 80;
     kh_demo_set_throttle(loc.throttle_pct);
 
     step(&m, &t, 20000, &loc, &knob);
-    const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_solaire", "3_vibrations", "4_systeme", "5_wifi"};
+    const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_autonomie", "3_vibrations", "4_systeme", "5_wifi"};
     /* page WI-FI : réseau connecté, résultat de balayage, mise à jour à jour */
     loc.espnow_channel = 1;
     loc.wifi.state = KH_WIFI_CONNECTED;

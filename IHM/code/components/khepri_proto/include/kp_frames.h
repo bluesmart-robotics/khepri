@@ -10,6 +10,11 @@
  *   0x601 à 0x61F    chaussette 0
  *   0x621 à 0x63F    chaussette 1          → id = 0x600 + 32 × chaussette + décalage
  *   0x000 à 0x03F    axes du BSR Drive (CANSimple, nœud × 32 + commande)
+ *   0x680, 0x681     synthèse énergie émise par le maître (batterie, solaire)
+ *
+ * Les trames d'énergie sont propres à KHEPRI : le maître les calcule à partir du BMS (EMUS G1) et
+ * des deux MPPT Victron (VE.Can), dont les protocoles restent internes au maître. L'écran n'a ainsi
+ * pas à connaître ces protocoles, et un changement de BMS ou de MPPT ne le touche pas.
  */
 #pragma once
 
@@ -51,6 +56,10 @@ static inline int kp_node_of(uint32_t id)
     return (int)((id - KP_ID_BASE) >> 5);
 }
 static inline uint8_t kp_off_of(uint32_t id) { return (uint8_t)(id & 0x1Fu); }
+
+/* ------------------------------------------------------------------ énergie (maître) */
+#define KP_ID_BATT  0x680u /* kp_batt_t, 1 Hz  */
+#define KP_ID_SOLAR 0x681u /* kp_solar_t, 1 Hz */
 
 /* ------------------------------------------------------------------ bits d'état / défauts */
 enum {
@@ -162,6 +171,29 @@ static inline void kp_alarm_pack(uint8_t d[8], const kp_alarm_t *a)
 static inline void kp_alarm_unpack(const uint8_t d[8], kp_alarm_t *a)
 {
     a->level = d[0]; a->axis = d[1]; a->rms_mg = kp_get_u16(d + 2); a->rpm[0] = kp_get_u16(d + 4); a->rpm[1] = kp_get_u16(d + 6);
+}
+
+/* Batterie (BMS) : état de charge, tension, courant (+ = charge), énergie restante */
+typedef struct { uint16_t soc_pm; uint16_t v_cv; int16_t i_da; uint16_t e_wh; } kp_batt_t;
+static inline void kp_batt_pack(uint8_t d[8], const kp_batt_t *b)
+{
+    kp_put_u16(d, b->soc_pm); kp_put_u16(d + 2, b->v_cv); kp_put_u16(d + 4, (uint16_t)b->i_da); kp_put_u16(d + 6, b->e_wh);
+}
+static inline void kp_batt_unpack(const uint8_t d[8], kp_batt_t *b)
+{
+    b->soc_pm = kp_get_u16(d); b->v_cv = kp_get_u16(d + 2); b->i_da = (int16_t)kp_get_u16(d + 4); b->e_wh = kp_get_u16(d + 6);
+}
+
+/* Solaire (MPPT) : puissance de chaque aile, puissance crête installée (0 = inconnue), MPPT en ligne */
+enum { KP_SOL_MPPT0 = 1u << 0, KP_SOL_MPPT1 = 1u << 1 };
+typedef struct { uint16_t p_w[2]; uint16_t installed_w; uint8_t flags; uint8_t rsv; } kp_solar_t;
+static inline void kp_solar_pack(uint8_t d[8], const kp_solar_t *s)
+{
+    kp_put_u16(d, s->p_w[0]); kp_put_u16(d + 2, s->p_w[1]); kp_put_u16(d + 4, s->installed_w); d[6] = s->flags; d[7] = s->rsv;
+}
+static inline void kp_solar_unpack(const uint8_t d[8], kp_solar_t *s)
+{
+    s->p_w[0] = kp_get_u16(d); s->p_w[1] = kp_get_u16(d + 2); s->installed_w = kp_get_u16(d + 4); s->flags = d[6]; s->rsv = d[7];
 }
 
 #ifdef __cplusplus

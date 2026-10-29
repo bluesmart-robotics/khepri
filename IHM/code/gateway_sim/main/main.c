@@ -29,6 +29,7 @@ static void on_cmd(uint8_t code, uint32_t arg)
     case KHN_CMD_ACK_ALARM: ESP_LOGW(TAG, "le pilote a acquitté l'alarme de la chaussette %lu", (unsigned long)arg); break;
     case KHN_CMD_MARK: ESP_LOGI(TAG, "REPÈRE pilote n° %lu (sur le maître : « mark » vers les chaussettes)", (unsigned long)arg); break;
     case KHN_CMD_LOG: ESP_LOGI(TAG, "enregistrement %s demandé", arg ? "ON" : "OFF"); break;
+    case KHN_CMD_THROTTLE: kh_demo_set_throttle(arg / 10.0f); break; /* consigne de régime en ‰ */
     default: break;
     }
 }

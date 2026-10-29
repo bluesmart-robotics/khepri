@@ -76,6 +76,31 @@ int main(void)
     CHECK(m.sync.flags == (KP_SYNC_UTC | KP_SYNC_PPS));
     CHECK(kh_link_ok(&m, 99900) && !kh_link_ok(&m, 120000));
 
+    /* autonomie : 50 % de 4 000 Wh, 500 W de soleil sur 1 000 W installés, palier à 2 500 W */
+    {
+        kh_model_t e;
+        kh_model_init(&e);
+        uint8_t d[8];
+        kp_batt_t bt = {.soc_pm = 500, .v_cv = 4600, .i_da = -300, .e_wh = 2000};
+        kp_batt_pack(d, &bt);
+        kh_model_apply_frame(&e, KP_ID_BATT, d, 8, 1000);
+        kp_solar_t so = {.p_w = {260, 240}, .installed_w = 0};
+        kp_solar_pack(d, &so);
+        kh_model_apply_frame(&e, KP_ID_SOLAR, d, 8, 1000);
+        kh_energy_cfg_t c = {.batt_wh = 4000, .pv_peak_w = 1000, .level_w = 2500};
+        kh_energy_t r;
+        kh_energy(&e, 1500, &c, &r);
+        CHECK(r.batt_ok && r.solar_ok && fabsf(r.soc_pct - 50.0f) < 0.01f);
+        CHECK(fabsf(r.solar_pct - 50.0f) < 0.01f);
+        CHECK(fabsf(r.level_h - 1.0f) < 0.001f);  /* 2 000 Wh / (2 500 − 500) W */
+        CHECK(fabsf(r.full_h - 4.0f) < 0.001f);   /* 2 000 Wh manquants / 500 W */
+        c.level_w = 400;
+        kh_energy(&e, 1500, &c, &r);
+        CHECK(isinf(r.level_h));                  /* le soleil suffit au palier */
+        kh_energy(&e, 9000, &c, &r);
+        CHECK(!r.batt_ok && !r.solar_ok);         /* données périmées */
+    }
+
     printf(g_fail ? "%d échec(s)\n" : "tous les tests passent\n", g_fail);
     return g_fail ? 1 : 0;
 }

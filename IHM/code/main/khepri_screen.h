@@ -5,7 +5,7 @@
  * noir pur (pixel AMOLED éteint), mise à jour périodique à partir d'une structure de données
  * partagée, et rappels vers la couche radio.
  *
- * Pages : MOTEURS · SOLAIRE · VIBRATIONS · SYSTÈME · WI-FI, plus l'alerte vibratoire plein écran.
+ * Pages : PRINCIPALE · AUTONOMIE · VIBRATIONS · SYSTÈME · WI-FI, plus l'alerte vibratoire plein écran.
  * Navigation : glisser au doigt, ou molette (accéléromètre aujourd'hui, moteur BLDC demain).
  *
  * Ce module n'appelle aucune fonction ESP-IDF : il compile aussi sur PC pour les aperçus.
@@ -41,7 +41,7 @@ extern "C" {
 #define KH_COL_ACCENT lv_color_hex(0x7DD3C8)
 #define KH_COL_SUN lv_color_hex(0xFCD34D)
 
-typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_SOLAR, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_WIFI, KH_PAGE_COUNT } kh_page_t;
+typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_ENERGY, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_WIFI, KH_PAGE_COUNT } kh_page_t;
 
 /* État de la molette, pour l'indicateur sur le pourtour de l'écran */
 typedef struct {
@@ -61,6 +61,9 @@ typedef struct {
     uint8_t espnow_channel;  /* canal attendu par le maître */
     char reset_text[64];     /* cause du dernier redémarrage (page SYSTÈME) */
     float thrust_ref_w;      /* puissance correspondant à 100 % (page principale) */
+    float batt_wh;           /* énergie utile batterie pleine (autonomie) */
+    float pv_peak_w;         /* puissance solaire crête installée */
+    float level_w;           /* puissance électrique du vol en palier */
     float throttle_pct;      /* consigne de régime [% de thrust_ref_w] */
     int64_t throttle_adjust_ms; /* dernier réglage de la consigne (affichage temporaire) */
     kh_wifi_status_t wifi;  /* page WI-FI */

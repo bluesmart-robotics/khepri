@@ -17,10 +17,9 @@ LV_FONT_DECLARE(kh_font_24);
 LV_FONT_DECLARE(kh_font_32);
 LV_FONT_DECLARE(kh_font_64);
 
-#define G_MAX 1200
 #define VIB_MAX 8000
 
-static const char *PAGE_TITLE[KH_PAGE_COUNT] = {"MOTEURS", "SOLAIRE", "VIBRATIONS", "SYSTÈME", "WI-FI"};
+static const char *PAGE_TITLE[KH_PAGE_COUNT] = {"MOTEURS", "AUTONOMIE", "VIBRATIONS", "SYSTÈME", "WI-FI"};
 
 static kh_screen_cb_t s_cb;
 
@@ -34,8 +33,8 @@ static struct {
         lv_obj_t *ring, *over, *cmd, *pct, *cmd_txt, *vib[2];
     } mot;
     struct {
-        lv_obj_t *arc[2], *g, *unit, *isc[2], *tc[2], *air, *hdr[2];
-    } sol;
+        lv_obj_t *bar[2], *pct[2], *level, *full;
+    } en;
     struct {
         lv_obj_t *bar[2], *val[2], *ord[2], *peak;
     } vib;
@@ -142,26 +141,12 @@ static lv_obj_t *gauge_arc(lv_obj_t *par, int size, int width, lv_color_t c, int
     return a;
 }
 
-/* Demi-anneau sur le pourtour : gauche (rempli de bas en haut, sens horaire) ou droite (miroir).
- * Les deux moitiés laissent libres le haut (titre) et le bas (pastilles de page). */
-static lv_obj_t *half_arc(lv_obj_t *par, int size, int width, lv_color_t c, int max, bool left)
-{
-    lv_obj_t *a = gauge_arc(par, size, width, c, max);
-    if (left) {
-        lv_arc_set_bg_angles(a, 110, 246);
-    } else {
-        lv_arc_set_bg_angles(a, 294, 70);
-        lv_arc_set_mode(a, LV_ARC_MODE_REVERSE);
-    }
-    return a;
-}
-
 static void tile_base(lv_obj_t *t, kh_page_t p)
 {
     lv_obj_set_style_bg_color(t, KH_COL_BG, 0);
     lv_obj_set_style_bg_opa(t, LV_OPA_COVER, 0);
     lv_obj_clear_flag(t, LV_OBJ_FLAG_SCROLLABLE);
-    if (p == KH_PAGE_MOTORS) return; /* page principale : la jauge se suffit */
+    if (p == KH_PAGE_MOTORS || p == KH_PAGE_ENERGY) return; /* pages de vol : pas de titre, le dessin se suffit */
     lv_obj_t *title = label(t, &kh_font_18, KH_COL_TEXT_DIM, PAGE_TITLE[p]);
     lv_obj_set_style_text_letter_space(title, 3, 0);
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 58);
@@ -242,31 +227,42 @@ static void build_motors(lv_obj_t *t)
     }
 }
 
-static void build_solar(lv_obj_t *t)
+/* Page AUTONOMIE : deux barres verticales, volontairement différentes de la jauge circulaire du
+ * moteur pour ne pas les confondre sous stress. À gauche l'état de charge, à droite la production
+ * solaire (vide : rien, pleine : puissance crête installée). Dessous, les deux durées utiles. */
+#define EN_BAR_H 196
+static lv_obj_t *energy_bar(lv_obj_t *t, int x, lv_color_t c)
 {
-    tile_base(t, KH_PAGE_SOLAR);
-    ui.sol.arc[0] = half_arc(t, 430, 22, KH_COL_SUN, G_MAX, true);
-    ui.sol.arc[1] = half_arc(t, 430, 22, KH_COL_SUN, G_MAX, false);
-    ui.sol.g = label(t, &kh_font_64, KH_COL_TEXT, "---");
-    lv_obj_align(ui.sol.g, LV_ALIGN_CENTER, 0, -72);
-    ui.sol.unit = label(t, &kh_font_18, KH_COL_TEXT_DIM, "W/m² moyen");
-    lv_obj_align(ui.sol.unit, LV_ALIGN_CENTER, 0, -22);
+    lv_obj_t *b = lv_bar_create(t);
+    lv_obj_set_size(b, 66, EN_BAR_H);
+    lv_obj_align(b, LV_ALIGN_CENTER, x, -22);
+    lv_bar_set_range(b, 0, 1000);
+    lv_obj_set_style_radius(b, 12, LV_PART_MAIN);
+    lv_obj_set_style_radius(b, 8, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(b, KH_COL_CARD, LV_PART_MAIN);
+    lv_obj_set_style_border_color(b, KH_COL_CARD2, LV_PART_MAIN);
+    lv_obj_set_style_border_width(b, 2, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(b, 5, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(b, c, LV_PART_INDICATOR);
+    return b;
+}
+
+static void build_energy(lv_obj_t *t)
+{
+    tile_base(t, KH_PAGE_ENERGY);
+    const int x[2] = {-78, 70}; /* batterie un peu à gauche, soleil à droite */
+    const char *sym[2] = {LV_SYMBOL_BATTERY_FULL, LV_SYMBOL_CHARGE};
     for (int k = 0; k < 2; k++) {
-        int x = k == 0 ? -72 : 72;
-        ui.sol.hdr[k] = label(t, &kh_font_14, KH_COL_TEXT_DIM, k == 0 ? "CH. 0" : "CH. 1");
-        lv_obj_align(ui.sol.hdr[k], LV_ALIGN_CENTER, x, 18);
-        ui.sol.isc[k] = label(t, &kh_font_24, KH_COL_TEXT, "---");
-        lv_obj_align(ui.sol.isc[k], LV_ALIGN_CENTER, x, 50);
-        ui.sol.tc[k] = label(t, &kh_font_24, KH_COL_TEXT_MID, "---");
-        lv_obj_align(ui.sol.tc[k], LV_ALIGN_CENTER, x, 86);
+        ui.en.bar[k] = energy_bar(t, x[k], k == 0 ? KH_COL_GREEN : KH_COL_SUN);
+        ui.en.pct[k] = label(t, k == 0 ? &kh_font_32 : &kh_font_24, k == 0 ? KH_COL_TEXT : KH_COL_TEXT_MID, "---");
+        lv_obj_align_to(ui.en.pct[k], ui.en.bar[k], LV_ALIGN_OUT_TOP_MID, 0, -6);
+        lv_obj_t *s = label(t, &kh_font_18, KH_COL_TEXT_DIM, sym[k]);
+        lv_obj_align_to(s, ui.en.bar[k], LV_ALIGN_OUT_BOTTOM_MID, 0, 6);
     }
-    lv_obj_t *sep = lv_obj_create(t);
-    lv_obj_set_size(sep, 2, 96);
-    lv_obj_set_style_bg_color(sep, KH_COL_CARD2, 0);
-    lv_obj_set_style_border_width(sep, 0, 0);
-    lv_obj_align(sep, LV_ALIGN_CENTER, 0, 62);
-    ui.sol.air = label(t, &kh_font_18, KH_COL_TEXT_DIM, "Air ---");
-    lv_obj_align(ui.sol.air, LV_ALIGN_CENTER, 0, 140);
+    ui.en.level = label(t, &kh_font_24, KH_COL_TEXT, "---");
+    lv_obj_align(ui.en.level, LV_ALIGN_CENTER, 0, 126);
+    ui.en.full = label(t, &kh_font_18, KH_COL_TEXT_MID, "");
+    lv_obj_align(ui.en.full, LV_ALIGN_CENTER, 0, 160);
 }
 
 static void build_vib(lv_obj_t *t)
@@ -729,7 +725,7 @@ void kh_screen_init(const kh_screen_cb_t *cb)
         ui.tile[i] = lv_tileview_add_tile(ui.tv, (uint8_t)i, 0, dir);
     }
     build_motors(ui.tile[KH_PAGE_MOTORS]);
-    build_solar(ui.tile[KH_PAGE_SOLAR]);
+    build_energy(ui.tile[KH_PAGE_ENERGY]);
     build_vib(ui.tile[KH_PAGE_VIB]);
     build_system(ui.tile[KH_PAGE_SYSTEM]);
     build_wifi(ui.tile[KH_PAGE_WIFI]);
@@ -851,50 +847,58 @@ static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t no
     }
 }
 
-static void update_solar(const kh_model_t *m, int64_t now)
+/* « 3 h 20 », « 45 min », « > 99 h » */
+static void fmt_hours(char *b, size_t n, float h)
 {
-    char b[48], v[24];
-    float gsum = 0, air = NAN;
-    int gn = 0;
-    for (int k = 0; k < 2; k++) {
-        const kh_node_t *n = &m->node[k];
-        bool ok = kh_fresh(n->t_pv, now, KH_STALE_MS);
-        if (ok && n->pv.isc_ma != KP_I16_INVALID) {
-            fmt_dec(v, sizeof v, n->pv.isc_ma / 1000.0f, 2);
-            snprintf(b, sizeof b, "%s A", v);
-            gsum += n->pv.g_wm2;
-            gn++;
-            set_arc(ui.sol.arc[k], true, n->pv.g_wm2 > G_MAX ? G_MAX : n->pv.g_wm2, KH_COL_SUN);
-        } else {
-            snprintf(b, sizeof b, "---");
-            set_arc(ui.sol.arc[k], false, 0, KH_COL_SUN);
-        }
-        set_text(ui.sol.isc[k], b);
-        if (ok && n->pv.tc_c100 != KP_I16_INVALID) {
-            fmt_dec(v, sizeof v, n->pv.tc_c100 / 100.0f, 1);
-            snprintf(b, sizeof b, "%s °C", v);
-        } else {
-            snprintf(b, sizeof b, "--- °C");
-        }
-        set_text(ui.sol.tc[k], b);
-        if (ok && n->pv.tair_c100 != KP_I16_INVALID && isnan(air)) air = n->pv.tair_c100 / 100.0f;
-    }
-    if (gn) {
-        int g = (int)lroundf(gsum / gn);
-        fmt_int(b, sizeof b, g);
-        set_text(ui.sol.g, b);
-        set_text_color(ui.sol.g, KH_COL_TEXT, 0);
+    if (h >= 99.5f) { snprintf(b, n, "> 99 h"); return; }
+    int min = (int)lroundf(h * 60.0f);
+    if (min < 60) snprintf(b, n, "%d min", min);
+    else snprintf(b, n, "%d h %02d", min / 60, min % 60);
+}
+
+static void update_energy(const kh_model_t *m, const kh_local_t *loc, int64_t now)
+{
+    char b[48], h[16];
+    kh_energy_cfg_t cfg = {.batt_wh = loc->batt_wh, .pv_peak_w = loc->pv_peak_w, .level_w = loc->level_w};
+    kh_energy_t e;
+    kh_energy(m, now, &cfg, &e);
+
+    /* état de charge : vert, ambre sous 30 %, rouge sous 15 % */
+    lv_color_t sc = e.soc_pct < 15.0f ? KH_COL_RED : e.soc_pct < 30.0f ? KH_COL_AMBER : KH_COL_GREEN;
+    set_bar(ui.en.bar[0], e.batt_ok ? (int)lroundf(e.soc_pct * 10.0f) : 0);
+    set_bg_color(ui.en.bar[0], sc, LV_PART_INDICATOR);
+    if (e.batt_ok) snprintf(b, sizeof b, "%d %%", (int)lroundf(e.soc_pct));
+    else snprintf(b, sizeof b, "---");
+    set_text(ui.en.pct[0], b);
+    set_text_color(ui.en.pct[0], !e.batt_ok ? KH_COL_TEXT_DIM : e.soc_pct < 30.0f ? sc : KH_COL_TEXT, 0);
+
+    set_bar(ui.en.bar[1], e.solar_ok ? (int)lroundf(e.solar_pct * 10.0f) : 0);
+    if (e.solar_ok) snprintf(b, sizeof b, "%d %%", (int)lroundf(e.solar_pct));
+    else snprintf(b, sizeof b, "---");
+    set_text(ui.en.pct[1], b);
+
+    if (!e.batt_ok) {
+        snprintf(b, sizeof b, "--- de palier");
+    } else if (isinf(e.level_h)) {
+        snprintf(b, sizeof b, "palier illimité");
     } else {
-        set_text(ui.sol.g, "---");
-        set_text_color(ui.sol.g, KH_COL_TEXT_DIM, 0);
+        fmt_hours(h, sizeof h, e.level_h);
+        snprintf(b, sizeof b, "%s de palier", h);
     }
-    if (!isnan(air)) {
-        fmt_dec(v, sizeof v, air, 1);
-        snprintf(b, sizeof b, "Air extérieur %s °C", v);
+    set_text(ui.en.level, b);
+    set_text_color(ui.en.level, e.batt_ok && e.level_h < 0.5f ? KH_COL_RED : KH_COL_TEXT, 0);
+
+    if (!e.batt_ok) {
+        b[0] = 0;
+    } else if (e.full_h == 0) {
+        snprintf(b, sizeof b, "batterie pleine");
+    } else if (isnan(e.full_h)) {
+        snprintf(b, sizeof b, "pas de recharge solaire");
     } else {
-        snprintf(b, sizeof b, "Air extérieur --- °C");
+        fmt_hours(h, sizeof h, e.full_h);
+        snprintf(b, sizeof b, "pleine dans %s", h);
     }
-    set_text(ui.sol.air, b);
+    set_text(ui.en.full, b);
 }
 
 static void update_vib(const kh_model_t *m, int64_t now)
@@ -1069,7 +1073,7 @@ void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_
     /* seule la page visible est mise à jour ; les autres le seront quand on y arrivera */
     switch (kh_screen_page()) {
     case KH_PAGE_MOTORS: update_motors(m, loc, now); break;
-    case KH_PAGE_SOLAR: update_solar(m, now); break;
+    case KH_PAGE_ENERGY: update_energy(m, loc, now); break;
     case KH_PAGE_VIB: update_vib(m, now); break;
     case KH_PAGE_SYSTEM: update_system(m, loc, now); break;
     case KH_PAGE_WIFI: update_wifi(loc, now); break;
