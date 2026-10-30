@@ -43,7 +43,7 @@ static void dump(const char *dir, const char *name)
     fclose(f);
 }
 
-static void step(kh_model_t *m, int64_t *t, int ms, const kh_local_t *loc, const kh_knob_view_t *k)
+static void step(kh_model_t *m, int64_t *t, int ms, const kh_local_t *loc, const void *k)
 {
     for (int i = 0; i < ms / 100; i++) {
         *t += 100;
@@ -56,7 +56,8 @@ static void step(kh_model_t *m, int64_t *t, int ms, const kh_local_t *loc, const
         n = khn_unpack(buf, len, &h, g, KHN_MAX_FRAMES);
         kh_model_apply_packet(m, &h, g, n, -58, *t);
         lv_tick_inc(100);
-        kh_screen_update(m, loc, k, *t);
+        (void)k;
+        kh_screen_update(m, loc, *t);
         lv_timer_handler();
     }
 }
@@ -80,10 +81,10 @@ int main(int argc, char **argv)
     kh_model_t m;
     kh_model_init(&m);
     kh_local_t loc = {.thrust_ref_w = 3500, .batt_wh = 4480, .pv_peak_w = 980, .level_w = 2500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
-    kh_knob_view_t knob = {.valid = true, .angle_deg = 35.0f};
+    const void *knob = NULL;
     int64_t t = 0;
-    loc.throttle_pct = 80;
-    kh_demo_set_throttle(loc.throttle_pct);
+    kh_screen_set_throttle(80, 0);
+    kh_demo_set_throttle(80);
 
     step(&m, &t, 20000, &loc, &knob);
     const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_autonomie", "3_vibrations", "4_systeme", "5_wifi"};
@@ -111,7 +112,6 @@ int main(int argc, char **argv)
     loc.ota.last_check_ms = 19000;
     for (int p = 0; p < KH_PAGE_COUNT; p++) {
         kh_screen_show_page((kh_page_t)p, false);
-        knob.angle_deg = 35.0f + 30.0f * p;
         step(&m, &t, 500, &loc, &knob);
         dump(dir, names[p]);
     }
@@ -132,27 +132,26 @@ int main(int argc, char **argv)
     /* régime réduit au roulis : consigne 45 %, affichée pendant le réglage */
     kh_screen_show_page(KH_PAGE_MOTORS, false);
     step(&m, &t, 64500 - (int)t, &loc, &knob);
-    loc.throttle_pct = 45;
+    kh_screen_set_throttle(45, 0);
     kh_demo_set_throttle(45);
     step(&m, &t, 4000, &loc, &knob);
-    loc.throttle_adjust_ms = t - 300;
+    kh_screen_set_throttle(45, t);
     kh_model_ack_alarm(&m, t);
     step(&m, &t, 200, &loc, &knob);
     dump(dir, "1b_moteurs_croisiere");
     /* dépassement : consigne 112 % */
-    loc.throttle_pct = 112;
-    loc.throttle_adjust_ms = 0;
+    kh_screen_set_throttle(112, 0);
     kh_demo_set_throttle(112);
     step(&m, &t, 5000, &loc, &knob);
     dump(dir, "1c_moteurs_depassement");
-    loc.throttle_pct = 80;
+    kh_screen_set_throttle(80, 0);
     kh_demo_set_throttle(80);
     /* liaison perdue */
     kh_model_ack_alarm(&m, t);
     kh_screen_show_page(KH_PAGE_MOTORS, false);
     t += 5000;
     lv_tick_inc(5000);
-    kh_screen_update(&m, &loc, NULL, t);
+    kh_screen_update(&m, &loc, t);
     lv_timer_handler();
     dump(dir, "7_liaison_perdue");
     return 0;

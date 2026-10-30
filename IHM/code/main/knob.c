@@ -4,7 +4,8 @@
 #include <string.h>
 
 #define RAD2DEG 57.29578f
-#define LP_SLOW 0.04f   /* gravité : suit l'orientation, ignore les coups (≈ 0,25 s à 100 Hz) */
+#define LP_SLOW 0.04f   /* Z de référence pour la poussée (≈ 0,25 s à 100 Hz) */
+#define LP_ROLL 0.12f   /* X-Y pour le roulis : réactif (≈ 80 ms), le bruit est absorbé par la zone morte */
 #define LP_FAST 0.6f    /* Z « instantané », débarrassé du bruit */
 #define G_ROLL_MIN 0.6f /* composante de gravité dans le plan X-Y nécessaire au roulis [g] */
 
@@ -22,8 +23,8 @@ void knob_update(knob_t *k, float ax, float ay, float az, uint32_t dt_ms, knob_e
         k->ax = ax, k->ay = ay, k->az = az, k->zfast = az;
         k->init = true;
     }
-    k->ax += LP_SLOW * (ax - k->ax);
-    k->ay += LP_SLOW * (ay - k->ay);
+    k->ax += LP_ROLL * (ax - k->ax);
+    k->ay += LP_ROLL * (ay - k->ay);
     k->az += LP_SLOW * (az - k->az);
     k->zfast += LP_FAST * (az - k->zfast);
 

@@ -83,7 +83,7 @@ static knob_t s_knob;
 static SemaphoreHandle_t s_snap_mux;
 static kh_model_t s_snap_model;
 static kh_local_t s_snap_local;
-static bool s_snap_new;
+static volatile bool s_snap_new;
 static portMUX_TYPE s_in_lock = portMUX_INITIALIZER_UNLOCKED;
 static int s_in_pushes, s_in_clicks;
 /* Consigne de régime réglée au roulis [%] ; le roulis n'agit que sur la page principale, hors alerte */
@@ -127,6 +127,24 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 
 static void lvgl_tick_cb(void *arg) { lv_tick_inc(LVGL_TICK_MS); }
 
+/* Mesure de fluidité : temps de rendu moyen, images par seconde, journalisés toutes les 10 s */
+static void lvgl_monitor_cb(lv_disp_drv_t *drv, uint32_t time_ms, uint32_t px)
+{
+    static uint32_t n, sum_ms, max_ms, sum_px;
+    static int64_t t0;
+    n++, sum_ms += time_ms, sum_px += px;
+    if (time_ms > max_ms) max_ms = time_ms;
+    int64_t t = esp_timer_get_time() / 1000;
+    if (!t0) t0 = t;
+    if (t - t0 >= 10000) {
+        ESP_LOGI(TAG, "affichage : %lu images/s, rendu moyen %lu ms (max %lu), %lu px/image",
+                 (unsigned long)(n * 1000 / (t - t0)), (unsigned long)(sum_ms / n), (unsigned long)max_ms,
+                 (unsigned long)(sum_px / n));
+        n = sum_ms = max_ms = sum_px = 0;
+        t0 = t;
+    }
+}
+
 static void lvgl_task(void *arg)
 {
     static kh_model_t model;
@@ -142,26 +160,33 @@ static void lvgl_task(void *arg)
         if (clicks) kh_screen_button();
         s_roll_enabled = kh_screen_page() == KH_PAGE_MOTORS && !kh_screen_alarm_visible();
 
+        /* consigne : directement depuis la tâche des gestes, à chaque tour (repère sans retard) */
+        portENTER_CRITICAL(&s_in_lock);
+        float thr = s_throttle;
+        int64_t thr_ms = s_throttle_ms;
+        portEXIT_CRITICAL(&s_in_lock);
+        kh_screen_set_throttle(thr, thr_ms);
+
+        /* données : dès qu'un nouvel instantané arrive (20 Hz), sinon toutes les 250 ms pour
+         * faire vieillir l'affichage (« --- ») si plus rien n'arrive */
         int64_t t = esp_timer_get_time() / 1000;
-        if (t - last >= 100) {
+        bool fresh = false;
+        if (s_snap_new && xSemaphoreTake(s_snap_mux, 0) == pdTRUE) { /* jamais bloquant */
+            if (s_snap_new) {
+                model = s_snap_model;
+                local = s_snap_local;
+                s_snap_new = false;
+                have = fresh = true;
+            }
+            xSemaphoreGive(s_snap_mux);
+        }
+        if (have && (fresh || t - last >= 250)) {
             last = t;
-            if (xSemaphoreTake(s_snap_mux, 0) == pdTRUE) { /* jamais bloquant */
-                if (s_snap_new) {
-                    model = s_snap_model;
-                    local = s_snap_local;
-                    s_snap_new = false;
-                    have = true;
-                }
-                xSemaphoreGive(s_snap_mux);
-            }
-            if (have) {
-                kh_knob_view_t knob = {0};
-                kh_screen_update(&model, &local, &knob, t);
-            }
+            kh_screen_update(&model, &local, t);
         }
 
         uint32_t delay = lv_timer_handler();
-        if (delay > 20) delay = 20; /* revenir assez souvent pour les mises à jour et la molette */
+        if (delay > 10) delay = 10; /* revenir souvent : gestes et données sans attente */
         if (delay < LVGL_TASK_MIN_DELAY_MS) delay = LVGL_TASK_MIN_DELAY_MS;
         vTaskDelay(pdMS_TO_TICKS(delay));
     }
@@ -317,13 +342,13 @@ static void on_rx(const khn_hdr_t *h, const khn_frame_t *f, int n, int8_t rssi)
 /* ══════════════════════════════════════════════
  *  Tâches
  * ══════════════════════════════════════════════ */
-/* 10 Hz : simulation éventuelle, puis rafraîchissement de l'écran */
+/* 20 Hz : simulation éventuelle, puis instantané pour l'écran */
 static void ui_task(void *arg)
 {
     TickType_t last = xTaskGetTickCount();
     uint16_t seq = 0;
     for (;;) {
-        vTaskDelayUntil(&last, pdMS_TO_TICKS(100));
+        vTaskDelayUntil(&last, pdMS_TO_TICKS(50)); /* 20 Hz : la jauge suit la puissance sans à-coups */
         int64_t t = now_ms();
         kh_model_t snap;
         xSemaphoreTake(s_model_mux, portMAX_DELAY);
@@ -340,15 +365,12 @@ static void ui_task(void *arg)
         /* consigne de régime : vers la simulation, et vers le maître (5 Hz au plus, et à chaque changement) */
         portENTER_CRITICAL(&s_in_lock);
         float thr = s_throttle;
-        int64_t thr_ms = s_throttle_ms;
         portEXIT_CRITICAL(&s_in_lock);
-        s_local.throttle_pct = thr;
-        s_local.throttle_adjust_ms = thr_ms;
         kh_demo_set_throttle(thr);
         static uint32_t sent_pm = UINT32_MAX;
         static int64_t sent_t;
         uint32_t pm = (uint32_t)lroundf(thr * 10.0f);
-        if (pm != sent_pm && t - sent_t >= 200 && s_local.bound && !s_local.demo && !kh_wifi_scanning()) {
+        if (pm != sent_pm && t - sent_t >= 100 && s_local.bound && !s_local.demo && !kh_wifi_scanning()) {
             if (khepri_link_send_cmd(KHN_CMD_THROTTLE, pm)) sent_pm = pm;
             sent_t = t;
         }
@@ -497,6 +519,7 @@ void app_main(void)
     disp_drv.ver_res = LCD_H;
     disp_drv.flush_cb = lvgl_flush_cb;
     disp_drv.rounder_cb = lvgl_rounder_cb;
+    disp_drv.monitor_cb = lvgl_monitor_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel;
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);

@@ -27,7 +27,6 @@ static struct {
     lv_obj_t *scr, *tv, *tile[KH_PAGE_COUNT];
     lv_obj_t *dots[KH_PAGE_COUNT];
     lv_obj_t *status;   /* liaison / simulation, en haut */
-    lv_obj_t *knob_arc; /* indicateur de molette sur le pourtour */
 
     struct {
         lv_obj_t *ring, *over, *cmd, *pct, *cmd_txt, *vib[2];
@@ -595,7 +594,11 @@ static void update_wifi(const kh_local_t *loc, int64_t now)
 }
 
 /* ------------------------------------------------------------------ alerte */
-static void alarm_ring_anim(void *obj, int32_t v) { lv_obj_set_style_arc_opa(obj, (lv_opa_t)v, LV_PART_MAIN); }
+/* clignotement franc (2 états) : l'anneau n'est redessiné que 2 fois par période, pas à chaque image */
+static void alarm_ring_anim(void *obj, int32_t v)
+{
+    if (lv_obj_get_style_arc_opa(obj, LV_PART_MAIN) != (lv_opa_t)v) lv_obj_set_style_arc_opa(obj, (lv_opa_t)v, LV_PART_MAIN);
+}
 
 /* pulsation de l'anneau, seulement pendant que l'alerte est affichée */
 static void alarm_ring_start(void)
@@ -605,6 +608,7 @@ static void alarm_ring_start(void)
     lv_anim_set_var(&a, ui.al.ring);
     lv_anim_set_exec_cb(&a, alarm_ring_anim);
     lv_anim_set_values(&a, LV_OPA_40, LV_OPA_COVER);
+    lv_anim_set_path_cb(&a, lv_anim_path_step);
     lv_anim_set_time(&a, 450);
     lv_anim_set_playback_time(&a, 450);
     lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
@@ -690,18 +694,6 @@ static void build_overlay(void)
     ui.status = label(ui.scr, &kh_font_14, KH_COL_TEXT_DIM, "");
     lv_obj_align(ui.status, LV_ALIGN_TOP_MID, 0, 36);
 
-    lv_obj_t *k = lv_arc_create(top);
-    lv_obj_set_size(k, 462, 462);
-    lv_obj_center(k);
-    lv_obj_remove_style(k, NULL, LV_PART_KNOB);
-    lv_obj_remove_style(k, NULL, LV_PART_MAIN);
-    lv_obj_clear_flag(k, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_arc_width(k, 6, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_color(k, KH_COL_TEXT_MID, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_rounded(k, true, LV_PART_INDICATOR);
-    lv_arc_set_mode(k, LV_ARC_MODE_NORMAL);
-    lv_obj_add_flag(k, LV_OBJ_FLAG_HIDDEN);
-    ui.knob_arc = k;
 }
 
 void kh_screen_init(const kh_screen_cb_t *cb)
@@ -751,14 +743,6 @@ void kh_screen_show_page(kh_page_t p, bool anim)
     tv_cb(NULL);
 }
 
-void kh_screen_knob_step(int steps)
-{
-    if (!steps || !lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN)) return; /* l'alerte n'est pas acquittée à la molette */
-    int p = ((int)kh_screen_page() + steps) % KH_PAGE_COUNT;
-    if (p < 0) p += KH_PAGE_COUNT;
-    kh_screen_show_page((kh_page_t)p, true);
-}
-
 /* Poussée de l'écran vers l'arrière (futur appui du bouton) : acquitte l'alerte, sinon page suivante */
 void kh_screen_push(void)
 {
@@ -766,7 +750,8 @@ void kh_screen_push(void)
         if (s_cb.on_ack) s_cb.on_ack();
         return;
     }
-    kh_screen_knob_step(1);
+    /* changement de page instantané : une seule image à dessiner au lieu d'un glissement */
+    kh_screen_show_page((kh_page_t)(((int)kh_screen_page() + 1) % KH_PAGE_COUNT), false);
 }
 
 bool kh_screen_alarm_visible(void) { return !lv_obj_has_flag(ui.al.root, LV_OBJ_FLAG_HIDDEN); }
@@ -804,6 +789,39 @@ static void set_arc(lv_obj_t *a, bool ok, int v, lv_color_t c)
     set_arc_color(a, c, LV_PART_INDICATOR);
 }
 
+/* Consigne de régime : fournie directement par la tâche d'affichage à chaque tour de boucle,
+ * sans attendre l'instantané des données, pour que le repère suive le geste sans retard. */
+static float s_thr = -1.0f;
+static int64_t s_thr_ms;
+
+static void update_throttle(int64_t now)
+{
+    if (s_thr < 0) return;
+    /* texte « consigne NN % » : seulement pendant le réglage, effacé 2 s après */
+    if (!(s_thr_ms && now - s_thr_ms < 2000)) set_text(ui.mot.cmd_txt, ""); /* sans effet si déjà vide */
+}
+
+void kh_screen_set_throttle(float pct, int64_t adjust_ms)
+{
+    if (pct == s_thr && adjust_ms == s_thr_ms) return;
+    bool moved = pct != s_thr;
+    s_thr = pct;
+    s_thr_ms = adjust_ms;
+    if (adjust_ms) {
+        char b[32];
+        snprintf(b, sizeof b, "consigne %d %%", (int)lroundf(pct));
+        set_text(ui.mot.cmd_txt, b);
+    }
+    if (!moved) return;
+    float c = pct < 0 ? 0 : pct;
+    float cmax = 100.0f * 360.0f / RING_SPAN;
+    if (c > cmax) c = cmax;
+    float a = (RING_START + c / 100.0f * RING_SPAN) * 0.0174533f; /* 0 = droite, sens horaire */
+    lv_coord_t x = (lv_coord_t)lroundf(CMD_R * cosf(a)), y = (lv_coord_t)lroundf(CMD_R * sinf(a));
+    if (lv_obj_get_x_aligned(ui.mot.cmd) != x || lv_obj_get_y_aligned(ui.mot.cmd) != y)
+        lv_obj_align(ui.mot.cmd, LV_ALIGN_CENTER, x, y);
+}
+
 static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t now)
 {
     char b[48];
@@ -823,19 +841,6 @@ static void update_motors(const kh_model_t *m, const kh_local_t *loc, int64_t no
     set_text(ui.mot.pct, b);
     set_text_color(ui.mot.pct, !ok ? KH_COL_TEXT_DIM : pm > 1000 ? KH_COL_AMBER : KH_COL_TEXT, 0);
 
-    /* repère de consigne sur la même échelle que la jauge */
-    float c = loc->throttle_pct;
-    if (c < 0) c = 0;
-    float cmax = 100.0f * 360.0f / RING_SPAN;
-    if (c > cmax) c = cmax;
-    float a = (RING_START + c / 100.0f * RING_SPAN) * 0.0174533f; /* 0 = droite, sens horaire */
-    lv_coord_t x = (lv_coord_t)lroundf(CMD_R * cosf(a)), y = (lv_coord_t)lroundf(CMD_R * sinf(a));
-    if (lv_obj_get_x_aligned(ui.mot.cmd) != x || lv_obj_get_y_aligned(ui.mot.cmd) != y)
-        lv_obj_align(ui.mot.cmd, LV_ALIGN_CENTER, x, y);
-    /* la valeur de consigne s'affiche seulement pendant qu'on la règle */
-    if (loc->throttle_adjust_ms && now - loc->throttle_adjust_ms < 2000) snprintf(b, sizeof b, "consigne %d %%", (int)lroundf(loc->throttle_pct));
-    else b[0] = 0;
-    set_text(ui.mot.cmd_txt, b);
 
     /* on ne signale que les problèmes */
     for (int k = 0; k < 2; k++) {
@@ -1061,13 +1066,8 @@ static void update_alarm(const kh_model_t *m)
     }
 }
 
-static void update_knob(const kh_knob_view_t *k)
-{
-    (void)k; /* la molette règle la consigne : son repère est sur la page principale */
-    if (!lv_obj_has_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN)) lv_obj_add_flag(ui.knob_arc, LV_OBJ_FLAG_HIDDEN);
-}
 
-void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_view_t *knob, int64_t now)
+void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, int64_t now)
 {
     update_status(m, loc, now);
     /* seule la page visible est mise à jour ; les autres le seront quand on y arrivera */
@@ -1080,5 +1080,5 @@ void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_
     default: break;
     }
     update_alarm(m);
-    update_knob(knob);
+    update_throttle(now);
 }

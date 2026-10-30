@@ -201,11 +201,11 @@ int kh_demo_frames(int64_t now, khn_frame_t *out, int max)
     kp_sync_pack(d, &s);
     put(&out[n++], KP_ID_SYNC, d);
 
-    /* Puissance : suit la consigne (premier ordre, ~1,5 s) ; régime ≈ racine cubique de la puissance */
+    /* Puissance : suit la consigne (premier ordre, ~0,5 s) ; régime ≈ racine cubique de la puissance */
     float dt = s_demo_t ? (float)(now - s_demo_t) : 0.0f;
     s_demo_t = now;
     float target = s_demo_cmd / 100.0f * DEMO_REF_W;
-    float a1 = dt / 1500.0f;
+    float a1 = dt / 500.0f; /* les moteurs répondent en ≈ 0,5 s */
     s_demo_p += (target - s_demo_p) * (a1 > 1.0f ? 1.0f : a1);
     float load = s_demo_p / DEMO_REF_W;
     float rpm[2];

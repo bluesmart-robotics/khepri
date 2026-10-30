@@ -43,12 +43,6 @@ extern "C" {
 
 typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_ENERGY, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_WIFI, KH_PAGE_COUNT } kh_page_t;
 
-/* État de la molette, pour l'indicateur sur le pourtour de l'écran */
-typedef struct {
-    bool valid;      /* l'entrée est utilisable (carte assez inclinée, ou mode inclinaison) */
-    bool tilt_mode;  /* carte à plat : on navigue en l'inclinant (manette) */
-    float angle_deg; /* position absolue de la molette, 0 = haut */
-} kh_knob_view_t;
 
 /* Informations locales à l'écran (pas transmises par la radio) */
 typedef struct {
@@ -64,8 +58,6 @@ typedef struct {
     float batt_wh;           /* énergie utile batterie pleine (autonomie) */
     float pv_peak_w;         /* puissance solaire crête installée */
     float level_w;           /* puissance électrique du vol en palier */
-    float throttle_pct;      /* consigne de régime [% de thrust_ref_w] */
-    int64_t throttle_adjust_ms; /* dernier réglage de la consigne (affichage temporaire) */
     kh_wifi_status_t wifi;  /* page WI-FI */
     kh_ota_status_t ota;    /* mises à jour depuis GitHub */
 } kh_local_t;
@@ -84,9 +76,11 @@ typedef struct {
 
 void kh_screen_init(const kh_screen_cb_t *cb);
 /* À appeler sous verrou LVGL, ~10 Hz */
-void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, const kh_knob_view_t *knob, int64_t now_ms);
+void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, int64_t now_ms);
+/* Consigne de régime [%] et instant du dernier réglage (0 = pas de réglage en cours) ; appel bon marché,
+ * à faire à chaque tour de la boucle d'affichage */
+void kh_screen_set_throttle(float pct, int64_t adjust_ms);
 /* Molette : un cran (+1 / −1) → page suivante / précédente ; sur l'alerte, un cran l'acquitte */
-void kh_screen_knob_step(int steps);
 /* Petit coup vers l'arrière : acquitte l'alerte affichée, sinon page suivante */
 void kh_screen_push(void);
 bool kh_screen_alarm_visible(void);

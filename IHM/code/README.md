@@ -38,6 +38,18 @@ reste vide si la liaison est bonne et n'indique que LIAISON PERDUE, NON APPAIRÉ
   5 Hz au plus). L'écran doit être tenu à peu près debout pour lire le roulis. En vol, les
   accélérations de l'avion perturbent ces gestes : c'est une solution d'atelier.
 
+## Fluidité
+
+- Une seule tâche touche LVGL (cœur 1, priorité 5) ; elle revient au moins toutes les 10 ms.
+- La consigne de régime va directement de la tâche des gestes à l'affichage, à chaque tour de
+  boucle : le repère suit le roulis sans attendre les données.
+- Les données sont rafraîchies à 20 Hz, et l'écran n'est mis à jour qu'à l'arrivée d'un nouvel
+  instantané (ou toutes les 250 ms pour faire vieillir l'affichage). Seule la page visible est
+  recalculée, et un widget n'est touché que si sa valeur change.
+- Le petit coup vers l'arrière change de page sans animation (une seule image à dessiner) ;
+  l'alerte clignote en deux états au lieu d'un fondu redessiné à chaque image.
+- Le journal série donne toutes les 10 s : images/s, temps de rendu moyen et maximal.
+
 ## Wi-Fi et mises à jour OTA
 
 **Connexion.** Page WI-FI : la liste se remplit à l'arrivée sur la page (CHERCHER pour relancer).
