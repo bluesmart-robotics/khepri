@@ -358,7 +358,10 @@ static void ui_task(void *arg)
             khn_hdr_t h = {.version = KHN_VERSION, .type = KHN_T_CAN_BATCH, .seq = seq++, .count = (uint8_t)n,
                            .flags = KHN_HF_DEMO};
             kh_model_apply_packet(&s_model, &h, fr, n, -40, t);
+            /* le rond en simulation sert de maître aux autres écrans liés (écran énergie 1.64) */
+            if (seq & 1) khepri_link_relay_send(fr, n);
         }
+        khepri_link_relay_enable(s_local.demo);
         snap = s_model;
         xSemaphoreGive(s_model_mux);
 
@@ -562,6 +565,7 @@ void app_main(void)
     s_local.pv_peak_w = CONFIG_KHEPRI_PV_PEAK_W;
     s_local.level_w = CONFIG_KHEPRI_LEVEL_POWER_W;
     khepri_link_init(on_rx);
+    khepri_link_relay_init();
     /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
     kh_wifi_init();
     kh_ota_init(ota_can_update);

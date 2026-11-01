@@ -1,0 +1,12 @@
+menu "KHEPRI - bus I2C de la carte"
+    config KH_I2C_SDA
+        int "Broche SDA"
+        default 15
+        help
+            15 sur la 1.75 ronde, 47 sur la 1.64 rectangulaire.
+    config KH_I2C_SCL
+        int "Broche SCL"
+        default 14
+        help
+            14 sur la 1.75 ronde, 48 sur la 1.64 rectangulaire.
+endmenu

@@ -1,0 +1,65 @@
+menu "KHEPRI - commun aux ecrans (liaison, avion, mises a jour)"
+
+    config KHEPRI_ESPNOW_CHANNEL
+        int "Canal Wi-Fi de la liaison ESP-NOW"
+        range 1 13
+        default 1
+        help
+            Doit etre identique sur les ecrans et sur le maitre (ou la passerelle de simulation).
+
+    config KHEPRI_THRUST_REF_W
+        int "Puissance electrique totale (W) affichee comme 100 % de poussee"
+        range 500 20000
+        default 3500
+        help
+            Somme M0 + M1 de la puissance de bus (U x I) mesuree par le BSR Drive
+            (trame CANSimple Get_Bus_Voltage_Current, 0x017). L'affichage peut depasser 100 %.
+
+    config KHEPRI_BATT_WH
+        int "Autonomie : energie utile de la batterie pleine (Wh)"
+        range 100 20000
+        default 4480
+        help
+            Utilisee si le BMS ne donne que l'etat de charge. 2 x 7S5P EVE LFP = 4480 Wh.
+
+    config KHEPRI_PV_PEAK_W
+        int "Autonomie : puissance solaire crete installee (W)"
+        range 50 5000
+        default 980
+        help
+            100 % de la jauge solaire, si le maitre ne la transmet pas. 288 cellules Maxeon Gen III.
+
+    config KHEPRI_LEVEL_POWER_W
+        int "Autonomie : puissance electrique du vol en palier (W)"
+        range 200 10000
+        default 2500
+        help
+            Heures de palier = energie restante / (cette puissance - production solaire).
+            Valeur provisoire, a recaler sur les essais.
+
+    config KHEPRI_ODRV_NODE_M0
+        int "Noeud CANSimple du BSR Drive pour le moteur M0"
+        range 0 63
+        default 0
+
+    config KHEPRI_ODRV_NODE_M1
+        int "Noeud CANSimple du BSR Drive pour le moteur M1"
+        range 0 63
+        default 1
+
+    config KHEPRI_OTA_MANIFEST_URL
+        string "OTA : adresse du manifeste version.json de cet ecran"
+        default "https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/ecran_rond/version.json"
+
+    config KHEPRI_OTA_URL_FIELD
+        string "OTA : champ du manifeste qui donne l'image de cette carte"
+        default "url"
+        help
+            Un manifeste peut servir plusieurs revisions de carte (url_V1, url_V1.1...).
+
+    config KHEPRI_OTA_PERIOD_S
+        int "OTA : periode de verification (s)"
+        range 30 86400
+        default 60
+
+endmenu

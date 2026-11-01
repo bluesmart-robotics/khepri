@@ -1,9 +1,11 @@
 /*
  * kh_ota.h — mises à jour automatiques depuis GitHub.
  *
- * Quand l'écran est connecté à un réseau Wi-Fi, il lit toutes les minutes le manifeste
- *   https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/version.json
- *   { "version": "1.1.0", "url": "https://.../khepri_ecran_app.bin", "size": 1234567 }
+ * Quand l'écran est connecté à un réseau Wi-Fi, il lit toutes les minutes SON manifeste
+ * (KHEPRI_OTA_MANIFEST_URL : release/ecran_rond/version.json ou release/ecran_energie/version.json)
+ *   { "version": "1.5.0", "url": "https://.../image.bin" }        un seul type de carte
+ *   { "version": "1.0.0", "url_V1": "…", "url_V1.1": "…" }        un champ par révision de carte
+ * Le champ lu est KHEPRI_OTA_URL_FIELD.
  * Si "version" diffère de la version du firmware en cours (PROJECT_VER), il télécharge l'image en
  * HTTPS (certificats racine intégrés), l'écrit dans l'autre partition OTA et redémarre dessus.
  * La nouvelle image se valide après 20 s de fonctionnement ; sinon le chargeur revient à l'ancienne.

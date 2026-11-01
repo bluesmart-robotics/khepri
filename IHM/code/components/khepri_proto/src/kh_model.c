@@ -152,6 +152,9 @@ void kh_energy(const kh_model_t *m, int64_t now, const kh_energy_cfg_t *cfg, kh_
     memset(o, 0, sizeof *o);
     o->level_h = NAN;
     o->full_h = NAN;
+    o->motor_w = NAN;
+    float pm;
+    if (kh_power_total(m, now, &pm)) o->motor_w = pm;
     o->solar_ok = kh_fresh(m->t_solar, now, KH_STALE_MS);
     if (o->solar_ok) {
         o->solar_w = (float)m->solar.p_w[0] + (float)m->solar.p_w[1];
@@ -160,11 +163,25 @@ void kh_energy(const kh_model_t *m, int64_t now, const kh_energy_cfg_t *cfg, kh_
         if (o->solar_pct > 100.0f) o->solar_pct = 100.0f;
     }
     o->batt_ok = kh_fresh(m->t_batt, now, KH_STALE_MS) && m->batt.soc_pm <= 1000;
-    if (!o->batt_ok) return;
+    if (!o->batt_ok) {
+        /* sans BMS, le bilan se déduit du soleil et des moteurs */
+        if (o->solar_ok && !isnan(o->motor_w)) {
+            o->net_ok = true;
+            o->net_w = o->solar_w - o->motor_w;
+        }
+        return;
+    }
+    /* bilan mesuré à la batterie : tient compte de toutes les charges */
+    o->batt_v = m->batt.v_cv / 100.0f;
+    o->batt_a = m->batt.i_da / 10.0f;
+    o->net_ok = true;
+    o->net_w = o->batt_v * o->batt_a;
     o->soc_pct = m->batt.soc_pm / 10.0f;
     /* énergie restante : celle du BMS si elle est donnée, sinon SOC × capacité */
     float e = m->batt.e_wh ? (float)m->batt.e_wh : o->soc_pct / 100.0f * cfg->batt_wh;
     float full = o->soc_pct >= 5.0f && m->batt.e_wh ? e * 100.0f / o->soc_pct : cfg->batt_wh;
+    o->batt_wh = e;
+    o->batt_ah = o->batt_v > 1.0f ? e / o->batt_v : 0;
     float sol = o->solar_ok ? o->solar_w : 0;
     float need = cfg->level_w - sol; /* ce que la batterie doit fournir en palier */
     o->level_h = need <= 0 ? INFINITY : e / need;

@@ -1,8 +1,14 @@
-build/
-sdkconfig
-sdkconfig.old
-dependencies.lock
-gateway_sim/build/
-gateway_sim/sdkconfig
-gateway_sim/sdkconfig.old
-gateway_sim/dependencies.lock
+# compilations ESP-IDF (tous les projets)
+**/build/
+**/build_*/
+**/sdkconfig
+**/sdkconfig.old
+**/dependencies.lock
+**/managed_components/
+# aperçus et tests PC
+tools/preview/obj/
+tools/preview/liblv.a
+tools/preview/preview
+tools/preview/preview_energie
+tests/test_proto
+tests/test_knob

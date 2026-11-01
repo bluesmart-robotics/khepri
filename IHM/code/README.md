@@ -1,168 +1,116 @@
-# KHÉPRI — écran pilote (Waveshare ESP32-S3-Touch-AMOLED-1.75)
+# KHÉPRI — écrans pilote (ESP-IDF 5.5, LVGL 8.3)
 
-Firmware ESP-IDF 5.5 de l'écran rond 1,75" (466×466, CO5300) qui affiche au pilote l'état de la
-motorisation, de la cellule solaire témoin et des vibrations des deux chaussettes. Il reprend
-l'architecture de `bsr_screen` (télécommande BSR sur AMOLED 1,64") : LVGL 8.3 en pages, liaison
-ESP-NOW avec appairage par bouton et commandes 32 bits.
+Deux écrans côte à côte sur le tableau de bord, chacun avec un rôle fixe :
 
-![Aperçus](docs/apercus/planche.png)
+| Écran | Carte | Rôle | Dossier |
+|---|---|---|---|
+| **Rond 1,75"** | Waveshare ESP32-S3-Touch-AMOLED-1.75 (466×466) | commande et effet : jauge de régime, consigne, alertes | [`ecran_rond_1.75/`](ecran_rond_1.75/) |
+| **Rectangulaire 1,64"** | Waveshare ESP32-S3-Touch-AMOLED-1.64 (280×456, portrait) | énergie : batterie, solaire, bilan | [`ecran_energie_1.64/`](ecran_energie_1.64/) |
 
-## Pages
+Forme différente = nature différente : rond = moteur, rectangle = énergie. Pas de changement de
+page en vol, mêmes couleurs sur les deux écrans, rien d'affiché quand tout va bien.
 
-| Page | Contenu |
+![Les deux écrans](docs/apercus/cote_a_cote.png)
+
+Les deux écrans reçoivent la même télémétrie du maître (ESP-NOW) et se mettent à jour seuls
+depuis ce dépôt GitHub quand ils sont connectés au Wi-Fi.
+
+## Arborescence
+
+```
+ecran_rond_1.75/      projet ESP-IDF de l'écran rond (main.c, khepri_screen.c, gestes knob.c…)
+ecran_energie_1.64/   projet ESP-IDF de l'écran énergie (main.c, energie_screen.c), cartes V1 / V1.1
+components/           commun aux deux écrans et à la passerelle
+  kh_common/          liaison ESP-NOW (khepri_link), Wi-Fi (kh_wifi), mises à jour OTA (kh_ota)
+  kh_fonts/           polices Montserrat 14-64 px + thème de couleurs (kh_theme.h)
+  khepri_proto/       protocole ESP-NOW, trames CAN, modèle, calcul d'autonomie, simulation (C pur)
+  lvgl/, esp-now/, cmake_utilities/, esp_lcd_sh8601/, i2c_bsp/, qmi8658/
+gateway_sim/          passerelle de simulation (rôle du maître) + khepri_relay à copier dans le maître
+release/              binaires publiés et manifestes OTA (voir ci-dessous)
+tools/                publier_maj.py, aperçus PC (tools/preview)
+tests/                tests PC (protocole, modèle, autonomie, gestes)
+docs/apercus/         images des deux écrans (rond/, energie/, cote_a_cote.png)
+```
+
+## Premier flash par USB (une seule fois par écran)
+
+| Écran | Fichier à flasher à l'adresse 0x0 |
 |---|---|
-| Principale | Une seule jauge verte sur le pourtour, sens horaire : 0 % à 20° après le bas, 100 % à 45° avant le bas (100 % = 3,5 kW électriques M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, la jauge continue en ambre jusqu'à ≈ 122 %. Au centre, le pourcentage seul. Pastille blanche = consigne de régime ; « consigne NN % » s'affiche 2 s pendant le réglage. Les chaussettes n'apparaissent qu'en cas de vibration anormale |
-| Autonomie | Deux barres verticales (rien de circulaire, pour ne pas confondre avec le moteur) : à gauche l'état de charge de la batterie (vert, ambre < 30 %, rouge < 15 %), à droite la production solaire (vide = rien, pleine = puissance crête installée, 980 W par défaut). Dessous : « X h de palier » = énergie restante / (puissance de palier − production solaire), « palier illimité » si le soleil suffit ; « pleine dans X h » = énergie manquante / production. Données : trames 0x680 (batterie) et 0x681 (solaire) émises par le maître |
-| VIBRATIONS | RMS vectoriel par chaussette, repères 3 000 / 6 000 mg, amplitudes 1P M0 · M1 |
-| SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité |
-| WI-FI | Réseaux à portée (balayage), saisie du mot de passe au clavier tactile, réseau mémorisé, OUBLIER ; version et état des mises à jour |
-| Alerte | Plein écran rouge sur trame ALARME niveau 2 ; acquittée au toucher, par une poussée ou au bouton PWR, puis 30 s de silence pour cette chaussette |
-
-Une donnée plus vieille que 3 s s'affiche `---`. Principe : on ne dit rien quand tout va bien. Le bandeau du haut
-reste vide si la liaison est bonne et n'indique que LIAISON PERDUE, NON APPAIRÉ ou SIMULATION.
-
-## Entrées
-
-- **Tactile** : glisser entre les pages, boutons de la page SYSTÈME.
-- **Bouton PWR** (TCA9554 P4) : acquitte l'alerte, sinon revient à MOTEURS. Un appui long reste
-  géré par l'AXP2101 (extinction).
-- **Gestes à l'accéléromètre QMI8658** (`main/knob.c`, 100 Hz), en attendant le bouton haptique
-  (moteur BLDC). Repère, écran face à soi : Z sort de l'écran vers le pilote, X vers le haut, Y vers
-  la droite.
-  - **petit coup vers l'arrière** (l'écran part vers −Z) → page suivante, ou acquittement de
-    l'alerte affichée ; simule l'appui du futur bouton. Seuil 120 mg, 0,6 s de temps mort ;
-  - **rouler l'écran vers la droite / la gauche** (rotation dans son plan, autour de Z) → la consigne
-    de régime monte / descend, de 0 à 122 %. Zone morte 3°, vitesse croissante jusqu'à 40 %/s à 13° ;
-    revenir droit garde la consigne. Actif seulement sur la page principale, hors alerte.
-  La consigne pilote la simulation et part vers le maître (commande `KHN_CMD_THROTTLE`, ‰ 0-1220,
-  5 Hz au plus). L'écran doit être tenu à peu près debout pour lire le roulis. En vol, les
-  accélérations de l'avion perturbent ces gestes : c'est une solution d'atelier.
-
-## Fluidité
-
-- Une seule tâche touche LVGL (cœur 1, priorité 5) ; elle revient au moins toutes les 10 ms.
-- La consigne de régime va directement de la tâche des gestes à l'affichage, à chaque tour de
-  boucle : le repère suit le roulis sans attendre les données.
-- Les données sont rafraîchies à 20 Hz, et l'écran n'est mis à jour qu'à l'arrivée d'un nouvel
-  instantané (ou toutes les 250 ms pour faire vieillir l'affichage). Seule la page visible est
-  recalculée, et un widget n'est touché que si sa valeur change.
-- Le petit coup vers l'arrière change de page sans animation (une seule image à dessiner) ;
-  l'alerte clignote en deux états au lieu d'un fondu redessiné à chaque image.
-- Le journal série donne toutes les 10 s : images/s, temps de rendu moyen et maximal.
-
-## Wi-Fi et mises à jour OTA
-
-**Connexion.** Page WI-FI : la liste se remplit à l'arrivée sur la page (CHERCHER pour relancer).
-Toucher un réseau ouvre le clavier ; ✓ connecte, l'icône clavier annule. Le réseau est mémorisé
-en NVS et rejoint à chaque démarrage. OUBLIER efface les identifiants.
-
-**Mises à jour automatiques.** Quand l'écran est connecté, il lit toutes les 60 s
-`https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/version.json`.
-Si la version annoncée diffère de la sienne (`PROJECT_VER`), il télécharge
-`release/khepri_ecran_app.bin` en HTTPS, l'écrit dans l'autre partition (ota_0 / ota_1) et
-redémarre. Si la nouvelle version ne tient pas 20 s sans planter, le chargeur revient à l'ancienne.
-
-- Jamais pendant que les moteurs tournent ou qu'une alerte est affichée : la mise à jour attend.
-- Le CDN de GitHub garde les fichiers jusqu'à 5 min : une publication est vue en 1 à 6 min.
-- Toucher la ligne de version force une vérification immédiate.
-- Le dépôt est public et l'image n'est pas signée : quiconque peut pousser sur `main` peut
-  installer un firmware sur les écrans connectés. À verrouiller (branche protégée, Secure Boot)
-  avant un usage en vol.
-
-**Publier une version.**
+| Rond 1,75" | `release/ecran_rond/khepri_ecran_rond_1.75_0x0.bin` |
+| 1,64" révision V1 (sérigraphie en haut) | `release/ecran_energie/khepri_ecran_energie_1.64_V1_0x0.bin` |
+| 1,64" révision V1.1 (sérigraphie à droite) | `release/ecran_energie/khepri_ecran_energie_1.64_V1.1_0x0.bin` |
+| Passerelle de simulation (tout ESP32-S3) | `release/passerelle/khepri_passerelle_simulation_0x0.bin` |
 
 ```
-# 1. augmenter set(PROJECT_VER "...") dans IHM/code/CMakeLists.txt
-idf.py build
-python tools/publier_maj.py        # copie l'image, régénère release/version.json et le .bin complet
-git add release CMakeLists.txt && git commit -m "écran v1.1.1" && git push
+python -m esptool --chip esp32s3 -p COM11 -b 460800 write-flash 0x0 <fichier>
 ```
 
-**Wi-Fi et ESP-NOW partagent la radio.** Connecté à un point d'accès, l'écran passe sur le canal
-de ce point d'accès. Si ce n'est pas le canal du maître (1 par défaut), la liaison avec l'avion
-est coupée, et la page WI-FI l'indique. Le Wi-Fi est prévu pour le sol.
+ou https://espressif.github.io/esptool-js/ (Chrome/Edge). Le flash USB écrit aussi la table de
+partitions OTA ; ensuite tout passe par le Wi-Fi. Un écran rond déjà en 1.4.1 n'a pas besoin du
+flash USB : il passe tout seul en 1.5.0 (l'ancien manifeste `release/version.json` reste tenu à
+jour et pointe vers la nouvelle image).
+
+## Mises à jour OTA
+
+Connecté au Wi-Fi, chaque écran lit **son** manifeste toutes les 60 s :
+
+| Écran | Manifeste | Champ de l'image |
+|---|---|---|
+| Rond | `release/ecran_rond/version.json` | `url` |
+| 1,64" V1 / V1.1 | `release/ecran_energie/version.json` | `url_V1` / `url_V1.1` |
+
+Si la version diffère de la sienne (`PROJECT_VER`), il télécharge l'image en HTTPS, l'écrit dans
+l'autre partition et redémarre ; si elle ne tient pas 20 s, le chargeur revient à l'ancienne.
+Jamais pendant que les moteurs tournent (ni pendant une alerte sur le rond). Le CDN de GitHub
+garde les fichiers jusqu'à 5 min.
+
+**Publier :**
+
+```
+# 1. augmenter set(PROJECT_VER "...") dans ecran_rond_1.75/CMakeLists.txt et/ou ecran_energie_1.64/CMakeLists.txt
+python tools/publier_maj.py tout --compiler     # ou rond / energie / passerelle
+git add -A release ecran_* && git commit -m "écrans : …" && git push
+```
+
+Le dépôt est public et les images ne sont pas signées : à verrouiller (branche protégée,
+Secure Boot) avant un usage en vol. Wi-Fi et ESP-NOW partagent la radio : connecté à un point
+d'accès sur un autre canal que le maître, un écran perd la liaison avion (indiqué à l'écran).
+Le Wi-Fi est prévu pour le sol.
+
+## Tester le double affichage
+
+**Avec les deux écrans seulement** (pas de passerelle) — l'écran rond en simulation sert de maître :
+
+1. Écran rond : page SYSTÈME, **SIMU** activée (c'est le réglage d'usine).
+2. Écran 1,64" : glisser deux fois vers la droite → RÉGLAGES, **SIMULATION : NON**, puis **LIER**,
+   les deux écrans à quelques centimètres l'un de l'autre.
+3. Le 1,64" affiche SIMULATION en haut et suit le rond : en roulant le rond vers la droite (consigne
+   de régime en hausse), la flèche de bilan du 1,64" passe vers le bas.
+
+**Avec la passerelle** (un troisième ESP32-S3) : flasher la passerelle, désactiver SIMU sur les
+deux écrans, puis LIER chacun. La passerelle sert les deux écrans et suit la consigne du rond.
+
+Pour revenir au vrai maître : DÉLIER puis LIER à côté du maître.
 
 ## Liaison ESP-NOW (`components/khepri_proto/include/khepri_espnow.h`)
 
-Bibliothèque `espressif/esp-now`, comme la télécommande BSR :
-
-1. **Appairage** : page SYSTÈME → LIER, écran à quelques centimètres du maître. L'écran est
-   initiateur `espnow_ctrl` avec l'attribut `KEY_7` (la télécommande BSR utilise `KEY_1` : les deux
-   ne peuvent pas se lier entre eux). Le maître accepte au-dessus de −55 dBm. L'écran retient en NVS
-   l'adresse du premier maître qui lui envoie de la télémétrie, puis ignore les autres.
-2. **Télémétrie maître → écran** : paquets `ESPNOW_DATA_TYPE_DATA` de 10 Hz contenant les trames CAN
-   telles quelles (en-tête `KH` de 8 octets, puis id/dlc/données, 20 trames au plus). L'écran
-   décode les mêmes octets que sur le bus : SYNC 0x600, chaussettes 0x601-0x605 et 0x621-0x625,
-   `Get_Encoder_Estimates` (0x009) et `Get_Bus_Voltage_Current` (0x017, P = U·I) des axes 0 et 1 du BSR Drive (`kp_frames.h` = sous-ensemble de `kp_can.h`).
-3. **Commandes écran → maître** : mot de 32 bits, code dans le quartet de poids fort :
-   `1` acquittement d'alarme (chaussette), `2` REPÈRE (n°), `3` enregistrement on/off,
-   `4` battement de cœur 1 Hz.
-
-### Côté maître
+1. **Appairage** : LIER sur l'écran, à quelques centimètres du maître. L'écran est initiateur
+   `espnow_ctrl` (attribut `KEY_7`) ; il retient en NVS le premier maître qui lui envoie de la
+   télémétrie et ignore ensuite les autres. Le maître sert jusqu'à 4 écrans liés.
+2. **Télémétrie maître → écrans** (10 Hz) : trames CAN telles quelles — SYNC 0x600, chaussettes
+   0x601-0x605 et 0x621-0x625, BSR Drive `Get_Encoder_Estimates` (0x009) et
+   `Get_Bus_Voltage_Current` (0x017) des axes 0 et 1, **énergie 0x680 (batterie : SOC, U, I, Wh) et
+   0x681 (solaire : W par aile, crête installée)** calculées par le maître à partir de l'EMUS G1 et
+   des MPPT Victron.
+3. **Commandes écran → maître** (mot de 32 bits) : `1` acquittement d'alarme, `2` REPÈRE,
+   `3` enregistrement, `4` battement de cœur 1 Hz, `5` consigne de régime en ‰ (rond seulement).
 
 `gateway_sim/main/khepri_relay.c` est fait pour être copié dans le firmware du maître :
-`khepri_relay_init()` après le démarrage du Wi-Fi, puis `khepri_relay_push(id, data, dlc)` pour
-chaque trame CAN reçue et pour la SYNC émise. Le relais garde la dernière valeur de chaque
-identifiant et n'envoie qu'aux écrans appairés. **Attention** : le Wi-Fi du maître sert aussi au
-rapatriement des fichiers (point d'accès sur un canal tiré au hasard) ; l'écran doit être sur le
-même canal (`KHEPRI_ESPNOW_CHANNEL`). À arbitrer avant intégration.
-
-## Passerelle de simulation (`gateway_sim/`)
-
-Joue le rôle du maître sur n'importe quel ESP32-S3 (par exemple la carte 1,64") : trames simulées,
-passées par `khepri_relay`, alarme vibratoire de la chaussette 1 toutes les 90 s.
-
-## Mode simulation de l'écran
-
-Actif au premier démarrage (`KHEPRI_DEMO_DEFAULT`) : l'écran génère lui-même ses données et
-affiche SIMULATION. Bouton SIMU de la page SYSTÈME pour l'arrêter ; le choix est mémorisé.
-**À désactiver avant tout vol.**
-
-## Compiler et flasher
-
-```
-idf.py build                       # ESP-IDF 5.5, aucun composant à télécharger
-idf.py -p COMx flash monitor
-cd gateway_sim && idf.py build flash   # passerelle
-```
-
-Sans ESP-IDF : flasher `release/khepri_ecran_1.75_0x0.bin` à l'adresse 0x0, par exemple
-`python -m esptool --chip esp32s3 -p COM11 -b 460800 write-flash 0x0 release/khepri_ecran_1.75_0x0.bin`
-ou avec https://espressif.github.io/esptool-js/ (Chrome/Edge, IDE Arduino fermé).
-Le premier flash par USB est obligatoire (nouvelle table de partitions OTA) ; ensuite, les mises à
-jour passent par le Wi-Fi.
-
-Réglages (`idf.py menuconfig` → « KHEPRI - ecran pilote ») : canal ESP-NOW, simulation au
-démarrage, énergie batterie (4 480 Wh), puissance solaire crête (980 W), puissance de palier
-(2 500 W, provisoire), seuil de poussée, zone morte / plage / vitesse et sens du roulis, nœuds CANSimple des
-moteurs.
+`khepri_relay_init()` après le Wi-Fi, puis `khepri_relay_push(id, data, dlc)` pour chaque trame.
 
 ## Tests et aperçus sur PC
 
 ```
 make -C tests && ./tests/test_proto && ./tests/test_knob
-make -C tools/preview && ./tools/preview/preview docs/apercus
+make -C tools/preview && ./tools/preview/preview docs/apercus/rond && ./tools/preview/preview_energie docs/apercus/energie
 ```
-
-## Arborescence
-
-```
-main/                 écran : main.c (CO5300, LVGL, tâches), khepri_screen.c (UI),
-                      khepri_link.c (ESP-NOW), kh_wifi.c (Wi-Fi), kh_ota.c (mises à jour),
-                      knob.c (gestes), kh_board.c (CST9217, TCA9554)
-release/              binaires publiés : version.json (manifeste OTA), image OTA, images complètes 0x0
-components/
-  khepri_proto/       protocole ESP-NOW, trames CAN, modèle, simulation (C pur)
-  lvgl/               LVGL 8.3.11 (copie de bsr_screen, sans exemples ni démos)
-  esp-now/, cmake_utilities/, esp_lcd_sh8601/   copies locales des composants Espressif
-  i2c_bsp/, qmi8658/  repris de bsr_screen (broches I2C 14/15)
-gateway_sim/          passerelle de simulation + khepri_relay (côté maître)
-tests/, tools/preview/, tools/publier_maj.py
-```
-
-## Non vérifié sur matériel
-
-Tout compile sans avertissement et les tests PC passent, mais rien n'a encore tourné sur la carte.
-Points à contrôler au premier essai : affichage (pilote SH8601 utilisé avec les commandes
-d'initialisation du CO5300, décalage de 6 colonnes), sens du tactile, sens et signes de
-l'accéléromètre (`KHEPRI_ROLL_INVERT`, `KHEPRI_PUSH_INVERT`), lecture du bouton PWR par le TCA9554.

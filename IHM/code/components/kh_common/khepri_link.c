@@ -95,7 +95,7 @@ void khepri_link_init(khepri_link_rx_cb_t cb)
     espnow_init(&ec);
     espnow_set_config_for_data_type(ESPNOW_DATA_TYPE_DATA, true, on_data);
     if (s_bound) ESP_LOGI(TAG, "maître mémorisé " MACSTR, MAC2STR(s_master));
-    else ESP_LOGI(TAG, "aucun maître : page SYSTÈME → LIER");
+    else ESP_LOGI(TAG, "aucun maître : page SYSTÈME / RÉGLAGES → LIER");
 }
 
 void khepri_link_bind(bool bind)
@@ -127,6 +127,41 @@ bool khepri_link_send_cmd(uint8_t code, uint32_t arg)
     esp_err_t e = espnow_ctrl_initiator_send(KHN_ATTR_INITIATOR, KHN_ATTR_RESPONDER, v);
     if (code != KHN_CMD_HEARTBEAT) ESP_LOGI(TAG, "commande 0x%08lx → %s", (unsigned long)v, esp_err_to_name(e));
     return e == ESP_OK;
+}
+
+/* ------------------------------------------------------------------ relais de simulation */
+#define RELAY_MAX 4
+static volatile bool s_relay;
+static uint16_t s_relay_seq;
+
+static bool on_bind_req(espnow_attribute_t attr, uint8_t mac[6], int8_t rssi)
+{
+    bool ok = s_relay && attr == KHN_ATTR_INITIATOR;
+    ESP_LOGI(TAG, "demande de liaison de " MACSTR " (%d dBm) : %s", MAC2STR(mac), rssi,
+             ok ? "acceptée (relais de simulation)" : "refusée (pas en simulation)");
+    return ok;
+}
+
+void khepri_link_relay_init(void) { espnow_ctrl_responder_bind(UINT32_MAX, -60, on_bind_req); }
+void khepri_link_relay_enable(bool on) { s_relay = on; }
+
+int khepri_link_relay_send(const khn_frame_t *f, int n)
+{
+    if (!s_relay || kh_wifi_scanning()) return 0;
+    uint8_t buf[KHN_PAYLOAD_MAX];
+    size_t len = khn_pack(buf, sizeof buf, s_relay_seq++, KHN_HF_DEMO, f, (size_t)n);
+    if (!len) return 0;
+    espnow_ctrl_bind_info_t list[RELAY_MAX];
+    size_t cnt = RELAY_MAX;
+    if (espnow_ctrl_responder_get_bindlist(list, &cnt) != ESP_OK) return 0;
+    int served = 0;
+    for (size_t i = 0; i < cnt; i++) {
+        if (list[i].initiator_attribute != KHN_ATTR_INITIATOR) continue;
+        espnow_add_peer(list[i].mac, NULL);
+        espnow_frame_head_t head = {.broadcast = false, .retransmit_count = 1, .channel = ESPNOW_CHANNEL_CURRENT};
+        if (espnow_send(ESPNOW_DATA_TYPE_DATA, list[i].mac, buf, len, &head, pdMS_TO_TICKS(10)) == ESP_OK) served++;
+    }
+    return served;
 }
 
 void khepri_link_tick(void)

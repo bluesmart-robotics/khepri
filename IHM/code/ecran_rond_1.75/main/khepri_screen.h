@@ -19,6 +19,7 @@
 #include "kh_ota.h"
 #include "kh_wifi.h"
 #include "lvgl.h"
+#include "kh_theme.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,19 +28,7 @@ extern "C" {
 #define KH_SCR_W 466
 #define KH_SCR_H 466
 
-/* ─── Couleurs (reprises du thème bsr_screen) ─── */
-#define KH_COL_BG lv_color_hex(0x000000)
-#define KH_COL_CARD lv_color_hex(0x22252E)
-#define KH_COL_CARD2 lv_color_hex(0x2A2D38)
-#define KH_COL_TEXT lv_color_hex(0xF2F4F8)
-#define KH_COL_TEXT_DIM lv_color_hex(0x7A8099)
-#define KH_COL_TEXT_MID lv_color_hex(0xB0B8CC)
-#define KH_COL_GREEN lv_color_hex(0x4ADE80)
-#define KH_COL_AMBER lv_color_hex(0xFBB040)
-#define KH_COL_RED lv_color_hex(0xF4614A)
-#define KH_COL_BLUE lv_color_hex(0x60A5FA)
-#define KH_COL_ACCENT lv_color_hex(0x7DD3C8)
-#define KH_COL_SUN lv_color_hex(0xFCD34D)
+/* Couleurs : kh_theme.h (communes aux deux écrans) */
 
 typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_ENERGY, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_WIFI, KH_PAGE_COUNT } kh_page_t;
 

@@ -48,7 +48,8 @@ static bool fetch_manifest(char *ver, size_t vl, char *url, size_t ul)
         if (status == 200 && n > 0) {
             cJSON *j = cJSON_Parse(buf);
             const cJSON *v = cJSON_GetObjectItem(j, "version");
-            const cJSON *u = cJSON_GetObjectItem(j, "url");
+            /* un manifeste peut servir plusieurs révisions de carte : url, url_V1, url_V1.1… */
+            const cJSON *u = cJSON_GetObjectItem(j, CONFIG_KHEPRI_OTA_URL_FIELD);
             if (cJSON_IsString(v) && cJSON_IsString(u)) {
                 strlcpy(ver, v->valuestring, vl);
                 strlcpy(url, u->valuestring, ul);

@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "url_V1": "https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/ecran_energie/khepri_ecran_energie_V1_app.bin",
+  "size_V1": 1439632,
+  "sha256_V1": "643467bd4b8cb2e67a5f8634d3cb05ce0a0536118042be3b06c5c6d8e895a4a5",
+  "url_V1.1": "https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/ecran_energie/khepri_ecran_energie_V1.1_app.bin",
+  "size_V1.1": 1439632,
+  "sha256_V1.1": "cb6130fbafa3bbf1cb1a3ce8f4b356a75fdfead5e0c07ba1cb935e0be4cf4a54"
+}

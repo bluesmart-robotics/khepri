@@ -4,8 +4,10 @@
 
 #define TEST_I2C_PORT I2C_NUM_0
 
-#define I2C_MASTER_SCL_IO 14   /* ESP32-S3-Touch-AMOLED-1.75 : bus I2C commun */
-#define I2C_MASTER_SDA_IO 15
+#include "sdkconfig.h"
+/* Broches réglées par carte (Kconfig) : 1.75 ronde SCL 14 / SDA 15, 1.64 rectangulaire SCL 48 / SDA 47 */
+#define I2C_MASTER_SCL_IO CONFIG_KH_I2C_SCL
+#define I2C_MASTER_SDA_IO CONFIG_KH_I2C_SDA
 
 void I2C_master_Init(void)
 {

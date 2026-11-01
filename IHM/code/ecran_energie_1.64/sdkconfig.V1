@@ -1,0 +1,4 @@
+# Carte 1.64 révision V1 (sérigraphie de version en haut du PCB) : écran sur GPIO9
+CONFIG_KHEPRI_LCD_CS=9
+CONFIG_KHEPRI_BOARD_REV="V1"
+CONFIG_KHEPRI_OTA_URL_FIELD="url_V1"

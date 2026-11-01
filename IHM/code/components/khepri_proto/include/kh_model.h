@@ -98,6 +98,10 @@ typedef struct {
     float solar_pct;    /* production / puissance installée */
     float level_h;      /* heures de palier restantes ; INFINITY si le soleil suffit au palier */
     float full_h;       /* heures pour une recharge complète au rythme actuel ; 0 si pleine, NAN si pas de production */
+    bool net_ok;
+    float net_w;        /* bilan de la batterie [W] : + = elle se charge, − = elle se vide */
+    float batt_v, batt_a, batt_wh, batt_ah; /* tension, courant (+ = charge), énergie et charge restantes */
+    float motor_w;      /* puissance électrique des moteurs (NAN si inconnue) */
 } kh_energy_t;
 void kh_energy(const kh_model_t *m, int64_t now_ms, const kh_energy_cfg_t *cfg, kh_energy_t *out);
 static inline float kh_power_axis(const kh_model_t *m, int k) { return m->vbus[k] * m->ibus[k]; }

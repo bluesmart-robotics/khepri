@@ -94,6 +94,8 @@ int main(void)
         CHECK(fabsf(r.solar_pct - 50.0f) < 0.01f);
         CHECK(fabsf(r.level_h - 1.0f) < 0.001f);  /* 2 000 Wh / (2 500 − 500) W */
         CHECK(fabsf(r.full_h - 4.0f) < 0.001f);   /* 2 000 Wh manquants / 500 W */
+        CHECK(r.net_ok && fabsf(r.net_w + 1380.0f) < 0.5f); /* 46,00 V × −30,0 A */
+        CHECK(fabsf(r.batt_ah - 2000.0f / 46.0f) < 0.01f);
         c.level_w = 400;
         kh_energy(&e, 1500, &c, &r);
         CHECK(isinf(r.level_h));                  /* le soleil suffit au palier */
