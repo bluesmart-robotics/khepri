@@ -94,3 +94,29 @@ routage, seulement le rendu 3D.
 - Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
   capots et seront à reprendre.
 - `production/khepri_v5.net` : netlist exportée par kicad-cli, de référence.
+
+### Points ouverts (à reprendre plus tard)
+
+- **Trous de fixation** : le fichier ne contient aucun perçage. Les trous qui
+  servent à visser la carte sur la BSR Drive sont à ajouter, ou à reprendre
+  de leur définition actuelle. J17 et le contour 50 × 150 mm n'ont pas bougé.
+- **Empreinte HSC** (`Honeywell_HSC_SMT_RR_PROVISOIRE`) : pas 2,54 mm, entraxe
+  des rangées 11,24 mm, pastilles 1,84 × 1,14 mm, ports vers −Y. Ces cotes
+  sont déduites, faute d'avoir pu lire le plan complet de la datasheet
+  Honeywell (HSC_DS.pdf). À vérifier avant fabrication.
+- **Empreinte MS5611** : `Package_LGA:LGA-8_3x5mm_P1.25mm` de KiCad. Elle est
+  cohérente avec le boîtier, mais à comparer avec le plan de pastilles TE.
+- **Anciennes pistes** : quelques-unes traversent encore les capots, avec deux
+  vias dans le capot TE. Le DRC (zone d'interdiction de vias) les signalera ;
+  elles sont à refaire au routage.
+- **Zones de cuivre** : à remplir (touche B) avant DRC, en particulier le
+  +36V B.Cu rogné.
+- **Mise à jour schéma → PCB par le serveur KiCad MCP (`sync_schematic_to_board`)** :
+  à ne pas utiliser. Elle coupait des nets en deux (/CANH, /EN, /IO0,
+  /PDT_pwr_switched séparés de leurs pistes). La carte a été mise à jour à
+  partir de la netlist kicad-cli (`production/khepri_v5.net`). Dans KiCad, la
+  commande F8 classique reste sûre.
+- **Avertissements ERC restants** : empreinte `L_7.1x6.6mm` (L1, L2) absente
+  de KiCad 9, bibliothèque BAT54 de D7 absente, symbole et empreinte XT60 2+4
+  de J17 hors bibliothèques.
+- **Suite prévue** : DRC, routage Freerouting, régénération de `production/`.
