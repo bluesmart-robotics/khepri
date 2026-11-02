@@ -1,7 +1,32 @@
 # PCB de contrôle
 
-Carte de contrôle principale du E-dolly. Projet KiCad 9 `e_dolly`, titre
-« PCB e-dolly », révision v1 du 05/02/2026, 4 couches.
+Carte de contrôle de l'instrument KHEPRI, dérivée de la carte de contrôle du
+E-dolly. Projet KiCad 9 `e_dolly`, 4 couches.
+
+## Modifications pour KHEPRI (novembre 2026)
+
+Cette copie a volontairement divergé de celle du dépôt E-dolly, qui garde son
+E-stop et ses contacteurs. Ne pas reporter ces changements dans E-dolly.
+
+- **Supprimé** : l'E-stop à MOSFET tête-bêche et sa précharge (Q5 à Q9, D5,
+  D6, R28, R29, R32, R35 à R40), la commande des contacteurs (J1, J2, Q3, Q4,
+  R9, R10, R11, R13), la boucle E-stop (J8, J9) et les entrées de puissance
+  XT60 J10/J13 et XT30 J15. À 6 kW, la coupure se fait en amont (contacteur
+  du BMS, EN_GATE de la BSR Drive, sectionneur cockpit).
+- **Alimentation** : la carte est alimentée par la XT60 2+4 (J17) depuis la
+  BSR Drive. L'ancien réseau `PWR_SWITCHED` est fusionné dans `+36V` (qui
+  verra jusqu'à environ 54 V : vérifier la tenue des condensateurs d'entrée).
+- **Ajouté** : feuille `capteurs_pression.kicad_sch` — MS5611 statique (0x76),
+  MS5611 TE (0x77) et Honeywell HSCMRRN001PD2A3 pitot ±1 psi (0x28) sur le
+  canal 2 du TCA9548A, chacun avec sa ferrite et son LDO LP5907 3,3 V, derrière
+  un L78L05 depuis le +24 V. Conçue à partir des fiches techniques ; les cartes
+  OpenVario, Larus et XCVario n'ont servi que de référence d'architecture.
+- **À faire** : empreinte Honeywell HSC SMT à créer, layout du bloc capteurs
+  (zone libre pour capots étanches imprimés en 3D), régénération des fichiers
+  de `production/` qui correspondent encore à l'ancienne carte.
+
+ERC KiCad 9.0.6 : 0 erreur, 9 avertissements (empreintes `L_7.1x6.6mm` et
+XT60 2+4 hors bibliothèques standard, BAT54 sans bibliothèque).
 
 ## Ce qu'il y a dessus
 
@@ -14,25 +39,30 @@ D'après la nomenclature :
 - **TCA9548A** (U5) — multiplexeur I²C 8 canaux.
 - **CP2102N** (U7) — pont USB-UART pour la programmation.
 - **MP2565** (U1) et **TPS54560** (U2) — deux abaisseurs de tension.
-- Étage de puissance : MOSFET AO3400A, IPB110P06LMATMA1 et SQD50P06, avec
-  protection SMCJ58A et diodes de roue libre SS34 / SS56.
-- Connectique : XT30PW-M pour la puissance, nappes JST PH pour les
-  périphériques, deux boutons SKRKAEE020.
+- Protection d'entrée SMCJ58A, diodes SS34 / SS56, petits MOSFET AO3400A
+  pour les commandes logiques.
+- Capteurs de pression du variomètre (voir plus haut).
+- Connectique : XT60 2+4 vers la BSR Drive (puissance + CAN), nappes JST PH
+  pour les périphériques, deux boutons SKRKAEE020.
 
 ## Fichiers
 
 | Fichier | Rôle |
 |---|---|
 | `e_dolly.kicad_pro` / `.kicad_sch` / `.kicad_pcb` | projet KiCad |
+| `capteurs_pression.kicad_sch` | feuille du bloc capteurs de pression |
+| `fp-lib-table`, `sym-lib-table` | bibliothèques du projet, en chemins relatifs `${KIPRJMOD}` |
 | `bom.csv` | nomenclature avec références LCSC |
 | `e_dolly.csv` | nomenclature détaillée |
 | `layout.png`, `apercu-3d.png` | aperçus du routage et du rendu 3D |
-| `production/` | BOM, désignateurs, positions, netlist IPC et `e_dolly.zip` (gerbers 4 couches + perçages, générés le 17/10/2026) |
+| `production/` | BOM, désignateurs, positions, netlist IPC et `e_dolly.zip` de l'**ancienne** carte (17/10/2026), à régénérer |
 
 ## Bibliothèques
 
 `Bibliotheque_kicad/` contient les symboles, empreintes et modèles 3D maison
-(13 modèles STEP, 13 empreintes, 13 symboles).
+(13 modèles STEP, 13 empreintes, 13 symboles), plus `khepri_Symboles/` avec
+les symboles du bloc capteurs (MS5611, HSC, LP5907, L78L05). Toutes ces
+bibliothèques sont déclarées dans les tables du projet.
 
 Attention, les chemins des modèles 3D inscrits dans le `.kicad_pcb` sont des
 chemins absolus pointant vers un autre poste
