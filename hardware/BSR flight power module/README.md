@@ -9,10 +9,12 @@ dissipateur.
 - **Façade** — smart knob et écran rond Waveshare ESP32-S3-Touch-AMOLED 1,75".
   Le code des écrans pilote vit dans [`../../IHM/`](../../IHM/) à la racine de
   ce dépôt, et se met à jour en OTA depuis là.
-- **`bsr-drive/`** — contrôleur moteur BSR Drive v3.7, en sous-module vers le
-  dépôt [bluesmart-robotics/Bsr-drive](https://github.com/bluesmart-robotics/Bsr-drive).
-  Y vivent le firmware (fork ODrive), les GUI et la conception de la carte
-  (`hardware/bsr-drive-v3.7/`).
+- **Contrôleur moteur BSR Drive v3.7** — dans son propre dépôt,
+  [bluesmart-robotics/Bsr-drive](https://github.com/bluesmart-robotics/Bsr-drive) :
+  firmware (fork ODrive), GUI et conception de la carte
+  (`hardware/bsr-drive-v3.7/`). Le sous-module `bsr-drive/` est
+  **temporairement retiré** de ce dépôt pour que BoardRepo n'y voie qu'une
+  seule carte (voir plus bas).
 - **`carte_controle/`** — carte qui pilote le bus CAN entre la commande moteur
   et la façade : ESP32-WROOM-32UE, transceiver CAN SN65HVD230, centrale
   inertielle ICM-42688-P, multiplexeur I²C TCA9548A, deux abaisseurs MP2565 et
@@ -23,11 +25,7 @@ dissipateur.
   défaille.
 - **Ventilation pilotée** et surveillance des températures.
 
-## Deux modes de rattachement, à connaître
-
-`bsr-drive/` est un **sous-module** : il pointe vers un commit du dépôt
-Bsr-drive, qui reste la seule source de vérité. Une mise à jour là-bas se
-récupère ici par un `git submodule update --remote`.
+## Rattachement des cartes
 
 `carte_controle/` est une **copie**, prise du dépôt E-dolly (`hardware/pcb_controle/`)
 au commit `20ab2e3`. E-dolly étant privé et ce dépôt public, un sous-module
@@ -37,16 +35,12 @@ de puissance, et gagné le bloc capteurs de pression (détails dans
 [`carte_controle/README.md`](carte_controle/README.md)). Ne pas reporter ces
 changements dans E-dolly, qui a besoin de son E-stop.
 
-## Sous-modules
-
-Un clonage simple laisse les sous-modules vides. Pour récupérer leur contenu :
-
-```
-git clone --recurse-submodules https://github.com/bluesmart-robotics/khepri
-```
-
-ou, si le dépôt est déjà cloné :
+La BSR Drive était rattachée ici en sous-module (`bsr-drive/`, commit
+`b21a2b1` du dépôt Bsr-drive). Il a été retiré temporairement le 02/11/2026
+pour tester l'import de ce dépôt sur BoardRepo avec une seule carte. Pour le
+remettre :
 
 ```
-git submodule update --init --recursive
+git submodule add https://github.com/bluesmart-robotics/bsr-drive "hardware/BSR flight power module/bsr-drive"
+git -C "hardware/BSR flight power module/bsr-drive" checkout b21a2b1
 ```
