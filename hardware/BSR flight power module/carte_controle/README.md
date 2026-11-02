@@ -93,7 +93,7 @@ routage, seulement le rendu 3D.
   de pastilles SMT de la datasheet Honeywell avant fabrication.
 - Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
   capots et seront à reprendre.
-- `production/khepri_v7.net` : netlist exportée par kicad-cli, de référence.
+- `production/khepri_v8.net` : netlist exportée par kicad-cli, de référence.
 
 ### Points ouverts (à reprendre plus tard)
 
@@ -196,9 +196,74 @@ par les deux tiges traversantes à l'emplacement du XT60 (à dessiner).
 
 **Broches ESP32** : INT_PWR (interruption commune PMP, chargeur, jauge,
 TMP117, INA226) sur IO36 (entrée seule) ; PMP_CHG_EN sur IO12 avec pull-down
-(broche de configuration au démarrage, doit rester basse). Restent libres :
-IO15 et IO39.
+(broche de configuration au démarrage, doit rester basse). IO15 et IO39 sont
+pris par la ventilation : plus aucune broche libre sur l'ESP32.
 
 **À vérifier** : pastille exposée du BQ25887 (empreinte RGE0024C choisie),
 câblage AIN2/CELLX du MAX17205 (mis à GND, à confirmer avec la config nPack),
 TH1/TH2 à placer au plus près des cellules si possible.
+
+## Ventilation de la BSR Drive (02/11/2026)
+
+**Bilan thermique à 6 kW** (2 × 3 kW, bus 42 V, cos φ 0,95, SVPWM) :
+courant de phase ≈ 61 A eff. (87 A crête) par moteur.
+
+| Poste | Par moteur | Hypothèse |
+|---|---|---|
+| Conduction MOSFET (6 FET) | ≈ 34 W | R_DS(on) chaud 3 mΩ (2 mΩ → 23 W, 4 mΩ → 45 W) |
+| Commutation | ≈ 7 W | 24 kHz, t_r + t_f ≈ 80 ns |
+| Shunts de phase | ≈ 4 W | 2 × 0,5 mΩ |
+| **Total** | **≈ 45 W** | |
+
+Deux moteurs ≈ 90 W, plus ≈ 10 W de cuivre et de condensateurs du bus → **≈ 100 W**,
+dimensionné à **125 W** (marge, plus un peu de résistance de freinage).
+
+**Dissipateur** 80 × 39 mm, denture dense, coupé à 150 mm, air dans le sens
+des ailettes (hypothèse : 20 ailettes de 1,2 mm, 33 mm de haut, pas de 4 mm
+→ à remesurer). Écoulement laminaire dans les canaux (Re ≈ 2000),
+h ≈ 40 W/m²K, rendement d'ailette ≈ 0,9 :
+
+| Débit réel | R_th dissipateur (sol) | ΔT à 125 W | à 3000 m |
+|---|---|---|---|
+| 17 CFM | 0,19 K/W | 24 K | 26 K |
+| 22–23 CFM | 0,17 K/W | 21–22 K | 24 K |
+
+Avec 45 °C dans le cockpit (verrière au soleil) : dissipateur ≈ 70 °C ;
+6,7 W par FET avec ≈ 5 K/W jonction → dissipateur (boîtier plus vias plus pad)
+donnent T_j ≈ 105 °C. C'est acceptable, mais tout se joue sur la liaison
+thermique FET → dissipateur.
+
+**Perte de charge** du dissipateur, de la grille d'entrée et du carénage
+≈ 70–85 Pa à 22 CFM. Points de fonctionnement estimés : ventilateur 43,6 CFM /
+0,31 inH₂O → ≈ 17 CFM ; 59 CFM / 0,47 inH₂O → ≈ 22 CFM ; 63 CFM / 0,48 inH₂O
+→ ≈ 23 CFM.
+
+**Choix : 12 V 0,5 A, 4 fils PWM + tachy (GDSTIME 5000 tr/min, 63 CFM,
+0,48 inH₂O).** C'est le plus de pression disponible, ce qui donne de la marge
+pour la grille, la poussière, les fuites et l'altitude. Le PWM permet d'être
+silencieux en croisière et à plein régime en montée, et la tachy permet de
+détecter une panne pour brider les moteurs. Les versions 24 V sont en
+2 fils, sans PWM ni tachy.
+
+Conditions indispensables :
+- carénage : tout l'air aspiré doit passer **entre les ailettes**, sans fuite
+  autour ;
+- résistances de freinage : à limiter en logiciel (dissipation continue
+  ≪ 100 W).
+
+**Feuille `ventilation.kicad_sch`** : J25 (embase ventilateur 4 broches, bas
+de carte, côté opposé aux capteurs). PWM 25 kHz en drain ouvert (Q15 2N7002)
+depuis IO15, tachy sur IO39 (pull-up 10 k, filtre 1 kΩ / 1 nF). Le +12V n'existe
+pas encore : PWR_FLAG provisoire, rail à créer au point 3. **Polarité** :
+GDSTIME annonce 1 = rouge +, 2 = noir − ; le standard PC est 1 = GND,
+2 = +12 V. À vérifier sur le ventilateur reçu.
+
+**Rail +12V (point 3, à dessiner)** :
+- charges : ventilateur 0,5 A ; électronique des chaussettes ≈ 2 × 0,3 A ;
+  servo RDS51150 9–12,6 V par chaussette, 5 mA au repos, **8 A au
+  blocage à 12 V** ;
+- proposition : convertisseur 48 → 12 V ≈ 10 A depuis le bus (via les tiges),
+  un eFuse par chaussette limité à ≈ 5–6 A et un eFuse de 1 A pour le
+  ventilateur ;
+- le +12V doit passer sur 2 contacts DTM (taille 20, 7,5 A chacun) et le GND
+  sur 2 autres.

@@ -9478,10 +9478,6 @@
 		(uuid "3913fd8f-2321-43e8-9174-606377d7c728")
 	)
 	(no_connect
-		(at 237.49 40.64)
-		(uuid "3e205f78-9d68-4dc4-a1f2-d03afdec839b")
-	)
-	(no_connect
 		(at 156.21 135.89)
 		(uuid "4cd25c7a-903b-4ad2-8a6c-686e72631899")
 	)
@@ -34286,10 +34282,6 @@
 			)
 		)
 	)
-	(no_connect
-		(at 267.97 55.88)
-		(uuid "d06a2c6c-295c-4c45-8ff1-5972bb050b5b")
-	)
 	(global_label "I2C_PRES_SDA" (shape bidirectional) (at 231.14 248.92 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "9d3c9c2d-5c23-4250-b9e2-7f6c5419a50a") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 248.92 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(global_label "I2C_PRES_SCL" (shape bidirectional) (at 231.14 246.38 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "01e591b4-4837-4b99-944b-a4eeacb152d0") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 246.38 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(sheet (at 80.01 40.64) (size 38.1 12.7) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "1629e472-0862-44e8-a277-1868ed7c136d") (property "Sheetname" "Capteurs pression" (at 80.01 39.93 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "capteurs_pression.kicad_sch" (at 80.01 53.93000000000001 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "2")))))
@@ -34327,6 +34319,11 @@
 	(sheet (at 80.01 81.28) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "93ffcfd3-fc60-4070-9410-95dc8c71179d") (property "Sheetname" "Alimentation secours" (at 80.01 80.57000000000001 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "alim_secours.kicad_sch" (at 80.01 92.03 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "4")))))
 	(sheet (at 80.01 96.52) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "ae5be68b-eb9d-47bc-ac69-3133c3f7c784") (property "Sheetname" "Mesures env" (at 80.01 95.81 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "mesures_env.kicad_sch" (at 80.01 107.27 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "5")))))
 	(sheet (at 80.01 111.76) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "309c939b-903d-4243-b999-8ea9c4bf0112") (property "Sheetname" "Interface PMP41115" (at 80.01 111.05000000000001 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "interface_pmp.kicad_sch" (at 80.01 122.51 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "6")))))
+	(wire (pts (xy 267.97 55.88) (xy 273.05 55.88)) (stroke (width 0) (type default)) (uuid "80f8779e-d24e-46a5-9594-bfc0e725c9cb"))
+	(global_label "FAN_PWM" (shape bidirectional) (at 273.05 55.88 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "2d223743-dc24-4aa3-8828-4bad7cd072a5") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 55.88 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 237.49 40.64) (xy 242.57 40.64)) (stroke (width 0) (type default)) (uuid "6d6da1be-240a-4080-8ea3-4749d0acb733"))
+	(global_label "FAN_TACH" (shape bidirectional) (at 242.57 40.64 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "8829e8a7-d07b-4e79-a65d-694cfe65c266") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 242.57 40.64 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(sheet (at 80.01 25.4) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "ab8e924e-7475-4e81-a391-fc41873adcba") (property "Sheetname" "Ventilation" (at 80.01 24.689999999999998 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "ventilation.kicad_sch" (at 80.01 36.150000000000006 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "7")))))
 	(sheet_instances
 		(path "/"
 			(page "1")
