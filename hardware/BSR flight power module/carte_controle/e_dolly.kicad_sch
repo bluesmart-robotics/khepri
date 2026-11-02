@@ -34174,32 +34174,12 @@
 		)
 	)
 	(no_connect
-		(at 267.97 63.5)
-		(uuid "2956eb65-6204-4a39-9a65-61336bd789d5")
-	)
-	(no_connect
 		(at 267.97 48.26)
 		(uuid "34ec70df-3bab-4d30-a641-bb4a36e2d4ab")
 	)
 	(no_connect
-		(at 267.97 53.34)
-		(uuid "d3f79a5a-b32e-49cd-9ee7-3f97c9c8e49f")
-	)
-	(no_connect
-		(at 267.97 91.44)
-		(uuid "8c2b8d77-b895-47f9-855a-8198cc2935ad")
-	)
-	(no_connect
-		(at 267.97 88.9)
-		(uuid "84ec9184-5bf8-4d05-ab17-5eedd1fd4681")
-	)
-	(no_connect
 		(at 267.97 55.88)
 		(uuid "d06a2c6c-295c-4c45-8ff1-5972bb050b5b")
-	)
-	(no_connect
-		(at 267.97 50.8)
-		(uuid "e0d114db-e155-451c-ac75-cbfab189a32a")
 	)
 	(global_label "I2C_PRES_SDA" (shape bidirectional) (at 231.14 248.92 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "9d3c9c2d-5c23-4250-b9e2-7f6c5419a50a") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 248.92 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(global_label "I2C_PRES_SCL" (shape bidirectional) (at 231.14 246.38 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "01e591b4-4837-4b99-944b-a4eeacb152d0") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 246.38 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
@@ -34207,10 +34187,6 @@
 	(no_connect
 		(at 226.06 238.76)
 		(uuid "f2d5a920-bb9a-40f4-9755-6f1e2518e3e4")
-	)
-	(no_connect
-		(at 267.97 66.04)
-		(uuid "dfe5a429-94f0-4cf6-b407-c8197f9a1a0c")
 	)
 	(no_connect
 		(at 226.06 236.22)
@@ -34224,10 +34200,21 @@
 		(at 226.06 243.84)
 		(uuid "274f9121-46eb-43f1-a836-6cc8e64f790c")
 	)
-	(no_connect
-		(at 267.97 68.58)
-		(uuid "3281a742-2c8d-49e3-a2f1-74caaa5a520e")
-	)
+	(wire (pts (xy 267.97 63.50) (xy 273.05 63.50)) (stroke (width 0) (type default)) (uuid "1fed1314-f3fe-4bb0-8ebc-7ad2b26b034e"))
+	(global_label "IHM_TX1" (shape bidirectional) (at 273.05 63.50 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "c5d799e9-1d58-4739-99dd-7cb07fbd8f26") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 63.50 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 88.90) (xy 273.05 88.90)) (stroke (width 0) (type default)) (uuid "0e3788be-ab53-495a-afa1-2d4f0fba80d4"))
+	(global_label "IHM_RX1" (shape bidirectional) (at 273.05 88.90 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "137783a9-dd48-4ffa-93e1-8613f94dc9fb") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 88.90 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 66.04) (xy 273.05 66.04)) (stroke (width 0) (type default)) (uuid "cd9a08da-393d-4e54-a43e-f1277f645828"))
+	(global_label "IHM_TX2" (shape bidirectional) (at 273.05 66.04 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "b1ee7793-354d-443f-abef-32fe3ec85f7e") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 66.04 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 91.44) (xy 273.05 91.44)) (stroke (width 0) (type default)) (uuid "49c4a1e3-df75-47fa-84fe-ef7c19db9c57"))
+	(global_label "IHM_RX2" (shape bidirectional) (at 273.05 91.44 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "74e23b11-abd9-4d77-a3f6-60d49af80d94") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 91.44 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 68.58) (xy 273.05 68.58)) (stroke (width 0) (type default)) (uuid "d0c7d10d-0bda-4614-bde5-16d5dfcf8a6c"))
+	(global_label "IHM_NRST" (shape bidirectional) (at 273.05 68.58 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "0748e8d8-04a2-46ca-a4c2-77def91c7822") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 68.58 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 53.34) (xy 273.05 53.34)) (stroke (width 0) (type default)) (uuid "18cce485-5ac1-4ceb-8d1f-b0bfff997a76"))
+	(global_label "IHM_BOOT0" (shape bidirectional) (at 273.05 53.34 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "1e91565c-89a3-4d13-80ea-755e9508c2ee") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 50.80) (xy 273.05 50.80)) (stroke (width 0) (type default)) (uuid "0d097e2a-0ad7-45f9-a255-c68e04fe6ef9"))
+	(global_label "IHM_PWR_OFF" (shape bidirectional) (at 273.05 50.80 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "5a0f0d76-d7ee-4c69-ab1c-d1d00920fa4c") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 50.80 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(sheet (at 80.01 60.96) (size 38.1 12.7) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "6b0387d2-d734-4408-bf2c-c55c62fe318c") (property "Sheetname" "Liaison IHM" (at 80.01 60.25 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "liaison_ihm.kicad_sch" (at 80.01 74.25 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "3")))))
 	(sheet_instances
 		(path "/"
 			(page "1")

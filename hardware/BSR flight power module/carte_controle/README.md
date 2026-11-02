@@ -93,7 +93,7 @@ routage, seulement le rendu 3D.
   de pastilles SMT de la datasheet Honeywell avant fabrication.
 - Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
   capots et seront à reprendre.
-- `production/khepri_v5.net` : netlist exportée par kicad-cli, de référence.
+- `production/khepri_v6.net` : netlist exportée par kicad-cli, de référence.
 
 ### Points ouverts (à reprendre plus tard)
 
@@ -124,3 +124,35 @@ routage, seulement le rendu 3D.
   L'attribution port 1 = P-tot (haute pression) / port 2 = P-stat est supposée
   et reste à confirmer sur le plan Honeywell du boîtier RR.
 - **Suite prévue** : DRC, routage Freerouting, régénération de `production/`.
+
+## Liaison IHM façade (02/11/2026)
+
+Architecture en étoile : l'ESP32 de cette carte reste la référence absolue et
+seul maître des consignes moteur. Tout le trafic IHM passe par **une seule
+nappe** vers la carte façade (smart knob STM32 + écran 1,64" ESP32-S3
+fusionnés). L'écran 1,75" se raccorde à la carte façade, pas ici.
+
+Feuille `liaison_ihm.kicad_sch` :
+
+| Signal | ESP32 | J20 (JST-GH 12, SM12B-GHS-TB) |
+|---|---|---|
+| +5V_IHM (2 A max) | — | 1, 2, 3 |
+| GND | — | 4, 11, 12 |
+| TX1 → RX STM32 (UART1) | IO18 | 5 |
+| RX1 ← TX STM32 (UART1) | IO34 | 6 |
+| TX2 → RX ESP32-S3 (UART2) | IO19 | 7 |
+| RX2 ← TX ESP32-S3 (UART2) | IO35 | 8 |
+| NRST STM32 (open-drain) | IO21 | 9 |
+| BOOT0 STM32 (reflash par bootloader UART) | IO14 | 10 |
+| Coupure du 5V_IHM | IO13 | — |
+
+- 5V_IHM : buck AP63205WU (U30) depuis le +24V, L13 6,8 µH SRN6045TA,
+  séparé du +5V_SENS des capteurs. EN tiré au +24V (R52), Q10 2N7002 le force
+  à la masse quand IO13 est haut : façade alimentée par défaut, redémarrage
+  à froid possible par l'ESP32.
+- Lignes : 100 Ω en série (R54–R59), pull-up 10 k sur les RX (IO34/35 n'en
+  ont pas, R60/R61), pull-down 10 k sur BOOT0 (R62), ESD TPD4E05U06 (U31, U32).
+- UART0 reste réservé au CP2102N (programmation, console).
+- Placement : J20 sur le bord droit, ouverture vers l'extérieur, buck juste
+  en dessous (zone de l'ancien J7). **Côté de sortie de la nappe à confirmer**
+  selon la position de la carte façade.
