@@ -57,6 +57,12 @@ menu "KHEPRI - commun aux ecrans (liaison, avion, mises a jour)"
         help
             Un manifeste peut servir plusieurs revisions de carte (url_V1, url_V1.1...).
 
+    config KHEPRI_OTA_PEER_MANIFEST_URL
+        string "OTA : manifeste de l'ecran rond, que cet ecran lui pousse par ESP-NOW (vide = non)"
+        default ""
+        help
+            Renseigne sur l'ecran energie, seul connecte au Wi-Fi.
+
     config KHEPRI_OTA_PERIOD_S
         int "OTA : periode de verification (s)"
         range 30 86400

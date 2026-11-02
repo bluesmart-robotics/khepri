@@ -15,7 +15,7 @@
 
 #define VIB_MAX 8000
 
-static const char *PAGE_TITLE[KH_PAGE_COUNT] = {"MOTEURS", "AUTONOMIE", "VIBRATIONS", "SYSTÈME", "WI-FI"};
+static const char *PAGE_TITLE[KH_PAGE_COUNT] = {"MOTEURS", "AUTONOMIE", "VIBRATIONS", "SYSTÈME"};
 
 static kh_screen_cb_t s_cb;
 
@@ -41,14 +41,8 @@ static struct {
         lv_obj_t *root, *ring, *title, *node, *val, *hint;
     } al;
     struct {
-        lv_obj_t *state, *info, *list, *btn_scan, *lbl_scan, *btn_forget, *ota, *ota2;
-        lv_obj_t *pw_root, *pw_title, *pw_ta, *pw_kb;
-        uint32_t scan_gen;
-        bool first_scan_done;
-        char sel_ssid[33];
-        kh_wifi_ap_t ap[KH_WIFI_MAX_AP];
-        int ap_count;
-    } wifi;
+        lv_obj_t *root, *ver, *pct, *hint;
+    } upd;
 
     bool demo, bound;
     int lum;
@@ -328,266 +322,9 @@ static void build_system(lv_obj_t *t)
     lv_obj_align(ui.sys.btn_lum, LV_ALIGN_CENTER, 60, 124);
     ui.sys.mac = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
     lv_obj_set_style_text_align(ui.sys.mac, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 166);
+    lv_obj_align(ui.sys.mac, LV_ALIGN_CENTER, 0, 174);
 }
 
-
-/* ------------------------------------------------------------------ page WI-FI */
-static void style_dark_btn(lv_obj_t *b)
-{
-    lv_obj_set_style_bg_color(b, KH_COL_CARD, 0);
-    lv_obj_set_style_bg_color(b, KH_COL_ACCENT, LV_STATE_PRESSED);
-    lv_obj_set_style_text_color(b, KH_COL_TEXT, 0);
-    lv_obj_set_style_border_width(b, 0, 0);
-    lv_obj_set_style_radius(b, 12, 0);
-    lv_obj_set_style_shadow_width(b, 0, 0);
-}
-
-static void pw_close(void)
-{
-    lv_obj_add_flag(ui.wifi.pw_root, LV_OBJ_FLAG_HIDDEN);
-    lv_textarea_set_text(ui.wifi.pw_ta, "");
-}
-
-static void kb_cb(lv_event_t *e)
-{
-    lv_event_code_t c = lv_event_get_code(e);
-    if (c == LV_EVENT_READY) {
-        if (s_cb.on_wifi_connect) s_cb.on_wifi_connect(ui.wifi.sel_ssid, lv_textarea_get_text(ui.wifi.pw_ta));
-        pw_close();
-        kh_screen_show_page(KH_PAGE_WIFI, false);
-    } else if (c == LV_EVENT_CANCEL) {
-        pw_close();
-    }
-}
-
-static void ap_cb(lv_event_t *e)
-{
-    int i = (int)(intptr_t)lv_event_get_user_data(e);
-    if (i < 0 || i >= ui.wifi.ap_count) return;
-    strncpy(ui.wifi.sel_ssid, ui.wifi.ap[i].ssid, sizeof ui.wifi.sel_ssid - 1);
-    ui.wifi.sel_ssid[sizeof ui.wifi.sel_ssid - 1] = 0;
-    if (!ui.wifi.ap[i].secure) { /* réseau ouvert : connexion directe */
-        if (s_cb.on_wifi_connect) s_cb.on_wifi_connect(ui.wifi.sel_ssid, "");
-        return;
-    }
-    char b[64];
-    snprintf(b, sizeof b, "Mot de passe\n%s", ui.wifi.sel_ssid);
-    lv_label_set_text(ui.wifi.pw_title, b);
-    lv_textarea_set_text(ui.wifi.pw_ta, "");
-    lv_obj_clear_flag(ui.wifi.pw_root, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_move_foreground(ui.wifi.pw_root);
-}
-
-/* Aperçus PC : ouvre (ssid non nul) ou ferme la saisie du mot de passe */
-void kh_screen_debug_open_password(const char *ssid, const char *text)
-{
-    if (!ssid) {
-        pw_close();
-        return;
-    }
-    char b[64];
-    snprintf(b, sizeof b, "Mot de passe\n%s", ssid);
-    lv_label_set_text(ui.wifi.pw_title, b);
-    lv_textarea_set_text(ui.wifi.pw_ta, text ? text : "");
-    lv_obj_clear_flag(ui.wifi.pw_root, LV_OBJ_FLAG_HIDDEN);
-}
-
-static void wifi_btn_cb(lv_event_t *e)
-{
-    lv_obj_t *b = lv_event_get_target(e);
-    if (b == ui.wifi.btn_scan && s_cb.on_wifi_scan) s_cb.on_wifi_scan();
-    else if (b == ui.wifi.btn_forget && s_cb.on_wifi_forget) s_cb.on_wifi_forget();
-    else if (b == ui.wifi.ota && s_cb.on_ota_check) s_cb.on_ota_check();
-}
-
-static void build_wifi(lv_obj_t *t)
-{
-    tile_base(t, KH_PAGE_WIFI);
-    ui.wifi.state = label(t, &kh_font_18, KH_COL_TEXT_MID, "Non connecté");
-    lv_obj_align(ui.wifi.state, LV_ALIGN_CENTER, 0, -134);
-    ui.wifi.info = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_set_width(ui.wifi.info, 330);
-    lv_obj_set_style_text_align(ui.wifi.info, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_long_mode(ui.wifi.info, LV_LABEL_LONG_WRAP);
-    lv_obj_align(ui.wifi.info, LV_ALIGN_CENTER, 0, -100);
-
-    lv_obj_t *l = lv_list_create(t);
-    lv_obj_set_size(l, 330, 168);
-    lv_obj_align(l, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_bg_opa(l, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_width(l, 0, 0);
-    lv_obj_set_style_pad_all(l, 0, 0);
-    lv_obj_set_style_pad_row(l, 6, 0);
-    ui.wifi.list = l;
-
-    ui.wifi.btn_scan = button(t, LV_SYMBOL_REFRESH " CHERCHER", 160, &ui.wifi.lbl_scan);
-    lv_obj_align(ui.wifi.btn_scan, LV_ALIGN_CENTER, -84, 116);
-    lv_obj_remove_event_cb(ui.wifi.btn_scan, btn_cb);
-    lv_obj_add_event_cb(ui.wifi.btn_scan, wifi_btn_cb, LV_EVENT_CLICKED, NULL);
-    ui.wifi.btn_forget = button(t, LV_SYMBOL_TRASH " OUBLIER", 150, NULL);
-    lv_obj_align(ui.wifi.btn_forget, LV_ALIGN_CENTER, 86, 116);
-    lv_obj_remove_event_cb(ui.wifi.btn_forget, btn_cb);
-    lv_obj_add_event_cb(ui.wifi.btn_forget, wifi_btn_cb, LV_EVENT_CLICKED, NULL);
-
-    /* ligne mise à jour : touchable pour forcer une vérification */
-    ui.wifi.ota = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_add_flag(ui.wifi.ota, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_ext_click_area(ui.wifi.ota, 12);
-    lv_obj_add_event_cb(ui.wifi.ota, wifi_btn_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_align(ui.wifi.ota, LV_ALIGN_CENTER, 0, 160);
-    ui.wifi.ota2 = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_align(ui.wifi.ota2, LV_ALIGN_CENTER, 0, 180);
-
-    /* saisie du mot de passe : plein écran au-dessus des pages */
-    lv_obj_t *r = lv_obj_create(lv_layer_top());
-    lv_obj_set_size(r, KH_SCR_W, KH_SCR_H);
-    lv_obj_center(r);
-    lv_obj_set_style_radius(r, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_bg_color(r, KH_COL_BG, 0);
-    lv_obj_set_style_bg_opa(r, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(r, 0, 0);
-    lv_obj_clear_flag(r, LV_OBJ_FLAG_SCROLLABLE);
-    ui.wifi.pw_root = r;
-    ui.wifi.pw_title = label(r, &kh_font_18, KH_COL_TEXT_MID, "Mot de passe");
-    lv_obj_set_style_text_align(ui.wifi.pw_title, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(ui.wifi.pw_title, LV_ALIGN_CENTER, 0, -158);
-    lv_obj_t *ta = lv_textarea_create(r);
-    lv_textarea_set_one_line(ta, true);
-    lv_textarea_set_password_mode(ta, false); /* visible : on saisit sur un petit écran */
-    lv_textarea_set_max_length(ta, 63);
-    lv_obj_set_size(ta, 320, 48);
-    lv_obj_align(ta, LV_ALIGN_CENTER, 0, -104);
-    lv_obj_set_style_text_font(ta, &kh_font_18, 0);
-    lv_obj_set_style_bg_color(ta, KH_COL_CARD, 0);
-    lv_obj_set_style_text_color(ta, KH_COL_TEXT, 0);
-    lv_obj_set_style_border_color(ta, KH_COL_ACCENT, 0);
-    ui.wifi.pw_ta = ta;
-    lv_obj_t *kb = lv_keyboard_create(r);
-    lv_obj_set_size(kb, 380, 200);
-    lv_obj_align(kb, LV_ALIGN_CENTER, 0, 48);
-    lv_keyboard_set_textarea(kb, ta);
-    lv_obj_set_style_text_font(kb, &kh_font_18, 0);
-    lv_obj_set_style_bg_color(kb, KH_COL_BG, 0);
-    lv_obj_set_style_border_width(kb, 0, 0);
-    lv_obj_set_style_pad_all(kb, 2, 0);
-    lv_obj_set_style_pad_gap(kb, 4, 0);
-    lv_obj_set_style_bg_color(kb, KH_COL_CARD2, LV_PART_ITEMS);
-        lv_obj_set_style_bg_color(kb, KH_COL_ACCENT, LV_PART_ITEMS | LV_STATE_PRESSED);
-    lv_obj_set_style_text_color(kb, KH_COL_TEXT, LV_PART_ITEMS);
-    lv_obj_set_style_text_color(kb, KH_COL_ACCENT, LV_PART_ITEMS | LV_STATE_CHECKED);
-    lv_obj_set_style_bg_color(kb, lv_color_hex(0x3A3F4E), LV_PART_ITEMS | LV_STATE_CHECKED);
-    lv_obj_set_style_border_width(kb, 0, LV_PART_ITEMS);
-    lv_obj_set_style_shadow_width(kb, 0, LV_PART_ITEMS);
-    lv_obj_set_style_radius(kb, 8, LV_PART_ITEMS);
-    lv_obj_add_event_cb(kb, kb_cb, LV_EVENT_ALL, NULL);
-    ui.wifi.pw_kb = kb;
-    lv_obj_t *hint = label(r, &kh_font_14, KH_COL_TEXT_DIM, LV_SYMBOL_OK " connecter   " LV_SYMBOL_KEYBOARD " annuler");
-    lv_obj_align(hint, LV_ALIGN_CENTER, 0, 172);
-    lv_obj_add_flag(r, LV_OBJ_FLAG_HIDDEN);
-}
-
-static void rebuild_ap_list(const kh_wifi_status_t *w)
-{
-    lv_obj_clean(ui.wifi.list);
-    ui.wifi.ap_count = w->ap_count;
-    memcpy(ui.wifi.ap, w->ap, sizeof ui.wifi.ap);
-    if (!w->ap_count) {
-        char m[64];
-        if (!w->scan_gen) m[0] = 0;
-        else if (w->scan_err) snprintf(m, sizeof m, "Balayage impossible (erreur 0x%x)", w->scan_err);
-        else snprintf(m, sizeof m, "Aucun réseau trouvé");
-        label(ui.wifi.list, &kh_font_14, w->scan_err ? KH_COL_AMBER : KH_COL_TEXT_DIM, m);
-        return;
-    }
-    for (int i = 0; i < w->ap_count; i++) {
-        char b[64];
-        int bars = w->ap[i].rssi > -60 ? 3 : w->ap[i].rssi > -72 ? 2 : 1;
-        snprintf(b, sizeof b, "%s%s", w->ap[i].secure ? "" : "(ouvert) ", w->ap[i].ssid);
-        lv_obj_t *btn = lv_btn_create(ui.wifi.list);
-        lv_obj_set_size(btn, lv_pct(100), 44);
-        style_dark_btn(btn);
-        lv_obj_t *l = label(btn, &kh_font_18, KH_COL_TEXT, b);
-        lv_label_set_long_mode(l, LV_LABEL_LONG_DOT);
-        lv_obj_set_width(l, 230);
-        lv_obj_align(l, LV_ALIGN_LEFT_MID, 4, 0);
-        char r[16];
-        snprintf(r, sizeof r, "%s %d", bars == 3 ? LV_SYMBOL_WIFI : "", w->ap[i].rssi);
-        lv_obj_t *rl = label(btn, &kh_font_14, bars == 3 ? KH_COL_GREEN : bars == 2 ? KH_COL_AMBER : KH_COL_RED, r);
-        lv_obj_align(rl, LV_ALIGN_RIGHT_MID, -4, 0);
-        lv_obj_add_event_cb(btn, ap_cb, LV_EVENT_CLICKED, (void *)(intptr_t)i);
-    }
-}
-
-static void update_wifi(const kh_local_t *loc, int64_t now)
-{
-    const kh_wifi_status_t *w = &loc->wifi;
-    char b[96];
-    switch (w->state) {
-    case KH_WIFI_CONNECTED:
-        snprintf(b, sizeof b, LV_SYMBOL_WIFI " %s", w->ssid);
-        set_text_color(ui.wifi.state, KH_COL_GREEN, 0);
-        break;
-    case KH_WIFI_CONNECTING:
-        snprintf(b, sizeof b, "Connexion à %s…", w->ssid);
-        set_text_color(ui.wifi.state, KH_COL_AMBER, 0);
-        break;
-    case KH_WIFI_FAILED:
-        snprintf(b, sizeof b, "Échec : %s", w->ssid);
-        set_text_color(ui.wifi.state, KH_COL_RED, 0);
-        break;
-    default:
-        snprintf(b, sizeof b, "Non connecté");
-        set_text_color(ui.wifi.state, KH_COL_TEXT_MID, 0);
-    }
-    set_text(ui.wifi.state, b);
-
-    if (w->state == KH_WIFI_CONNECTED) {
-        if (loc->espnow_channel && w->channel != loc->espnow_channel)
-            snprintf(b, sizeof b, "%s · canal %u · %d dBm\n" LV_SYMBOL_WARNING " liaison avion sur canal %u : coupée", w->ip,
-                     w->channel, w->rssi, loc->espnow_channel);
-        else
-            snprintf(b, sizeof b, "%s · canal %u · %d dBm", w->ip, w->channel, w->rssi);
-    } else {
-        snprintf(b, sizeof b, w->scanning ? "Recherche des réseaux…" : "Touchez un réseau pour vous connecter");
-    }
-    set_text(ui.wifi.info, b);
-    set_text_color(ui.wifi.info,
-                                w->state == KH_WIFI_CONNECTED && loc->espnow_channel && w->channel != loc->espnow_channel
-                                    ? KH_COL_AMBER
-                                    : KH_COL_TEXT_DIM,
-                                0);
-    set_text(ui.wifi.lbl_scan, w->scanning ? LV_SYMBOL_REFRESH " …" : LV_SYMBOL_REFRESH " CHERCHER");
-
-    if (w->scan_gen != ui.wifi.scan_gen) {
-        ui.wifi.scan_gen = w->scan_gen;
-        rebuild_ap_list(w);
-    }
-    /* premier balayage automatique quand on arrive sur la page */
-    if (!ui.wifi.first_scan_done && kh_screen_page() == KH_PAGE_WIFI && s_cb.on_wifi_scan) {
-        ui.wifi.first_scan_done = true;
-        s_cb.on_wifi_scan();
-    }
-
-    const kh_ota_status_t *o = &loc->ota;
-    long ago = o->last_check_ms ? (long)((now - o->last_check_ms) / 1000) : -1;
-    switch (o->state) {
-    case KH_OTA_UP_TO_DATE: snprintf(b, sizeof b, "v%s · à jour", o->running); break;
-    case KH_OTA_DOWNLOADING: snprintf(b, sizeof b, "Mise à jour v%s : %d %%", o->remote, o->progress_pct); break;
-    case KH_OTA_DEFERRED: snprintf(b, sizeof b, "v%s prête, après arrêt moteurs", o->remote); break;
-    case KH_OTA_FAILED: snprintf(b, sizeof b, "v%s · échec mise à jour v%s", o->running, o->remote); break;
-    case KH_OTA_CHECK_FAIL: snprintf(b, sizeof b, "v%s · GitHub injoignable", o->running); break;
-    default: snprintf(b, sizeof b, "v%s · MAJ auto avec Wi-Fi", o->running); break;
-    }
-    set_text(ui.wifi.ota, b);
-    set_text_color(ui.wifi.ota, o->state == KH_OTA_DOWNLOADING ? KH_COL_AMBER
-                                             : o->state == KH_OTA_FAILED  ? KH_COL_RED
-                                                                          : KH_COL_TEXT_DIM,
-                                0);
-    if (ago >= 0) snprintf(b, sizeof b, "GitHub vérifié il y a %ld s", ago);
-    else b[0] = 0;
-    set_text(ui.wifi.ota2, b);
-}
 
 /* ------------------------------------------------------------------ alerte */
 /* clignotement franc (2 états) : l'anneau n'est redessiné que 2 fois par période, pas à chaque image */
@@ -654,6 +391,49 @@ static void build_alarm(void)
     lv_obj_add_flag(r, LV_OBJ_FLAG_HIDDEN);
 }
 
+/* ------------------------------------------------------------------ mise à jour reçue de l'écran énergie */
+static void build_update(void)
+{
+    lv_obj_t *r = lv_obj_create(lv_layer_top());
+    lv_obj_set_size(r, KH_SCR_W, KH_SCR_H);
+    lv_obj_center(r);
+    lv_obj_set_style_radius(r, LV_RADIUS_CIRCLE, 0);
+    lv_obj_set_style_bg_color(r, KH_COL_BG, 0);
+    lv_obj_set_style_bg_opa(r, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(r, 0, 0);
+    lv_obj_clear_flag(r, LV_OBJ_FLAG_SCROLLABLE);
+    ui.upd.root = r;
+    lv_obj_t *t = label(r, &kh_font_24, KH_COL_BLUE, LV_SYMBOL_DOWNLOAD " MISE À JOUR");
+    lv_obj_align(t, LV_ALIGN_CENTER, 0, -96);
+    ui.upd.ver = label(r, &kh_font_18, KH_COL_TEXT_MID, "");
+    lv_obj_align(ui.upd.ver, LV_ALIGN_CENTER, 0, -58);
+    ui.upd.pct = label(r, &kh_font_64, KH_COL_TEXT, "0 %");
+    lv_obj_align(ui.upd.pct, LV_ALIGN_CENTER, 0, 4);
+    ui.upd.hint = label(r, &kh_font_18, KH_COL_TEXT_DIM, "reçue de l'écran énergie\nne pas couper l'alimentation");
+    lv_obj_set_style_text_align(ui.upd.hint, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_align(ui.upd.hint, LV_ALIGN_CENTER, 0, 84);
+    lv_obj_add_flag(r, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void update_upd(const kh_local_t *loc)
+{
+    const bool shown = !lv_obj_has_flag(ui.upd.root, LV_OBJ_FLAG_HIDDEN);
+    if (!loc->upd_rx) {
+        if (shown) lv_obj_add_flag(ui.upd.root, LV_OBJ_FLAG_HIDDEN);
+        return;
+    }
+    char b[48];
+    if (loc->peer.hello.upd_ver[0]) snprintf(b, sizeof b, "v%s → v%s", loc->fw, loc->peer.hello.upd_ver);
+    else snprintf(b, sizeof b, "v%s", loc->fw);
+    set_text(ui.upd.ver, b);
+    snprintf(b, sizeof b, "%d %%", loc->upd_rx_pct);
+    set_text(ui.upd.pct, b);
+    if (!shown) {
+        lv_obj_clear_flag(ui.upd.root, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(ui.upd.root);
+    }
+}
+
 /* ------------------------------------------------------------------ éléments communs */
 static void tv_cb(lv_event_t *e)
 {
@@ -716,9 +496,9 @@ void kh_screen_init(const kh_screen_cb_t *cb)
     build_energy(ui.tile[KH_PAGE_ENERGY]);
     build_vib(ui.tile[KH_PAGE_VIB]);
     build_system(ui.tile[KH_PAGE_SYSTEM]);
-    build_wifi(ui.tile[KH_PAGE_WIFI]);
     build_overlay();
     build_alarm();
+    build_update();
     lv_obj_add_event_cb(ui.tv, tv_cb, LV_EVENT_VALUE_CHANGED, NULL);
     tv_cb(NULL);
     lv_scr_load(ui.scr);
@@ -1012,18 +792,27 @@ static void update_system(const kh_model_t *m, const kh_local_t *loc, int64_t no
     set_text_color(ui.sys.lbl_demo, loc->demo ? KH_COL_BG : KH_COL_TEXT, 0);
     snprintf(b, sizeof b, LV_SYMBOL_IMAGE " %d %%", loc->brightness_pct);
     set_text(ui.sys.lbl_lum, b);
-    if (loc->bound)
-        snprintf(b, sizeof b, "maître %02X:%02X:%02X:%02X:%02X:%02X", loc->master_mac[0], loc->master_mac[1],
-                 loc->master_mac[2], loc->master_mac[3], loc->master_mac[4], loc->master_mac[5]);
+    /* écran énergie voisin : seul connecté au Wi-Fi, il apporte les mises à jour */
+    const kh_peer_status_t *p = &loc->peer;
+    char l1[64], l2[64];
+    if (p->alive)
+        snprintf(l1, sizeof l1, "énergie v%s%s%s", p->hello.fw, p->hello.ssid[0] ? " · Wi-Fi " : " · sans Wi-Fi", p->hello.ssid);
+    else if (p->hunting)
+        snprintf(l1, sizeof l1, "énergie : recherche (canal %u)", p->channel);
     else
-        b[0] = 0;
-    if (loc->reset_text[0]) {
-        char t[160];
-        snprintf(t, sizeof t, "%s\n%s", b, loc->reset_text);
-        set_text(ui.sys.mac, t);
-    } else {
-        set_text(ui.sys.mac, b);
+        snprintf(l1, sizeof l1, "énergie : %s", p->paired ? "PERDU" : "absent");
+    switch (p->alive ? p->hello.upd_state : KHP_UPD_NONE) {
+    case KHP_UPD_UP_TO_DATE: snprintf(l2, sizeof l2, "v%s · à jour", loc->fw); break;
+    case KHP_UPD_DOWNLOADING: snprintf(l2, sizeof l2, "v%s → v%s : téléchargement %u %%", loc->fw, p->hello.upd_ver, p->hello.upd_pct); break;
+    case KHP_UPD_WAITING: snprintf(l2, sizeof l2, "v%s prête : arrêter les moteurs", p->hello.upd_ver); break;
+    case KHP_UPD_SENDING: snprintf(l2, sizeof l2, "v%s : envoi %u %%", p->hello.upd_ver, p->hello.upd_pct); break;
+    case KHP_UPD_FAILED: snprintf(l2, sizeof l2, "v%s · échec mise à jour v%s", loc->fw, p->hello.upd_ver); break;
+    default: snprintf(l2, sizeof l2, "v%s", loc->fw); break;
     }
+    char t[200];
+    snprintf(t, sizeof t, "%s\n%s%s%s", l1, l2, loc->reset_text[0] ? "\n" : "", loc->reset_text);
+    set_text(ui.sys.mac, t);
+    set_text_color(ui.sys.mac, p->paired && !p->alive ? KH_COL_AMBER : KH_COL_TEXT_DIM, 0);
 }
 
 static void update_status(const kh_model_t *m, const kh_local_t *loc, int64_t now)
@@ -1072,9 +861,9 @@ void kh_screen_update(const kh_model_t *m, const kh_local_t *loc, int64_t now)
     case KH_PAGE_ENERGY: update_energy(m, loc, now); break;
     case KH_PAGE_VIB: update_vib(m, now); break;
     case KH_PAGE_SYSTEM: update_system(m, loc, now); break;
-    case KH_PAGE_WIFI: update_wifi(loc, now); break;
     default: break;
     }
     update_alarm(m);
+    update_upd(loc);
     update_throttle(now);
 }

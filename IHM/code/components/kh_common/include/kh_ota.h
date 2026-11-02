@@ -49,6 +49,28 @@ void kh_ota_get_status(kh_ota_status_t *out);
 /* À appeler une fois l'application jugée saine (annule le retour arrière) */
 void kh_ota_mark_valid(void);
 
+/* ── Écran énergie : mise à jour de l'écran rond par ESP-NOW ──
+ * Si KHEPRI_OTA_PEER_MANIFEST_URL n'est pas vide, la tâche OTA lit aussi le manifeste du rond ;
+ * quand la version publiée diffère de celle que le rond annonce (kh_peer), elle télécharge
+ * l'image dans la partition « fw_rond » (à défaut, dans sa propre partition OTA libre), en
+ * vérifie le SHA-256, la propose au rond (moteurs arrêtés, pas d'alerte) puis la lui envoie
+ * avec la bibliothèque esp-now OTA. */
+typedef struct {
+    uint8_t state;      /* KHP_UPD_* */
+    uint8_t pct;        /* téléchargement ou envoi */
+    char remote[32];    /* version publiée pour le rond */
+} kh_ota_peer_status_t;
+void kh_ota_get_peer_status(kh_ota_peer_status_t *out);
+
+/* ── Écran rond : réception d'une mise à jour poussée par l'écran énergie ──
+ * kh_ota_rx_accept() arme la réception (esp-now OTA, vers la partition OTA libre) ; la
+ * progression arrive par le rappel ; à la fin, l'écran redémarre sur la nouvelle version.
+ * kh_ota_rx_tick() (1 Hz) désarme la réception si plus rien n'arrive pendant 3 minutes. */
+typedef void (*kh_ota_rx_cb_t)(int pct, bool done, bool failed);
+void kh_ota_rx_accept(kh_ota_rx_cb_t cb);
+void kh_ota_rx_tick(void);
+bool kh_ota_rx_active(void);
+
 #ifdef __cplusplus
 }
 #endif

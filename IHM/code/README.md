@@ -12,8 +12,10 @@ page en vol, mêmes couleurs sur les deux écrans, rien d'affiché quand tout va
 
 ![Les deux écrans](docs/apercus/cote_a_cote.png)
 
-Les deux écrans reçoivent la même télémétrie du maître (ESP-NOW) et se mettent à jour seuls
-depuis ce dépôt GitHub quand ils sont connectés au Wi-Fi.
+Les deux écrans **se trouvent tout seuls au démarrage** et se parlent en ESP-NOW (filaire plus
+tard, peut-être). Le rond reçoit la télémétrie du maître et la relaie à l'écran énergie. **Seul
+l'écran énergie va sur le Wi-Fi** : il se met à jour depuis ce dépôt, et pousse au rond ses
+mises à jour par ESP-NOW.
 
 ## Arborescence
 
@@ -21,7 +23,8 @@ depuis ce dépôt GitHub quand ils sont connectés au Wi-Fi.
 ecran_rond_1.75/      projet ESP-IDF de l'écran rond (main.c, khepri_screen.c, gestes knob.c…)
 ecran_energie_1.64/   projet ESP-IDF de l'écran énergie (main.c, energie_screen.c), cartes V1 / V1.1
 components/           commun aux deux écrans et à la passerelle
-  kh_common/          liaison ESP-NOW (khepri_link), Wi-Fi (kh_wifi), mises à jour OTA (kh_ota)
+  kh_common/          liaison avec le maître (khepri_link), entre écrans (kh_peer), Wi-Fi (kh_wifi),
+                      mises à jour (kh_ota : GitHub, et rond ← énergie par ESP-NOW)
   kh_fonts/           polices Montserrat 14-64 px + thème de couleurs (kh_theme.h)
   khepri_proto/       protocole ESP-NOW, trames CAN, modèle, calcul d'autonomie, simulation (C pur)
   lvgl/, esp-now/, cmake_utilities/, esp_lcd_sh8601/, i2c_bsp/, qmi8658/
@@ -46,23 +49,34 @@ python -m esptool --chip esp32s3 -p COM11 -b 460800 write-flash 0x0 <fichier>
 ```
 
 ou https://espressif.github.io/esptool-js/ (Chrome/Edge). Le flash USB écrit aussi la table de
-partitions OTA ; ensuite tout passe par le Wi-Fi. Un écran rond déjà en 1.4.1 n'a pas besoin du
-flash USB : il passe tout seul en 1.5.0 (l'ancien manifeste `release/version.json` reste tenu à
-jour et pointe vers la nouvelle image).
+partitions ; ensuite tout passe par le Wi-Fi de l'écran énergie.
+
+- **Écran énergie** : le flash USB de la 1.1.0 ajoute la partition `fw_rond` (4 Mo) où il range
+  l'image du rond. Un écran énergie mis à jour par Wi-Fi depuis la 1.0.0 garde l'ancienne table :
+  ça marche quand même (il range alors l'image du rond dans sa partition OTA libre).
+- **Écran rond** : un rond en 1.4.1 ou 1.5.0 connecté au Wi-Fi passe seul en 1.6.0 (l'ancien
+  manifeste `release/version.json` reste tenu à jour). À partir de la 1.6.0, il ne va plus sur le
+  Wi-Fi : ses mises à jour arrivent par l'écran énergie.
 
 ## Mises à jour OTA
 
-Connecté au Wi-Fi, chaque écran lit **son** manifeste toutes les 60 s :
+Seul l'écran énergie est connecté au Wi-Fi (page RÉGLAGES → Wi-Fi). Toutes les 60 s :
 
-| Écran | Manifeste | Champ de l'image |
-|---|---|---|
-| Rond | `release/ecran_rond/version.json` | `url` |
-| 1,64" V1 / V1.1 | `release/ecran_energie/version.json` | `url_V1` / `url_V1.1` |
+1. **Lui-même** : il lit `release/ecran_energie/version.json` (champ `url_V1` ou `url_V1.1` selon
+   sa carte) ; si la version diffère de la sienne, il télécharge l'image, l'écrit dans son autre
+   partition et redémarre.
+2. **L'écran rond** : il lit `release/ecran_rond/version.json` et compare avec la version que le
+   rond lui annonce. Si elle diffère :
+   - il télécharge l'image dans sa partition `fw_rond` et en vérifie le SHA-256 ;
+   - il la **propose** au rond, qui n'accepte que moteurs arrêtés et sans alerte (sinon : « prête,
+     arrêter les moteurs », nouvel essai toutes les 10 s) ;
+   - il l'**envoie par ESP-NOW** (bibliothèque esp-now OTA, paquets acquittés et reprise des
+     manquants) ; le rond l'écrit dans sa partition libre, affiche la progression en plein écran,
+     puis redémarre dessus. 3 essais au plus par version.
 
-Si la version diffère de la sienne (`PROJECT_VER`), il télécharge l'image en HTTPS, l'écrit dans
-l'autre partition et redémarre ; si elle ne tient pas 20 s, le chargeur revient à l'ancienne.
-Jamais pendant que les moteurs tournent (ni pendant une alerte sur le rond). Le CDN de GitHub
-garde les fichiers jusqu'à 5 min.
+Les deux écrans gardent le retour arrière : une version qui ne tient pas 20 s est abandonnée au
+profit de l'ancienne. L'état est affiché dans RÉGLAGES (écran énergie) et en bas de SYSTÈME
+(écran rond). Le CDN de GitHub garde les fichiers jusqu'à 5 min.
 
 **Publier :**
 
@@ -72,31 +86,36 @@ python tools/publier_maj.py tout --compiler     # ou rond / energie / passerelle
 git add -A release ecran_* && git commit -m "écrans : …" && git push
 ```
 
-Le dépôt est public et les images ne sont pas signées : à verrouiller (branche protégée,
-Secure Boot) avant un usage en vol. Wi-Fi et ESP-NOW partagent la radio : connecté à un point
-d'accès sur un autre canal que le maître, un écran perd la liaison avion (indiqué à l'écran).
-Le Wi-Fi est prévu pour le sol.
+Le dépôt est public et les images ne sont pas signées ; le rond n'arme la réception par ESP-NOW
+qu'après une proposition de son écran énergie, mais n'importe quel émetteur esp-now OTA proche
+pourrait alors lui envoyer une image. À verrouiller (branche protégée, Secure Boot, chiffrement
+ESP-NOW) avant un usage en vol.
 
-## Tester le double affichage
+## Liaison entre les deux écrans
 
-**Avec les deux écrans seulement** (pas de passerelle) — l'écran rond en simulation sert de maître :
+Rien à faire : à la mise sous tension, chaque écran annonce son rôle ; le premier écran de l'autre
+rôle entendu à moins de −75 dBm (côte à côte) devient son partenaire jusqu'au prochain démarrage
+(bouton RÉAPPAIRER sur l'écran énergie pour en changer).
 
-1. Écran rond : page SYSTÈME, **SIMU** activée (c'est le réglage d'usine).
-2. Écran 1,64" : glisser deux fois vers la droite → RÉGLAGES, **SIMULATION : NON**, puis **LIER**,
-   les deux écrans à quelques centimètres l'un de l'autre.
-3. Le 1,64" affiche SIMULATION en haut et suit le rond : en roulant le rond vers la droite (consigne
-   de régime en hausse), la flèche de bilan du 1,64" passe vers le bas.
+- **rond → énergie** : la télémétrie que le rond reçoit du maître, ou sa simulation (SIMU) ;
+  l'écran énergie affiche donc la même chose, et suit la consigne réglée au roulis sur le rond.
+- **énergie → rond** : état du Wi-Fi et des mises à jour (bas de la page SYSTÈME), puis les
+  mises à jour elles-mêmes.
 
-**Avec la passerelle** (un troisième ESP32-S3) : flasher la passerelle, désactiver SIMU sur les
-deux écrans, puis LIER chacun. La passerelle sert les deux écrans et suit la consigne du rond.
+**Canal radio.** Connecté à un point d'accès, l'écran énergie passe sur le canal de ce point
+d'accès. Le rond, s'il n'a pas de maître (ou est en SIMU) et n'entend plus l'écran énergie,
+parcourt les canaux pour le retrouver (« recherche (canal N) » en bas de SYSTÈME). Lié à un vrai
+maître, il reste sur le canal du maître : le Wi-Fi de l'écran énergie est donc pour le sol.
 
-Pour revenir au vrai maître : DÉLIER puis LIER à côté du maître.
+**Tester** : flasher les deux écrans, les poser côte à côte, allumer. Le rond démarre en SIMU :
+l'écran énergie affiche SIMULATION et sa flèche de bilan bouge quand on roule le rond.
 
 ## Liaison ESP-NOW (`components/khepri_proto/include/khepri_espnow.h`)
 
-1. **Appairage** : LIER sur l'écran, à quelques centimètres du maître. L'écran est initiateur
-   `espnow_ctrl` (attribut `KEY_7`) ; il retient en NVS le premier maître qui lui envoie de la
-   télémétrie et ignore ensuite les autres. Le maître sert jusqu'à 4 écrans liés.
+1. **Appairage avec le maître** : LIER sur l'écran rond, à quelques centimètres du maître. Le rond
+   est initiateur `espnow_ctrl` (attribut `KEY_7`) ; il retient en NVS le premier maître qui lui
+   envoie de la télémétrie et ignore ensuite les autres. L'écran énergie n'a pas besoin de se
+   lier au maître : le rond lui relaie tout.
 2. **Télémétrie maître → écrans** (10 Hz) : trames CAN telles quelles — SYNC 0x600, chaussettes
    0x601-0x605 et 0x621-0x625, BSR Drive `Get_Encoder_Estimates` (0x009) et
    `Get_Bus_Voltage_Current` (0x017) des axes 0 et 1, **énergie 0x680 (batterie : SOC, U, I, Wh) et

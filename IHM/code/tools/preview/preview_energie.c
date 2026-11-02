@@ -78,10 +78,17 @@ int main(int argc, char **argv)
     ke_screen_init(NULL);
     kh_model_t m;
     kh_model_init(&m);
-    ke_local_t loc = {.bound = true, .brightness_pct = 100, .espnow_channel = 1, .thrust_ref_w = 3500, .batt_wh = 4480,
-                      .pv_peak_w = 980, .level_w = 2500, .board = "V1.1",
-                      .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
-    strcpy(loc.ota.running, "1.0.0");
+    ke_local_t loc = {.brightness_pct = 100, .espnow_channel = 1, .thrust_ref_w = 3500, .batt_wh = 4480,
+                      .pv_peak_w = 980, .level_w = 2500, .board = "V1.1"};
+    loc.peer.paired = loc.peer.alive = true;
+    loc.peer.rssi = -38;
+    loc.peer.channel = 6;
+    memcpy(loc.peer.mac, (uint8_t[]){0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}, 6);
+    strcpy(loc.peer.hello.fw, "1.6.0");
+    loc.rond.state = KHP_UPD_SENDING;
+    loc.rond.pct = 37;
+    strcpy(loc.rond.remote, "1.7.0");
+    strcpy(loc.ota.running, "1.1.0");
     loc.ota.state = KH_OTA_UP_TO_DATE;
     int64_t t = 0;
 
@@ -144,11 +151,12 @@ int main(int argc, char **argv)
     ke_screen_update(&low, &loc, t);
     lv_timer_handler();
     dump(dir, "8_batterie_faible");
-    /* liaison perdue */
+    /* écran rond perdu */
+    loc.peer.alive = false;
     t += 5000;
     lv_tick_inc(5000);
     ke_screen_update(&m, &loc, t);
     lv_timer_handler();
-    dump(dir, "9_liaison_perdue");
+    dump(dir, "9_ecran_rond_perdu");
     return 0;
 }

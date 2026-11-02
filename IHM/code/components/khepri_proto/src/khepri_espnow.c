@@ -59,3 +59,103 @@ int khn_unpack(const uint8_t *buf, size_t len, khn_hdr_t *hdr, khn_frame_t *out,
     if (hdr) *hdr = h;
     return (int)n;
 }
+
+/* ------------------------------------------------------------------ liaison entre écrans */
+#define KHP_HDR 4 /* 'K' 'Q' version type */
+
+static size_t khp_head(uint8_t *buf, size_t cap, uint8_t type, size_t body)
+{
+    if (!buf || cap < KHP_HDR + body) return 0;
+    buf[0] = KHN_MAGIC0;
+    buf[1] = KHP_MAGIC1;
+    buf[2] = KHP_VERSION;
+    buf[3] = type;
+    return KHP_HDR + body;
+}
+
+int khp_type(const uint8_t *buf, size_t len)
+{
+    if (!buf || len < KHP_HDR || buf[0] != KHN_MAGIC0 || buf[1] != KHP_MAGIC1 || buf[2] != KHP_VERSION) return 0;
+    return buf[3];
+}
+
+static void put_str(uint8_t *d, const char *s, size_t n)
+{
+    memset(d, 0, n);
+    if (s) {
+        size_t l = strlen(s);
+        memcpy(d, s, l < n - 1 ? l : n - 1);
+    }
+}
+static void get_str(char *s, const uint8_t *d, size_t n)
+{
+    memcpy(s, d, n);
+    s[n - 1] = 0;
+}
+
+#define HELLO_BODY (2 + KHP_FW_LEN + 2 + KHP_FW_LEN + KHP_SSID_LEN)
+size_t khp_pack_hello(uint8_t *buf, size_t cap, const khp_hello_t *h)
+{
+    size_t n = khp_head(buf, cap, KHP_T_HELLO, HELLO_BODY);
+    if (!n) return 0;
+    uint8_t *p = buf + KHP_HDR;
+    *p++ = h->role;
+    *p++ = h->flags;
+    put_str(p, h->fw, KHP_FW_LEN), p += KHP_FW_LEN;
+    *p++ = h->upd_state;
+    *p++ = h->upd_pct;
+    put_str(p, h->upd_ver, KHP_FW_LEN), p += KHP_FW_LEN;
+    put_str(p, h->ssid, KHP_SSID_LEN);
+    return n;
+}
+bool khp_unpack_hello(const uint8_t *buf, size_t len, khp_hello_t *h)
+{
+    if (khp_type(buf, len) != KHP_T_HELLO || len != KHP_HDR + HELLO_BODY) return false;
+    const uint8_t *p = buf + KHP_HDR;
+    h->role = *p++;
+    h->flags = *p++;
+    get_str(h->fw, p, KHP_FW_LEN), p += KHP_FW_LEN;
+    h->upd_state = *p++;
+    h->upd_pct = *p++;
+    get_str(h->upd_ver, p, KHP_FW_LEN), p += KHP_FW_LEN;
+    get_str(h->ssid, p, KHP_SSID_LEN);
+    return true;
+}
+
+#define OFFER_BODY (KHP_FW_LEN + 4 + 16)
+size_t khp_pack_offer(uint8_t *buf, size_t cap, const khp_offer_t *o)
+{
+    size_t n = khp_head(buf, cap, KHP_T_OFFER, OFFER_BODY);
+    if (!n) return 0;
+    uint8_t *p = buf + KHP_HDR;
+    put_str(p, o->ver, KHP_FW_LEN), p += KHP_FW_LEN;
+    for (int i = 0; i < 4; i++) *p++ = (uint8_t)(o->size >> (8 * i));
+    memcpy(p, o->id, 16);
+    return n;
+}
+bool khp_unpack_offer(const uint8_t *buf, size_t len, khp_offer_t *o)
+{
+    if (khp_type(buf, len) != KHP_T_OFFER || len != KHP_HDR + OFFER_BODY) return false;
+    const uint8_t *p = buf + KHP_HDR;
+    get_str(o->ver, p, KHP_FW_LEN), p += KHP_FW_LEN;
+    o->size = 0;
+    for (int i = 0; i < 4; i++) o->size |= (uint32_t)*p++ << (8 * i);
+    memcpy(o->id, p, 16);
+    return true;
+}
+
+size_t khp_pack_answer(uint8_t *buf, size_t cap, const khp_answer_t *a)
+{
+    size_t n = khp_head(buf, cap, KHP_T_ANSWER, 2);
+    if (!n) return 0;
+    buf[KHP_HDR] = a->accept;
+    buf[KHP_HDR + 1] = a->reason;
+    return n;
+}
+bool khp_unpack_answer(const uint8_t *buf, size_t len, khp_answer_t *a)
+{
+    if (khp_type(buf, len) != KHP_T_ANSWER || len != KHP_HDR + 2) return false;
+    a->accept = buf[KHP_HDR];
+    a->reason = buf[KHP_HDR + 1];
+    return true;
+}

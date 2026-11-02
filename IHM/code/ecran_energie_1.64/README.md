@@ -4,6 +4,10 @@
 côté de l'écran rond. Il montre l'énergie **en permanence, sans changer de page en vol** ; le rond
 garde le régime moteur. Il est passif : aucune commande moteur ne part d'ici.
 
+Il se lie tout seul au rond au démarrage et affiche la télémétrie que celui-ci lui relaie. C'est
+**le seul écran connecté au Wi-Fi** : il se met à jour, et met à jour le rond par ESP-NOW (voir le
+README du dossier parent).
+
 ![Aperçus](../docs/apercus/energie/planche.png)
 
 ## Page ÉNERGIE (toujours affichée en vol)
@@ -18,7 +22,8 @@ garde le régime moteur. Il est passif : aucune commande moteur ne part d'ici.
   une faute). Sa longueur suit la racine carrée du flux, même échelle dans les deux sens, pleine
   longueur à 3,5 kW : les petits flux restent visibles. Sous 25 W, pas de flèche : le trait du
   zéro s'épaissit (bilan nul, la motorisation suit le soleil).
-- En haut, rien quand tout va bien ; sinon SIMULATION, LIAISON PERDUE, NON APPAIRÉ.
+- En haut, rien quand tout va bien ; sinon SIMULATION, ÉCRAN ROND PERDU, RECHERCHE ÉCRAN ROND,
+  PAS DE DONNÉES (le rond répond mais n'a rien à relayer).
 
 Le bilan est mesuré à la batterie (U × I du BMS, trame 0x680) ; sans BMS, il est déduit du
 solaire moins les moteurs.
@@ -27,8 +32,9 @@ solaire moins les moteurs.
 
 1. **DÉTAILS** : SOC, tension, courant (+ en charge), Wh et Ah restants ; solaire total, % de la
    crête, par aile ; bilan en W ; puissance des moteurs ; heures de palier, temps de recharge.
-2. **RÉGLAGES** : liaison (LIER / DÉLIER), simulation, luminosité, Wi-Fi (liste des réseaux et
-   clavier), état des mises à jour (toucher pour vérifier), version et révision de carte.
+2. **RÉGLAGES** : écran rond (version, signal, canal ; RÉAPPAIRER), simulation locale,
+   luminosité, Wi-Fi (liste des réseaux et clavier), mises à jour de cet écran (toucher pour
+   vérifier) et du rond, révision de carte.
 
 **Retour automatique à la page ÉNERGIE après 10 s sans toucher l'écran** (60 s dans la fenêtre
 Wi-Fi).
@@ -59,12 +65,11 @@ ou, depuis `IHM/code` : `python tools/publier_maj.py energie --compiler` (compil
 Les réglages communs (canal ESP-NOW, batterie 4 480 Wh, solaire 980 W, palier 2 500 W,
 référence 3,5 kW, OTA) sont dans « KHEPRI - commun aux ecrans » : mêmes valeurs que l'écran rond.
 
-## Simulation autonome
+## Simulation locale
 
-Active au premier démarrage : un pilote fictif alterne moteur arrêté (charge), suivi du soleil
-(bilan nul), croisière et montée (décharge), sur un cycle de 2 minutes. Pour afficher les
-données du maître ou de l'écran rond, passer SIMULATION à NON puis LIER (voir le README du
-dossier parent).
+Désactivée par défaut : l'écran affiche ce que lui relaie le rond (qui démarre lui-même en SIMU).
+Activée dans RÉGLAGES, elle sert à tester cet écran seul : un pilote fictif alterne moteur arrêté,
+suivi du soleil, croisière et montée, sur un cycle de 2 minutes.
 
 ## Non vérifié sur matériel
 

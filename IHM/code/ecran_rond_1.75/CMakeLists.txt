@@ -2,7 +2,7 @@
 # PROJECT_VER est la version comparée au manifeste OTA (release/ecran_rond/version.json) :
 # l'augmenter à chaque publication, sinon les écrans ne se mettent pas à jour.
 cmake_minimum_required(VERSION 3.16)
-set(PROJECT_VER "1.5.0")
+set(PROJECT_VER "1.6.0")
 set(EXTRA_COMPONENT_DIRS "${CMAKE_CURRENT_LIST_DIR}/../components")
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(khepri_display_175)

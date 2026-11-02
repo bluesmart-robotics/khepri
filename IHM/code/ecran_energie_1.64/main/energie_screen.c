@@ -35,7 +35,7 @@ static struct {
         lv_obj_t *v[12];
     } det;
     struct {
-        lv_obj_t *link, *link2, *btn_bind, *lbl_bind, *btn_demo, *lbl_demo, *btn_lum, *lbl_lum, *btn_wifi, *lbl_wifi;
+        lv_obj_t *link, *link2, *btn_bind, *lbl_bind, *btn_demo, *rond, *lbl_demo, *btn_lum, *lbl_lum, *btn_wifi, *lbl_wifi;
         lv_obj_t *ota, *ver;
     } set;
     struct {
@@ -46,7 +46,7 @@ static struct {
         kh_wifi_ap_t ap[KH_WIFI_MAX_AP];
         char sel_ssid[33];
     } wf;
-    bool bound, demo;
+    bool demo;
     int lum;
 } ui;
 
@@ -623,7 +623,7 @@ static void build_settings(lv_obj_t *t)
     lv_obj_align(ui.set.link, LV_ALIGN_TOP_MID, 0, 62);
     ui.set.link2 = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
     lv_obj_align(ui.set.link2, LV_ALIGN_TOP_MID, 0, 88);
-    ui.set.btn_bind = button(t, LV_SYMBOL_WIFI " LIER", 236, &ui.set.lbl_bind);
+    ui.set.btn_bind = button(t, LV_SYMBOL_REFRESH " RÉAPPAIRER", 236, &ui.set.lbl_bind);
     lv_obj_align(ui.set.btn_bind, LV_ALIGN_TOP_MID, 0, 116);
     ui.set.btn_demo = button(t, "SIMULATION", 236, &ui.set.lbl_demo);
     lv_obj_align(ui.set.btn_demo, LV_ALIGN_TOP_MID, 0, 174);
@@ -635,34 +635,35 @@ static void build_settings(lv_obj_t *t)
     lv_obj_add_flag(ui.set.ota, LV_OBJ_FLAG_CLICKABLE); /* toucher : vérifier tout de suite */
     lv_obj_set_ext_click_area(ui.set.ota, 12);
     lv_obj_add_event_cb(ui.set.ota, btn_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_align(ui.set.ota, LV_ALIGN_TOP_MID, 0, 356);
+    lv_obj_align(ui.set.ota, LV_ALIGN_TOP_MID, 0, 346);
+    ui.set.rond = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
+    lv_obj_align(ui.set.rond, LV_ALIGN_TOP_MID, 0, 366);
     ui.set.ver = label(t, &kh_font_14, KH_COL_TEXT_DIM, "");
-    lv_obj_align(ui.set.ver, LV_ALIGN_TOP_MID, 0, 378);
+    lv_obj_align(ui.set.ver, LV_ALIGN_TOP_MID, 0, 386);
 }
 
 static void update_settings(const kh_model_t *m, const ke_local_t *loc, int64_t now)
 {
     char b[96];
-    ui.bound = loc->bound;
     ui.demo = loc->demo;
-    if (loc->binding) {
-        set_text(ui.set.link, "Recherche d'un maître…");
-        set_text_color(ui.set.link, KH_COL_AMBER);
-    } else if (!loc->bound) {
-        set_text(ui.set.link, "Non appairé");
-        set_text_color(ui.set.link, KH_COL_TEXT_MID);
+    const kh_peer_status_t *p = &loc->peer;
+    if (p->alive) {
+        snprintf(b, sizeof b, LV_SYMBOL_OK " écran rond v%s", p->hello.fw);
+        set_text_color(ui.set.link, KH_COL_TEXT);
+    } else if (p->paired) {
+        snprintf(b, sizeof b, LV_SYMBOL_WARNING " écran rond perdu");
+        set_text_color(ui.set.link, KH_COL_RED);
     } else {
-        bool ok = kh_link_ok(m, now);
-        snprintf(b, sizeof b, "%s %02X:%02X:%02X:%02X:%02X:%02X", ok ? LV_SYMBOL_OK : LV_SYMBOL_WARNING, loc->master_mac[0],
-                 loc->master_mac[1], loc->master_mac[2], loc->master_mac[3], loc->master_mac[4], loc->master_mac[5]);
-        set_text(ui.set.link, b);
-        set_text_color(ui.set.link, ok ? KH_COL_TEXT : KH_COL_RED);
+        snprintf(b, sizeof b, "Recherche de l'écran rond…");
+        set_text_color(ui.set.link, KH_COL_AMBER);
     }
-    if (loc->bound && kh_link_ok(m, now))
-        snprintf(b, sizeof b, "%d dBm · %lu paquets%s", m->rssi, (unsigned long)m->rx_pkts, m->simulated ? " · simulés" : "");
-    else b[0] = 0;
+    set_text(ui.set.link, b);
+    if (p->paired)
+        snprintf(b, sizeof b, "%02X:%02X:%02X:%02X:%02X:%02X · %d dBm · canal %u%s", p->mac[0], p->mac[1], p->mac[2], p->mac[3],
+                 p->mac[4], p->mac[5], p->rssi, p->channel, kh_link_ok(m, now) && m->simulated ? " · simulé" : "");
+    else
+        b[0] = 0;
     set_text(ui.set.link2, b);
-    set_text(ui.set.lbl_bind, loc->binding ? LV_SYMBOL_REFRESH " RECHERCHE…" : loc->bound ? LV_SYMBOL_CLOSE " DÉLIER" : LV_SYMBOL_WIFI " LIER");
     set_text(ui.set.lbl_demo, loc->demo ? "SIMULATION : OUI" : "SIMULATION : NON");
     set_bg_color(ui.set.btn_demo, loc->demo ? KH_COL_AMBER : KH_COL_CARD2, 0);
     set_text_color(ui.set.lbl_demo, loc->demo ? KH_COL_BG : KH_COL_TEXT);
@@ -674,25 +675,42 @@ static void update_settings(const kh_model_t *m, const ke_local_t *loc, int64_t 
     set_text(ui.set.lbl_wifi, b);
 
     const kh_ota_status_t *o = &loc->ota;
+    char st[48];
     switch (o->state) {
-    case KH_OTA_UP_TO_DATE: snprintf(b, sizeof b, "à jour"); break;
-    case KH_OTA_DOWNLOADING: snprintf(b, sizeof b, "mise à jour v%s : %d %%", o->remote, o->progress_pct); break;
-    case KH_OTA_DEFERRED: snprintf(b, sizeof b, "v%s prête, après arrêt moteurs", o->remote); break;
-    case KH_OTA_FAILED: snprintf(b, sizeof b, "échec de la mise à jour v%s", o->remote); break;
-    case KH_OTA_CHECK_FAIL: snprintf(b, sizeof b, "GitHub injoignable"); break;
-    default: snprintf(b, sizeof b, "mise à jour auto avec le Wi-Fi"); break;
+    case KH_OTA_UP_TO_DATE: snprintf(st, sizeof st, "à jour"); break;
+    case KH_OTA_DOWNLOADING: snprintf(st, sizeof st, "mise à jour v%s %d %%", o->remote, o->progress_pct); break;
+    case KH_OTA_DEFERRED: snprintf(st, sizeof st, "v%s après arrêt moteurs", o->remote); break;
+    case KH_OTA_FAILED: snprintf(st, sizeof st, "échec mise à jour v%s", o->remote); break;
+    case KH_OTA_CHECK_FAIL: snprintf(st, sizeof st, "GitHub injoignable"); break;
+    default: snprintf(st, sizeof st, "MAJ auto avec le Wi-Fi"); break;
     }
+    snprintf(b, sizeof b, "écran énergie v%s · %s", o->running, st);
     set_text(ui.set.ota, b);
     set_text_color(ui.set.ota, o->state == KH_OTA_DOWNLOADING ? KH_COL_AMBER : o->state == KH_OTA_FAILED ? KH_COL_RED : KH_COL_TEXT_DIM);
-    snprintf(b, sizeof b, "écran énergie v%s · carte %s", o->running, loc->board);
+    snprintf(b, sizeof b, "carte %s", loc->board);
     set_text(ui.set.ver, b);
+
+    /* mise à jour de l'écran rond, poussée par cet écran */
+    const kh_ota_peer_status_t *rd = &loc->rond;
+    switch (rd->state) {
+    case KHP_UPD_UP_TO_DATE: snprintf(b, sizeof b, "écran rond v%s · à jour", rd->remote); break;
+    case KHP_UPD_DOWNLOADING: snprintf(b, sizeof b, "écran rond : téléchargement v%s %u %%", rd->remote, rd->pct); break;
+    case KHP_UPD_WAITING: snprintf(b, sizeof b, "écran rond : v%s prête (moteurs à l'arrêt)", rd->remote); break;
+    case KHP_UPD_SENDING: snprintf(b, sizeof b, "écran rond : envoi v%s %u %%", rd->remote, rd->pct); break;
+    case KHP_UPD_FAILED: snprintf(b, sizeof b, "écran rond : échec mise à jour v%s", rd->remote); break;
+    default: snprintf(b, sizeof b, p->alive ? "écran rond : MAJ via ce Wi-Fi" : ""); break;
+    }
+    set_text(ui.set.rond, b);
+    set_text_color(ui.set.rond, rd->state == KHP_UPD_SENDING || rd->state == KHP_UPD_DOWNLOADING ? KH_COL_AMBER
+                                : rd->state == KHP_UPD_FAILED                                    ? KH_COL_RED
+                                                                                                 : KH_COL_TEXT_DIM);
 }
 
 /* ------------------------------------------------------------------ boutons */
 static void btn_cb(lv_event_t *e)
 {
     lv_obj_t *b = lv_event_get_target(e);
-    if (b == ui.set.btn_bind && s_cb.on_bind) s_cb.on_bind(!ui.bound);
+    if (b == ui.set.btn_bind && s_cb.on_repair) s_cb.on_repair();
     else if (b == ui.set.btn_demo && s_cb.on_demo) s_cb.on_demo(!ui.demo);
     else if (b == ui.set.btn_lum) {
         ui.lum = ui.lum >= 100 ? 60 : ui.lum >= 60 ? 30 : 100;
@@ -713,12 +731,12 @@ static void update_status(const kh_model_t *m, const ke_local_t *loc, int64_t no
         set_text_color(ui.status, KH_COL_AMBER);
     } else if (kh_link_ok(m, now)) {
         set_text(ui.status, "");
-    } else if (loc->binding) {
-        set_text(ui.status, "RECHERCHE DU MAÎTRE");
-        set_text_color(ui.status, KH_COL_AMBER);
+    } else if (!loc->peer.alive) {
+        set_text(ui.status, loc->peer.paired ? LV_SYMBOL_WARNING " ÉCRAN ROND PERDU" : "RECHERCHE ÉCRAN ROND");
+        set_text_color(ui.status, loc->peer.paired ? KH_COL_RED : KH_COL_AMBER);
     } else {
-        set_text(ui.status, loc->bound ? LV_SYMBOL_WARNING " LIAISON PERDUE" : "NON APPAIRÉ");
-        set_text_color(ui.status, loc->bound ? KH_COL_RED : KH_COL_TEXT_DIM);
+        set_text(ui.status, LV_SYMBOL_WARNING " PAS DE DONNÉES");
+        set_text_color(ui.status, KH_COL_RED);
     }
 }
 

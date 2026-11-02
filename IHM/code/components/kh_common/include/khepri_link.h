@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "khepri_espnow.h"
@@ -31,16 +32,9 @@ bool khepri_link_send_cmd(uint8_t code, uint32_t arg);
 /* À appeler ~1 Hz : fin de la recherche, battement de cœur */
 void khepri_link_tick(void);
 
-/*
- * Relais de simulation : un écran en SIMU peut jouer le rôle du maître pour les autres écrans
- * (test du double affichage sans passerelle). Il accepte alors les demandes de liaison des
- * autres écrans et leur envoie ses trames simulées, marquées KHN_HF_DEMO. Hors SIMU, il refuse
- * toute liaison et n'émet rien.
- */
-void khepri_link_relay_init(void);
-void khepri_link_relay_enable(bool on);
-/* Envoie un paquet aux écrans liés à celui-ci ; renvoie le nombre d'écrans servis */
-int khepri_link_relay_send(const khn_frame_t *f, int n);
+/* Tout paquet de données qui n'est pas la télémétrie du maître lié (liaison entre écrans) */
+typedef void (*khepri_link_other_cb_t)(const uint8_t *src, const uint8_t *data, size_t size, int8_t rssi);
+void khepri_link_set_other_cb(khepri_link_other_cb_t cb);
 
 #ifdef __cplusplus
 }

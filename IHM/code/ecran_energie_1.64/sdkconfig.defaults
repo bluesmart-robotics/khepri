@@ -62,3 +62,5 @@ CONFIG_LV_ATTRIBUTE_FAST_MEM_USE_IRAM=n
 CONFIG_KH_I2C_SDA=47
 CONFIG_KH_I2C_SCL=48
 CONFIG_KHEPRI_OTA_MANIFEST_URL="https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/ecran_energie/version.json"
+# Seul l'écran énergie va sur le Wi-Fi : il pousse aussi les mises à jour de l'écran rond par ESP-NOW
+CONFIG_KHEPRI_OTA_PEER_MANIFEST_URL="https://raw.githubusercontent.com/bluesmart-robotics/khepri/main/IHM/code/release/ecran_rond/version.json"

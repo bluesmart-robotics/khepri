@@ -2,12 +2,10 @@ menu "KHEPRI - ecran energie 1.64"
 
     config KHEPRI_DEMO_DEFAULT
         bool "Simulation locale active au premier demarrage"
-        default y
+        default n
         help
-            L'ecran genere lui-meme des donnees plausibles (badge SIMULATION) tant qu'on ne
-            l'a pas desactivee depuis la page REGLAGES. Le choix est ensuite memorise en NVS.
-            Pour recevoir les donnees du maitre (ou de l'ecran rond en simulation), la desactiver
-            puis LIER. A desactiver avant tout vol.
+            Normalement non : l'ecran affiche ce que lui relaie l'ecran rond (donnees du maitre,
+            ou simulation du rond). La simulation locale sert a tester cet ecran seul.
 
     config KHEPRI_LCD_CS
         int "Broche CS de l'ecran (V1 : 9, V1.1 : 46)"

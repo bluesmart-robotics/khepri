@@ -80,36 +80,24 @@ int main(int argc, char **argv)
     kh_screen_init(NULL);
     kh_model_t m;
     kh_model_init(&m);
-    kh_local_t loc = {.thrust_ref_w = 3500, .batt_wh = 4480, .pv_peak_w = 980, .level_w = 2500, .reset_text = "mise sous tension · 0 anomalie(s)", .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
+    kh_local_t loc = {.thrust_ref_w = 3500, .batt_wh = 4480, .pv_peak_w = 980, .level_w = 2500, .bound = true, .brightness_pct = 100, .master_mac = {0x24, 0x58, 0x7C, 0x1A, 0x2B, 0x3C}};
     const void *knob = NULL;
     int64_t t = 0;
     kh_screen_set_throttle(80, 0);
     kh_demo_set_throttle(80);
 
     step(&m, &t, 20000, &loc, &knob);
-    const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_autonomie", "3_vibrations", "4_systeme", "5_wifi"};
-    /* page WI-FI : réseau connecté, résultat de balayage, mise à jour à jour */
+    const char *names[KH_PAGE_COUNT] = {"1_moteurs", "2_autonomie", "3_vibrations", "4_systeme"};
+    /* écran énergie voisin, connecté au Wi-Fi, rond à jour */
     loc.espnow_channel = 1;
-    loc.wifi.state = KH_WIFI_CONNECTED;
-    strcpy(loc.wifi.ssid, "Atelier-KHEPRI");
-    strcpy(loc.wifi.ip, "192.168.1.42");
-    loc.wifi.rssi = -54;
-    loc.wifi.channel = 1;
-    loc.wifi.saved = true;
-    const char *ss[] = {"Atelier-KHEPRI", "Livebox-4E20", "EAE-Invites", "iPhone de Antoine", "SFR_7A10"};
-    const int8_t rs[] = {-54, -63, -70, -48, -81};
-    for (int i = 0; i < 5; i++) {
-        strcpy(loc.wifi.ap[i].ssid, ss[i]);
-        loc.wifi.ap[i].rssi = rs[i];
-        loc.wifi.ap[i].channel = 1;
-        loc.wifi.ap[i].secure = i != 2;
-    }
-    loc.wifi.ap_count = 5;
-    loc.wifi.scan_gen = 1;
-    loc.ota.state = KH_OTA_UP_TO_DATE;
-    strcpy(loc.ota.running, "1.1.0");
-    strcpy(loc.ota.remote, "1.1.0");
-    loc.ota.last_check_ms = 19000;
+    strcpy(loc.fw, "1.6.0");
+    loc.peer.paired = loc.peer.alive = true;
+    loc.peer.rssi = -38;
+    loc.peer.channel = 1;
+    strcpy(loc.peer.hello.fw, "1.1.0");
+    strcpy(loc.peer.hello.ssid, "Atelier-KHEPRI");
+    loc.peer.hello.upd_state = KHP_UPD_UP_TO_DATE;
+    strcpy(loc.peer.hello.upd_ver, "1.6.0");
     for (int p = 0; p < KH_PAGE_COUNT; p++) {
         kh_screen_show_page((kh_page_t)p, false);
         step(&m, &t, 500, &loc, &knob);
@@ -121,14 +109,15 @@ int main(int argc, char **argv)
     dump(dir, "5_vibrations_avertissement");
     step(&m, &t, 61500 - (int)t, &loc, &knob);
     dump(dir, "6_alerte");
-    /* saisie du mot de passe (toucher un réseau de la liste) */
+    /* mise à jour reçue de l'écran énergie */
     kh_model_ack_alarm(&m, t);
-    kh_screen_show_page(KH_PAGE_WIFI, false);
-    step(&m, &t, 300, &loc, NULL);
-    kh_screen_debug_open_password("Livebox-4E20", "khepri2026");
-    lv_timer_handler();
-    dump(dir, "8_wifi_mot_de_passe");
-    kh_screen_debug_open_password(NULL, NULL);
+    loc.upd_rx = true;
+    loc.upd_rx_pct = 45;
+    strcpy(loc.peer.hello.upd_ver, "1.7.0");
+    step(&m, &t, 200, &loc, NULL);
+    dump(dir, "8_mise_a_jour");
+    loc.upd_rx = false;
+    strcpy(loc.peer.hello.upd_ver, "1.6.0");
     /* régime réduit au roulis : consigne 45 %, affichée pendant le réglage */
     kh_screen_show_page(KH_PAGE_MOTORS, false);
     step(&m, &t, 64500 - (int)t, &loc, &knob);

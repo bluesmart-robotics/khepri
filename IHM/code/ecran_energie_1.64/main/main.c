@@ -4,8 +4,9 @@
  * Même ossature que l'écran rond 1.75 :
  *   PARTIE 1  écran AMOLED en QSPI (pilote esp_lcd_sh8601, commandes de bsr_screen pour cette dalle)
  *   PARTIE 2  LVGL 8.3 : une seule tâche touche LVGL, tactile FT3168
- *   PARTIE 3  liaison ESP-NOW vers le maître (ou vers l'écran rond en simulation), simulation locale
- *   PARTIE 4  Wi-Fi (page RÉGLAGES) et mises à jour OTA depuis GitHub
+ *   PARTIE 3  liaison ESP-NOW automatique avec l'écran rond, qui lui relaie la télémétrie
+ *   PARTIE 4  Wi-Fi (seul cet écran s'y connecte) : ses mises à jour, et celles du rond, qu'il lui
+ *             pousse par ESP-NOW
  * L'écran est passif : aucune commande moteur ne part d'ici.
  */
 #include <math.h>
@@ -31,6 +32,7 @@
 #include "kh_model.h"
 #include "kh_ota.h"
 #include "kh_wifi.h"
+#include "kh_peer.h"
 #include "khepri_link.h"
 #include "lvgl.h"
 #include "nvs.h"
@@ -178,7 +180,7 @@ static void settings_save(void)
 {
     nvs_handle_t h;
     if (nvs_open("khepri", NVS_READWRITE, &h) != ESP_OK) return;
-    nvs_set_u8(h, "demo", s_local.demo);
+    nvs_set_u8(h, "sim", s_local.demo);
     nvs_set_u8(h, "lum", (uint8_t)s_local.brightness_pct);
     nvs_commit(h);
     nvs_close(h);
@@ -186,12 +188,16 @@ static void settings_save(void)
 
 static void settings_load(void)
 {
-    s_local.demo = CONFIG_KHEPRI_DEMO_DEFAULT;
+#ifdef CONFIG_KHEPRI_DEMO_DEFAULT
+    s_local.demo = true;
+#else
+    s_local.demo = false; /* normalement : on affiche ce que relaie l'écran rond */
+#endif
     s_local.brightness_pct = 100;
     nvs_handle_t h;
     if (nvs_open("khepri", NVS_READONLY, &h) != ESP_OK) return;
     uint8_t v;
-    if (nvs_get_u8(h, "demo", &v) == ESP_OK) s_local.demo = v;
+    if (nvs_get_u8(h, "sim", &v) == ESP_OK) s_local.demo = v;
     if (nvs_get_u8(h, "lum", &v) == ESP_OK) s_local.brightness_pct = v;
     nvs_close(h);
 }
@@ -206,7 +212,7 @@ static void model_reset(void)
     s_model.odrv_node[1] = CONFIG_KHEPRI_ODRV_NODE_M1;
 }
 
-static void ui_on_bind(bool bind) { khepri_link_bind(bind); }
+static void ui_on_repair(void) { kh_peer_repair(); }
 
 static void ui_on_demo(bool en)
 {
@@ -245,6 +251,7 @@ static bool ota_can_update(void)
 /* ══════════════════════════════════════════════
  *  Radio → modèle
  * ══════════════════════════════════════════════ */
+/* Télémétrie relayée par l'écran rond (celle du maître, ou sa simulation) */
 static void on_rx(const khn_hdr_t *h, const khn_frame_t *f, int n, int8_t rssi)
 {
     if (s_local.demo) return; /* la simulation locale a la main */
@@ -284,11 +291,13 @@ static void ui_task(void *arg)
         kh_model_t snap = s_model;
         xSemaphoreGive(s_model_mux);
 
-        s_local.bound = khepri_link_bound();
-        s_local.binding = khepri_link_binding();
-        khepri_link_master_mac(s_local.master_mac);
         kh_wifi_get_status(&s_local.wifi);
         kh_ota_get_status(&s_local.ota);
+        kh_ota_get_peer_status(&s_local.rond);
+        kh_peer_get(&s_local.peer);
+        bool wifi = s_local.wifi.state == KH_WIFI_CONNECTED;
+        kh_peer_set_hello((wifi ? KHP_F_WIFI : 0) | (s_local.demo ? KHP_F_DEMO : 0), s_local.rond.state, s_local.rond.pct,
+                          s_local.rond.remote, wifi ? s_local.wifi.ssid : "");
         xSemaphoreTake(s_snap_mux, portMAX_DELAY);
         s_snap_model = snap;
         s_snap_local = s_local;
@@ -406,7 +415,7 @@ void app_main(void)
     s_local.level_w = CONFIG_KHEPRI_LEVEL_POWER_W;
     strlcpy(s_local.board, CONFIG_KHEPRI_BOARD_REV, sizeof s_local.board);
 
-    const ke_cb_t cb = {.on_bind = ui_on_bind,
+    const ke_cb_t cb = {.on_repair = ui_on_repair,
                         .on_demo = ui_on_demo,
                         .on_brightness = ui_on_brightness,
                         .on_wifi_scan = ui_on_wifi_scan,
@@ -417,8 +426,10 @@ void app_main(void)
     set_brightness(s_local.brightness_pct);
     start_task(lvgl_task, "lvgl", 12 * 1024, 5, 1, false);
 
-    /* ── PARTIE 3 : radio ── */
-    khepri_link_init(on_rx);
+    /* ── PARTIE 3 : radio, liaison avec l'écran rond ── */
+    khepri_link_init(NULL); /* pas de maître direct : tout passe par l'écran rond */
+    if (khepri_link_bound()) khepri_link_bind(false); /* oublie une liaison directe d'une version précédente */
+    kh_peer_init(KHP_ROLE_ENERGIE, on_rx);
     /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
     kh_wifi_init();
     kh_ota_init(ota_can_update);

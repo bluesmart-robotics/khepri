@@ -76,6 +76,33 @@ int main(void)
     CHECK(m.sync.flags == (KP_SYNC_UTC | KP_SYNC_PPS));
     CHECK(kh_link_ok(&m, 99900) && !kh_link_ok(&m, 120000));
 
+    /* liaison entre écrans : HELLO, proposition, réponse */
+    {
+        uint8_t b[128];
+        khp_hello_t h = {.role = KHP_ROLE_ENERGIE, .flags = KHP_F_WIFI | KHP_F_SEEK, .upd_state = KHP_UPD_SENDING, .upd_pct = 42};
+        strcpy(h.fw, "1.1.0");
+        strcpy(h.upd_ver, "1.6.0");
+        strcpy(h.ssid, "reseau-atelier-khepri-2"); /* 23 caractères : la taille maximale */
+        size_t n = khp_pack_hello(b, sizeof b, &h);
+        khp_hello_t g;
+        CHECK(n > 0 && khp_type(b, n) == KHP_T_HELLO && khp_unpack_hello(b, n, &g));
+        CHECK(g.role == KHP_ROLE_ENERGIE && g.flags == h.flags && g.upd_pct == 42 && !strcmp(g.fw, "1.1.0"));
+        CHECK(!strcmp(g.upd_ver, "1.6.0") && !strcmp(g.ssid, h.ssid));
+        khn_frame_t fr[2] = {0};
+        CHECK(khn_unpack(b, n, NULL, fr, 2) < 0);       /* jamais pris pour de la télémétrie */
+        size_t k = khn_pack(b, sizeof b, 1, 0, fr, 1);
+        CHECK(khp_type(b, k) == 0);                     /* et inversement */
+        khp_offer_t o = {.size = 1518496}, o2;
+        strcpy(o.ver, "1.6.0");
+        for (int i = 0; i < 16; i++) o.id[i] = (uint8_t)(i * 17);
+        n = khp_pack_offer(b, sizeof b, &o);
+        CHECK(khp_unpack_offer(b, n, &o2) && o2.size == o.size && !memcmp(o2.id, o.id, 16) && !strcmp(o2.ver, "1.6.0"));
+        khp_answer_t a = {.accept = 0, .reason = KHP_REFUSE_MOTORS}, a2;
+        n = khp_pack_answer(b, sizeof b, &a);
+        CHECK(khp_unpack_answer(b, n, &a2) && !a2.accept && a2.reason == KHP_REFUSE_MOTORS);
+        CHECK(!khp_unpack_answer(b, n - 1, &a2));
+    }
+
     /* autonomie : 50 % de 4 000 Wh, 500 W de soleil sur 1 000 W installés, palier à 2 500 W */
     {
         kh_model_t e;

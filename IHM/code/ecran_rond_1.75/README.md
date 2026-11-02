@@ -13,8 +13,7 @@ rectangulaire voisin ([`../ecran_energie_1.64`](../ecran_energie_1.64)).
 | Principale | Une seule jauge verte sur le pourtour, sens horaire : 0 % à 20° après le bas, 100 % à 45° avant le bas (100 % = 3,5 kW électriques M0 + M1, réglable `KHEPRI_THRUST_REF_W`) ; au-delà, la jauge continue en ambre jusqu'à ≈ 122 %. Au centre, le pourcentage seul. Pastille blanche = consigne de régime ; « consigne NN % » s'affiche 2 s pendant le réglage. Les chaussettes n'apparaissent qu'en cas de vibration anormale |
 | Autonomie | Deux barres verticales (rien de circulaire, pour ne pas confondre avec le moteur) : à gauche l'état de charge de la batterie (vert, ambre < 30 %, rouge < 15 %), à droite la production solaire (vide = rien, pleine = puissance crête installée, 980 W par défaut). Dessous : « X h de palier » = énergie restante / (puissance de palier − production solaire), « palier illimité » si le soleil suffit ; « pleine dans X h » = énergie manquante / production. Données : trames 0x680 (batterie) et 0x681 (solaire) émises par le maître |
 | VIBRATIONS | RMS vectoriel par chaussette, repères 3 000 / 6 000 mg, amplitudes 1P M0 · M1 |
-| SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité |
-| WI-FI | Réseaux à portée (balayage), saisie du mot de passe au clavier tactile, réseau mémorisé, OUBLIER ; version et état des mises à jour |
+| SYSTÈME | Liaison radio, heure GPS, état et défauts des chaussettes ; LIER/DÉLIER, REPÈRE, SIMU, luminosité ; en bas : écran énergie et mises à jour |
 | Alerte | Plein écran rouge sur trame ALARME niveau 2 ; acquittée au toucher, par une poussée ou au bouton PWR, puis 30 s de silence pour cette chaussette |
 
 Une donnée plus vieille que 3 s s'affiche `---`. Principe : on ne dit rien quand tout va bien. Le bandeau du haut
@@ -49,12 +48,13 @@ reste vide si la liaison est bonne et n'indique que LIAISON PERDUE, NON APPAIRÉ
   l'alerte clignote en deux états au lieu d'un fondu redessiné à chaque image.
 - Le journal série donne toutes les 10 s : images/s, temps de rendu moyen et maximal.
 
-## Relais de simulation
+## Écran énergie voisin
 
-En SIMU, l'écran rond accepte la liaison des autres écrans KHÉPRI et leur envoie ses trames
-simulées (10 Hz, marquées simulation). C'est ce qui permet de tester le double affichage sans
-passerelle : la consigne réglée au roulis sur le rond fait bouger la flèche de bilan de l'écran
-énergie. Hors SIMU, il refuse toute liaison et n'émet rien. Voir le README du dossier parent.
+L'écran rond se lie tout seul, au démarrage, à l'écran énergie posé à côté, et lui relaie la
+télémétrie (celle du maître, ou sa simulation). Il ne va plus sur le Wi-Fi : c'est l'écran
+énergie qui lui apporte ses mises à jour, par ESP-NOW. Il ne les accepte que moteurs arrêtés et
+sans alerte, affiche alors « MISE À JOUR · NN % » en plein écran, puis redémarre. Le bas de la
+page SYSTÈME indique l'écran énergie (version, Wi-Fi) et l'état des mises à jour.
 
 ## Réglages
 

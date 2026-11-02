@@ -81,6 +81,69 @@ enum {
     KHN_CMD_THROTTLE = 0x5,  /* arg : consigne de régime en ‰ de la puissance de référence   */
                              /*       (0 à 1220) ; le maître décide s'il l'applique          */
 };
+/* ------------------------------------------------------------------ liaison entre les deux écrans
+ *
+ * Les deux écrans se trouvent tout seuls au démarrage : chacun annonce son rôle (paquet HELLO,
+ * ESPNOW_DATA_TYPE_DATA, en-tête « KQ ») ; le premier écran de l'autre rôle entendu à moins de
+ * KHP_PAIR_RSSI devient le partenaire jusqu'au prochain redémarrage.
+ *   - rond → énergie : la télémétrie qu'il reçoit (ou qu'il simule) est relayée telle quelle, en
+ *     paquets KHN ordinaires ;
+ *   - énergie → rond : HELLO enrichi (Wi-Fi, état de la mise à jour du rond), proposition de mise
+ *     à jour (OFFER), puis envoi du firmware par la bibliothèque esp-now OTA.
+ */
+#define KHP_MAGIC1 'Q'
+#define KHP_VERSION 1
+#define KHP_PAIR_RSSI (-75) /* dBm : les deux écrans sont côte à côte */
+#define KHP_FW_LEN 16
+#define KHP_SSID_LEN 24
+
+enum { KHP_ROLE_ROND = 1, KHP_ROLE_ENERGIE = 2 };
+enum { KHP_T_HELLO = 1, KHP_T_OFFER = 2, KHP_T_ANSWER = 3 };
+enum {
+    KHP_F_PAIRED = 1u << 0, /* l'émetteur a déjà un partenaire */
+    KHP_F_SEEK = 1u << 1,   /* l'émetteur cherche son partenaire : répondre tout de suite */
+    KHP_F_WIFI = 1u << 2,   /* l'émetteur est connecté à un réseau Wi-Fi */
+    KHP_F_DEMO = 1u << 3,   /* l'émetteur est en simulation */
+};
+/* état de la mise à jour du rond, tenu par l'écran énergie */
+enum {
+    KHP_UPD_NONE = 0,     /* pas d'information (pas de Wi-Fi, ou pas encore vérifié) */
+    KHP_UPD_UP_TO_DATE,   /* le rond a la version publiée */
+    KHP_UPD_DOWNLOADING,  /* téléchargement de la nouvelle version (pct) */
+    KHP_UPD_WAITING,      /* version prête, en attente : moteurs arrêtés, pas d'alerte */
+    KHP_UPD_SENDING,      /* envoi au rond (pct) */
+    KHP_UPD_FAILED,       /* échec (téléchargement, contrôle ou envoi) */
+};
+
+typedef struct {
+    uint8_t role, flags;
+    char fw[KHP_FW_LEN];        /* version du firmware de l'émetteur */
+    uint8_t upd_state, upd_pct; /* énergie → rond : état de la mise à jour du rond */
+    char upd_ver[KHP_FW_LEN];
+    char ssid[KHP_SSID_LEN];    /* énergie → rond : réseau Wi-Fi, vide si non connecté */
+} khp_hello_t;
+
+typedef struct {
+    char ver[KHP_FW_LEN];
+    uint32_t size;
+    uint8_t id[16]; /* 16 premiers octets du SHA-256 de l'image */
+} khp_offer_t;
+
+typedef struct {
+    uint8_t accept;
+    uint8_t reason; /* KHP_REFUSE_* si refus */
+} khp_answer_t;
+enum { KHP_REFUSE_NONE = 0, KHP_REFUSE_MOTORS, KHP_REFUSE_ALARM, KHP_REFUSE_SAME, KHP_REFUSE_BUSY };
+
+/* Type d'un paquet de la liaison entre écrans, 0 si ce n'en est pas un */
+int khp_type(const uint8_t *buf, size_t len);
+size_t khp_pack_hello(uint8_t *buf, size_t cap, const khp_hello_t *h);
+bool khp_unpack_hello(const uint8_t *buf, size_t len, khp_hello_t *h);
+size_t khp_pack_offer(uint8_t *buf, size_t cap, const khp_offer_t *o);
+bool khp_unpack_offer(const uint8_t *buf, size_t len, khp_offer_t *o);
+size_t khp_pack_answer(uint8_t *buf, size_t cap, const khp_answer_t *a);
+bool khp_unpack_answer(const uint8_t *buf, size_t len, khp_answer_t *a);
+
 static inline uint32_t khn_cmd(uint8_t code, uint32_t arg) { return ((uint32_t)(code & 0xFu) << 28) | (arg & 0x0FFFFFFFu); }
 static inline uint8_t khn_cmd_code(uint32_t v) { return (uint8_t)(v >> 28); }
 static inline uint32_t khn_cmd_arg(uint32_t v) { return v & 0x0FFFFFFFu; }

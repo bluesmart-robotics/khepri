@@ -8,9 +8,10 @@
  *   - à gauche, un fin trait jaune : la production solaire (vide = rien, plein = crête installée) ;
  *   - à droite, le bilan : une flèche qui part du milieu, vers le haut quand la batterie se charge,
  *     vers le bas quand elle se vide, d'autant plus longue que le flux est fort.
- * Glisser le doigt vers la droite : DÉTAILS (valeurs en W, V, A, Wh, Ah), puis RÉGLAGES (liaison,
- * simulation, luminosité, Wi-Fi, mises à jour). Retour automatique à l'énergie après 10 s sans
- * toucher l'écran.
+ * Glisser le doigt vers la droite : DÉTAILS (valeurs en W, V, A, Wh, Ah), puis RÉGLAGES (écran
+ * rond, simulation, luminosité, Wi-Fi, mises à jour des deux écrans).
+ * Retour automatique à l'énergie après 10 s sans toucher l'écran.
+ * La télémétrie arrive de l'écran rond (liaison automatique) ; cet écran est le seul sur le Wi-Fi.
  *
  * Ce module n'appelle aucune fonction ESP-IDF : il compile aussi sur PC pour les aperçus.
  */
@@ -21,6 +22,7 @@
 
 #include "kh_model.h"
 #include "kh_ota.h"
+#include "kh_peer.h"
 #include "kh_theme.h"
 #include "kh_wifi.h"
 #include "lvgl.h"
@@ -37,18 +39,19 @@ typedef enum { KE_PAGE_SETTINGS = 0, KE_PAGE_DETAILS, KE_PAGE_ENERGY, KE_PAGE_CO
 
 /* Informations locales à l'écran (pas transmises par la radio) */
 typedef struct {
-    bool bound, binding, demo;
-    uint8_t master_mac[6];
+    bool demo;
     int brightness_pct;
     uint8_t espnow_channel;
     float thrust_ref_w, batt_wh, pv_peak_w, level_w;
     char board[8]; /* révision de carte : « V1 » ou « V1.1 » */
     kh_wifi_status_t wifi;
     kh_ota_status_t ota;
+    kh_peer_status_t peer;      /* écran rond voisin : source de la télémétrie */
+    kh_ota_peer_status_t rond;  /* mise à jour de l'écran rond par cet écran */
 } ke_local_t;
 
 typedef struct {
-    void (*on_bind)(bool bind);
+    void (*on_repair)(void); /* oublier l'écran rond et en chercher un */
     void (*on_demo)(bool en);
     void (*on_brightness)(int pct);
     void (*on_wifi_scan)(void);

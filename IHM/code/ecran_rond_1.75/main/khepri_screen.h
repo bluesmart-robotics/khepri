@@ -5,7 +5,8 @@
  * noir pur (pixel AMOLED éteint), mise à jour périodique à partir d'une structure de données
  * partagée, et rappels vers la couche radio.
  *
- * Pages : PRINCIPALE · AUTONOMIE · VIBRATIONS · SYSTÈME · WI-FI, plus l'alerte vibratoire plein écran.
+ * Pages : PRINCIPALE · AUTONOMIE · VIBRATIONS · SYSTÈME, plus l'alerte vibratoire plein écran et la
+ * progression d'une mise à jour reçue de l'écran énergie (seul connecté au Wi-Fi).
  * Navigation : glisser au doigt, ou molette (accéléromètre aujourd'hui, moteur BLDC demain).
  *
  * Ce module n'appelle aucune fonction ESP-IDF : il compile aussi sur PC pour les aperçus.
@@ -16,8 +17,7 @@
 #include <stdint.h>
 
 #include "kh_model.h"
-#include "kh_ota.h"
-#include "kh_wifi.h"
+#include "kh_peer.h"
 #include "lvgl.h"
 #include "kh_theme.h"
 
@@ -30,7 +30,7 @@ extern "C" {
 
 /* Couleurs : kh_theme.h (communes aux deux écrans) */
 
-typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_ENERGY, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_WIFI, KH_PAGE_COUNT } kh_page_t;
+typedef enum { KH_PAGE_MOTORS = 0, KH_PAGE_ENERGY, KH_PAGE_VIB, KH_PAGE_SYSTEM, KH_PAGE_COUNT } kh_page_t;
 
 
 /* Informations locales à l'écran (pas transmises par la radio) */
@@ -47,8 +47,10 @@ typedef struct {
     float batt_wh;           /* énergie utile batterie pleine (autonomie) */
     float pv_peak_w;         /* puissance solaire crête installée */
     float level_w;           /* puissance électrique du vol en palier */
-    kh_wifi_status_t wifi;  /* page WI-FI */
-    kh_ota_status_t ota;    /* mises à jour depuis GitHub */
+    kh_peer_status_t peer;   /* écran énergie voisin (liaison automatique) */
+    bool upd_rx;             /* mise à jour en cours de réception depuis l'écran énergie */
+    int upd_rx_pct;
+    char fw[32];             /* version de ce firmware */
 } kh_local_t;
 
 typedef struct {
@@ -57,10 +59,6 @@ typedef struct {
     void (*on_demo)(bool enable); /* SIMULATION locale */
     void (*on_ack)(void);         /* acquittement de l'alerte vibratoire */
     void (*on_brightness)(int pct);
-    void (*on_wifi_scan)(void);
-    void (*on_wifi_connect)(const char *ssid, const char *password);
-    void (*on_wifi_forget)(void);
-    void (*on_ota_check)(void);
 } kh_screen_cb_t;
 
 void kh_screen_init(const kh_screen_cb_t *cb);
@@ -77,8 +75,6 @@ bool kh_screen_alarm_visible(void);
 void kh_screen_button(void);
 void kh_screen_show_page(kh_page_t p, bool anim);
 kh_page_t kh_screen_page(void);
-/* Aperçus PC uniquement */
-void kh_screen_debug_open_password(const char *ssid, const char *text);
 
 #ifdef __cplusplus
 }

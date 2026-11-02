@@ -5,7 +5,8 @@
  *   PARTIE 1  écran AMOLED en QSPI (pilote esp_lcd_sh8601, compatible CO5300 avec ses commandes)
  *   PARTIE 2  LVGL 8.3 : tampons DMA, tâche LVGL protégée par mutex, tactile
  *   PARTIE 3  liaison ESP-NOW vers le maître, molette (accéléromètre), bouton PWR, simulation
- *   PARTIE 4  Wi-Fi (page WI-FI) et mises à jour OTA depuis GitHub
+ *   PARTIE 4  liaison automatique avec l'écran énergie : il reçoit la télémétrie relayée par le rond,
+ *             et lui seul va sur le Wi-Fi ; il pousse au rond ses mises à jour par ESP-NOW
  */
 #include <math.h>
 #include <stdio.h>
@@ -13,6 +14,7 @@
 
 #include "board.h"
 #include "driver/spi_master.h"
+#include "esp_app_desc.h"
 #include "esp_err.h"
 #include "esp_event.h"
 #include "esp_lcd_panel_io.h"
@@ -32,7 +34,7 @@
 #include "khepri_link.h"
 #include "khepri_screen.h"
 #include "kh_ota.h"
-#include "kh_wifi.h"
+#include "kh_peer.h"
 #include "knob.h"
 #include "lvgl.h"
 #include "nvs.h"
@@ -238,8 +240,8 @@ static void boot_diag(void)
         }
         nvs_close(h);
     }
-    snprintf(s_local.reset_text, sizeof s_local.reset_text, "%s · %lu anomalie(s)", reset_name(r),
-             (unsigned long)n);
+    /* affiché seulement s'il y a quelque chose à signaler */
+    if (bad || n) snprintf(s_local.reset_text, sizeof s_local.reset_text, "%s · %lu anomalie(s)", reset_name(r), (unsigned long)n);
     if (bad) ESP_LOGE(TAG, "redémarrage anormal : %s (%lu au total)", reset_name(r), (unsigned long)n);
     else ESP_LOGI(TAG, "démarrage : %s", reset_name(r));
 }
@@ -317,10 +319,30 @@ static bool ota_can_update(void)
     return ok;
 }
 
-static void ui_on_wifi_scan(void) { kh_wifi_scan(); }
-static void ui_on_wifi_connect(const char *ssid, const char *pass) { kh_wifi_connect(ssid, pass); }
-static void ui_on_wifi_forget(void) { kh_wifi_forget(); }
-static void ui_on_ota_check(void) { kh_ota_check_now(); }
+/* Mise à jour proposée par l'écran énergie : acceptée moteurs arrêtés, sans alerte, autre version */
+static volatile bool s_upd_rx;
+static volatile int s_upd_pct;
+
+static void on_upd_progress(int pct, bool done, bool failed)
+{
+    s_upd_rx = !failed;
+    s_upd_pct = pct;
+}
+
+static uint8_t on_offer(const khp_offer_t *o)
+{
+    if (!strcmp(o->ver, s_local.fw)) return KHP_REFUSE_SAME;
+    if (!ota_can_update()) {
+        bool alarm;
+        xSemaphoreTake(s_model_mux, portMAX_DELAY);
+        alarm = s_model.alarm_pending;
+        xSemaphoreGive(s_model_mux);
+        return alarm ? KHP_REFUSE_ALARM : KHP_REFUSE_MOTORS;
+    }
+    ESP_LOGW(TAG, "l'écran énergie propose la version %s (%lu o) : acceptée", o->ver, (unsigned long)o->size);
+    kh_ota_rx_accept(on_upd_progress);
+    return KHP_REFUSE_NONE;
+}
 
 static void ui_on_brightness(int pct)
 {
@@ -337,6 +359,7 @@ static void on_rx(const khn_hdr_t *h, const khn_frame_t *f, int n, int8_t rssi)
     xSemaphoreTake(s_model_mux, portMAX_DELAY);
     kh_model_apply_packet(&s_model, h, f, n, rssi, now_ms());
     xSemaphoreGive(s_model_mux);
+    if (!s_upd_rx) kh_peer_send_frames(f, n, h->flags); /* relayée telle quelle à l'écran énergie */
 }
 
 /* ══════════════════════════════════════════════
@@ -358,14 +381,13 @@ static void ui_task(void *arg)
             khn_hdr_t h = {.version = KHN_VERSION, .type = KHN_T_CAN_BATCH, .seq = seq++, .count = (uint8_t)n,
                            .flags = KHN_HF_DEMO};
             kh_model_apply_packet(&s_model, &h, fr, n, -40, t);
-            /* le rond en simulation sert de maître aux autres écrans liés (écran énergie 1.64) */
-            if (seq & 1) khepri_link_relay_send(fr, n);
+            /* l'écran énergie affiche la même simulation (10 Hz) */
+            if ((seq & 1) && !s_upd_rx) kh_peer_send_frames(fr, n, KHN_HF_DEMO);
         }
-        khepri_link_relay_enable(s_local.demo);
         snap = s_model;
         xSemaphoreGive(s_model_mux);
 
-        /* consigne de régime : vers la simulation, et vers le maître (5 Hz au plus, et à chaque changement) */
+        /* consigne de régime : vers la simulation, et vers le maître (10 Hz au plus, et à chaque changement) */
         portENTER_CRITICAL(&s_in_lock);
         float thr = s_throttle;
         portEXIT_CRITICAL(&s_in_lock);
@@ -373,15 +395,19 @@ static void ui_task(void *arg)
         static uint32_t sent_pm = UINT32_MAX;
         static int64_t sent_t;
         uint32_t pm = (uint32_t)lroundf(thr * 10.0f);
-        if (pm != sent_pm && t - sent_t >= 100 && s_local.bound && !s_local.demo && !kh_wifi_scanning()) {
+        if (pm != sent_pm && t - sent_t >= 100 && s_local.bound && !s_local.demo) {
             if (khepri_link_send_cmd(KHN_CMD_THROTTLE, pm)) sent_pm = pm;
             sent_t = t;
         }
 
         s_local.bound = khepri_link_bound();
         s_local.binding = khepri_link_binding();
-        kh_wifi_get_status(&s_local.wifi);
-        kh_ota_get_status(&s_local.ota);
+        /* sans maître (ou en simulation), le rond peut suivre l'écran énergie sur le canal de son Wi-Fi */
+        kh_peer_allow_hunt((s_local.demo || !s_local.bound) && !s_local.binding && !s_upd_rx);
+        kh_peer_set_hello(s_local.demo ? KHP_F_DEMO : 0, KHP_UPD_NONE, 0, "", "");
+        kh_peer_get(&s_local.peer);
+        s_local.upd_rx = s_upd_rx;
+        s_local.upd_rx_pct = s_upd_pct;
         khepri_link_master_mac(s_local.master_mac);
         /* instantané pour la tâche d'affichage (aucun appel LVGL ici) */
         xSemaphoreTake(s_snap_mux, portMAX_DELAY);
@@ -442,6 +468,7 @@ static void link_task(void *arg)
     for (;;) {
         vTaskDelay(pdMS_TO_TICKS(1000));
         khepri_link_tick();
+        kh_ota_rx_tick();
         if (++t == 20) kh_ota_mark_valid(); /* 20 s sans plantage : la nouvelle version est gardée */
     }
 }
@@ -549,11 +576,7 @@ void app_main(void)
                                .on_mark = ui_on_mark,
                                .on_demo = ui_on_demo,
                                .on_ack = ui_on_ack,
-                               .on_brightness = ui_on_brightness,
-                               .on_wifi_scan = ui_on_wifi_scan,
-                               .on_wifi_connect = ui_on_wifi_connect,
-                               .on_wifi_forget = ui_on_wifi_forget,
-                               .on_ota_check = ui_on_ota_check};
+                               .on_brightness = ui_on_brightness};
     kh_screen_init(&cb);
     set_brightness(s_local.brightness_pct);
     start_task(lvgl_task, "lvgl", 12 * 1024, 5, 1, false); /* NVS (réglages) : pile interne */
@@ -565,10 +588,10 @@ void app_main(void)
     s_local.pv_peak_w = CONFIG_KHEPRI_PV_PEAK_W;
     s_local.level_w = CONFIG_KHEPRI_LEVEL_POWER_W;
     khepri_link_init(on_rx);
-    khepri_link_relay_init();
-    /* ── PARTIE 4 : Wi-Fi et mises à jour ── */
-    kh_wifi_init();
-    kh_ota_init(ota_can_update);
+    /* ── PARTIE 4 : écran énergie (pas de Wi-Fi ici : il passe par l'écran énergie) ── */
+    strlcpy(s_local.fw, esp_app_get_description()->version, sizeof s_local.fw);
+    kh_peer_on_offer(on_offer);
+    kh_peer_init(KHP_ROLE_ROND, NULL);
     start_task(ui_task, "ui", 12 * 1024, 4, tskNO_AFFINITY, true);
     start_task(input_task, "input", 8 * 1024, 4, tskNO_AFFINITY, true);
     start_task(link_task, "link", 6 * 1024, 2, tskNO_AFFINITY, false); /* écrit l'otadata : pile interne */
