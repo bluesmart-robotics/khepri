@@ -1,4 +1,4 @@
-(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "cb95fba5-5daf-46c6-8506-26b880459d38") (paper "A3")(title_block (title "Ventilation BSR Drive") (company "Blue Smart Robotics"))(lib_symbols (symbol "Device:C"
+(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "65a68651-d2d6-4807-aa7c-ee4f463b1f33") (paper "A3")(title_block (title "Ventilation BSR Drive") (company "Blue Smart Robotics"))(lib_symbols (symbol "Device:C"
 			(pin_numbers
 				(hide yes)
 			)
@@ -545,6 +545,130 @@
 				)
 			)
 			(embedded_fonts no)
+		)(symbol "power:+24V"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+24V"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+24V\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+24V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+24V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
 		)(symbol "power:+3.3V"
 			(power)
 			(pin_numbers
@@ -769,272 +893,45 @@
 				)
 			)
 			(embedded_fonts no)
-		)(symbol "power:PWR_FLAG"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#FLG"
-				(at 0 1.905 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "PWR_FLAG"
-				(at 0 3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Special symbol for telling ERC where power comes from"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "flag power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "PWR_FLAG_0_0"
-				(pin power_out line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "PWR_FLAG_0_1"
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)(symbol "power:+12V"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#PWR"
-				(at 0 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "+12V"
-				(at 0 3.556 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"+12V\""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "+12V_0_1"
-				(polyline
-					(pts
-						(xy -0.762 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0.762 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 2.54)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "+12V_1_1"
-				(pin power_in line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)(symbol "khepri:FAN_4P" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "J" (at -2.54 6.35 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "FAN_4P" (at -2.54 -6.35 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Connector:FanPinHeader_1x04_P2.54mm_Vertical" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Ventilateur 4 fils PWM (standard PC : 1 GND, 2 +12V, 3 tachy, 4 PWM)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "FAN_4P_0_1" (rectangle (start -2.54 5.08) (end 2.54 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "FAN_4P_1_1" (pin passive line (at -5.08 3.81 0) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 1.27 0) (length 2.54) (name "+12V" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -1.27 0) (length 2.54) (name "TACH" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -3.81 0) (length 2.54) (name "PWM" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )) (text "VENTILATION - aspiration de l air interieur, rejet au fond de l instrument a travers le dissipateur de la BSR Drive\nVentilateur 80x80x25 12 V 0.5 A 4 fils PWM (GDSTIME 5000 tr/min, 63 CFM, 0.48 inH2O) - connecteur J25 en bas de carte.\nPWM 25 kHz open-drain par Q15 depuis IO15 (au boot IO15 haut -> PWM bas -> ventilo lent). Tachy (2 impulsions/tour) sur IO39 (entree seule).\n+12V : rail a creer (point 3, avec chaussettes et servos) - prevoir un eFuse dedie ventilateur ~1 A.\nATTENTION polarite : GDSTIME annonce 1 rouge +, 2 noir - ; le standard PC est 1 GND, 2 +12V. Verifier le connecteur recu." (exclude_from_sim no) (at 20.32 15.24 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "3f6e8f75-9581-4543-a0de-8d9e9b192890"))
-(symbol (lib_id "khepri:FAN_4P") (at 114.30 63.50 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "a7bc5a0c-be1a-4ded-ab50-e9efc6b91f27")(property "Reference" "J25" (at 117.60 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "Ventilateur 12V PWM" (at 117.60 64.77 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Connector:FanPinHeader_1x04_P2.54mm_Vertical" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "7083c295-f0ca-499c-9162-f8bf7823da2d"))(pin "2" (uuid "3a08df2a-a4cd-41b1-a011-019608d2815a"))(pin "3" (uuid "62126792-3d5b-4912-ad9d-8179b2d1527c"))(pin "4" (uuid "9ccd0dfa-bfb5-487e-bb26-d4892e0e615d"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "J25") (unit 1)))))
-(wire (pts (xy 109.22 59.69) (xy 106.68 59.69)) (stroke (width 0) (type default)) (uuid "b5d4bc62-4d46-4f96-9102-635db13a41ba"))
-(symbol (lib_id "power:GND") (at 106.68 59.69 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "24d8c51a-330b-4c23-9514-31e501005302")(property "Reference" "#PWRV01" (at 109.98 58.42 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 109.98 63.49 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bf1654cd-7252-4ecc-9f86-f52f53f65543"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV01") (unit 1)))))
-(wire (pts (xy 109.22 62.23) (xy 106.68 62.23)) (stroke (width 0) (type default)) (uuid "138754fe-4d9d-4554-83cd-654b0db522ed"))
-(symbol (lib_id "power:+12V") (at 106.68 62.23 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "469883e5-dad3-4cf1-ae80-8f95e42b90b5")(property "Reference" "#PWRV02" (at 109.98 60.96 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+12V" (at 109.98 66.03 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "4b572723-c34d-4e33-8ea8-0581fc6bc548"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV02") (unit 1)))))
-(wire (pts (xy 109.22 64.77) (xy 106.68 64.77)) (stroke (width 0) (type default)) (uuid "a08e6461-85b0-431a-b3d6-65b3845c4034"))
-(label "FAN_TACH_C" (at 106.68 64.77 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "e24a50eb-d16f-4a68-b024-002ebfe1d9a7"))
-(wire (pts (xy 109.22 67.31) (xy 106.68 67.31)) (stroke (width 0) (type default)) (uuid "3d1d3437-4afd-4216-af76-cf0437246949"))
-(label "FAN_PWM_C" (at 106.68 67.31 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "ea2816ad-63ab-4f78-b69a-ef7c7fe57a51"))
-(symbol (lib_id "Transistor_FET:Q_NMOS_GSD") (at 60.96 76.20 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "d023965a-b35c-42ce-83ca-6537222ae6eb")(property "Reference" "Q15" (at 64.26 74.93 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "2N7002" (at 64.26 77.47 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Package_TO_SOT_SMD:SOT-23" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "c7d20089-f3d4-4ad3-8d0d-cfe412836c62"))(pin "3" (uuid "6763b6ff-c0e4-49cd-9a5e-b2eb36f96b7d"))(pin "2" (uuid "c4e93067-a46d-4694-a529-20405e173dfe"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "Q15") (unit 1)))))
-(wire (pts (xy 63.50 71.12) (xy 63.50 68.58)) (stroke (width 0) (type default)) (uuid "c6d59a3c-5ed1-4498-a8ee-b34bd65d7fee"))
-(label "FAN_PWM_C" (at 63.50 68.58 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "9f244b05-857f-43b4-93d9-b0dd380b45ac"))
-(wire (pts (xy 63.50 81.28) (xy 63.50 83.82)) (stroke (width 0) (type default)) (uuid "81c484a1-7c28-428a-a052-a04ce51760cc"))
-(symbol (lib_id "power:GND") (at 63.50 83.82 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "ca2658f0-fa43-4fe7-bde0-37e0faeb4c48")(property "Reference" "#PWRV03" (at 66.80 82.55 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 66.80 87.62 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "5176e8ba-0692-4281-a00b-2194f187e287"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV03") (unit 1)))))
-(wire (pts (xy 55.88 76.20) (xy 53.34 76.20)) (stroke (width 0) (type default)) (uuid "b2eb63b1-e932-43de-93a2-cc1dcd053f4c"))
-(label "FAN_G" (at 53.34 76.20 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "329313a8-b87a-43d3-8997-3ed7a08e9623"))
-(symbol (lib_id "Device:R") (at 35.56 76.20 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "f8ac54b0-39a2-4fa5-a6cc-19987abec600")(property "Reference" "R101" (at 38.86 74.93 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100" (at 38.86 77.47 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "674b233f-baff-4267-9bc6-dfa1e5bbed69"))(pin "2" (uuid "89e7746b-c3d6-4990-b2fc-7e23fa3d0df4"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "R101") (unit 1)))))
-(wire (pts (xy 35.56 72.39) (xy 35.56 69.85)) (stroke (width 0) (type default)) (uuid "8bbcfdf7-869d-4a8a-a382-c688405dd6ea"))
-(global_label "FAN_PWM" (shape bidirectional) (at 35.56 69.85 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "3ec23fb8-fde9-4836-8557-9ec0517eb0d3") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 35.56 69.85 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
-(wire (pts (xy 35.56 80.01) (xy 35.56 82.55)) (stroke (width 0) (type default)) (uuid "30da2407-19a9-454c-b315-289972a44248"))
-(label "FAN_G" (at 35.56 82.55 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "110bc228-727b-4b1f-9239-3ab53fe13f44"))
-(symbol (lib_id "Device:R") (at 45.72 91.44 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "d65fa54f-eeb4-4194-8b76-512eb06770f1")(property "Reference" "R102" (at 49.02 90.17 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100k" (at 49.02 92.71 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bd2c97c8-aa37-4b6d-a541-029785364262"))(pin "2" (uuid "9f9856f5-3177-4c9f-80af-6763eb9fc35f"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "R102") (unit 1)))))
-(wire (pts (xy 45.72 87.63) (xy 45.72 85.09)) (stroke (width 0) (type default)) (uuid "f5192e75-f0cd-48a0-9319-ffc6c922479b"))
-(label "FAN_G" (at 45.72 85.09 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "478eacdc-6b4a-4f19-99e9-c34e19354a36"))
-(wire (pts (xy 45.72 95.25) (xy 45.72 97.79)) (stroke (width 0) (type default)) (uuid "3b44098f-b284-42bb-9e4e-6239e3769660"))
-(symbol (lib_id "power:GND") (at 45.72 97.79 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "8c9f63a4-ae2f-4202-86a8-10f47191e501")(property "Reference" "#PWRV04" (at 49.02 96.52 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 49.02 101.59 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "7774f7ea-f60d-498b-9f09-82baa57566e7"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV04") (unit 1)))))
-(symbol (lib_id "Device:R") (at 35.56 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "83abdcd5-46eb-4773-8f5b-a2ca8ef40025")(property "Reference" "R103" (at 38.86 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "10k" (at 38.86 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "e62300a0-976b-47a3-836c-84bba1bf9505"))(pin "2" (uuid "9e69266b-b6d6-42af-b560-01a88a1802aa"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "R103") (unit 1)))))
-(wire (pts (xy 35.56 46.99) (xy 35.56 44.45)) (stroke (width 0) (type default)) (uuid "214ae0bc-d77e-4e0c-9066-d088084e7cbf"))
-(symbol (lib_id "power:+3.3V") (at 35.56 44.45 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "86e46f58-7d57-4581-b809-f5fb9a0d0bff")(property "Reference" "#PWRV05" (at 38.86 43.18 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 38.86 48.25 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "e0505d5d-5890-4a7a-acc7-84b921abb76c"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV05") (unit 1)))))
-(wire (pts (xy 35.56 54.61) (xy 35.56 57.15)) (stroke (width 0) (type default)) (uuid "347ebf17-5422-43c3-a3a4-09715483a73d"))
-(global_label "FAN_TACH" (shape bidirectional) (at 35.56 57.15 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "2dbe640b-5533-4eeb-9e12-f5f3d328904e") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 35.56 57.15 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
-(symbol (lib_id "Device:R") (at 50.80 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "24b48fc4-de52-470c-bddd-e92f06c6191b")(property "Reference" "R104" (at 54.10 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "1k" (at 54.10 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "52e01b05-869c-4e41-b209-f6610e9f8ed0"))(pin "2" (uuid "4ab48774-812e-4d33-841c-a35fdd05114a"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "R104") (unit 1)))))
-(wire (pts (xy 50.80 46.99) (xy 50.80 44.45)) (stroke (width 0) (type default)) (uuid "4cd35f80-e166-4f49-9087-797acbd4af06"))
-(global_label "FAN_TACH" (shape bidirectional) (at 50.80 44.45 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "daa2f3c9-7d5f-45fc-abca-cd272997415f") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 50.80 44.45 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
-(wire (pts (xy 50.80 54.61) (xy 50.80 57.15)) (stroke (width 0) (type default)) (uuid "2e376544-ef1e-479f-abcd-42a8a3612411"))
-(label "FAN_TACH_C" (at 50.80 57.15 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "c8a8d3be-e623-4944-b51a-081cfbe08408"))
-(symbol (lib_id "Device:C") (at 60.96 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "a39ba7af-78fa-4ec3-9434-f68eeadd74ee")(property "Reference" "C67" (at 64.26 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "1n" (at 64.26 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Capacitor_SMD:C_0603_1608Metric" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "970f9345-9ddc-4f6d-a92f-85b26e7d3b45"))(pin "2" (uuid "7afb3db8-db33-4663-996d-54e38369393e"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "C67") (unit 1)))))
-(wire (pts (xy 60.96 46.99) (xy 60.96 44.45)) (stroke (width 0) (type default)) (uuid "3770beb4-fe90-4191-a1c6-a5f358beaefb"))
-(global_label "FAN_TACH" (shape bidirectional) (at 60.96 44.45 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "107279e2-c869-41fa-b0a5-f81445bd33ea") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 60.96 44.45 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
-(wire (pts (xy 60.96 54.61) (xy 60.96 57.15)) (stroke (width 0) (type default)) (uuid "15110f80-5e02-445a-ae33-b5097e53f089"))
-(symbol (lib_id "power:GND") (at 60.96 57.15 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "c3a365e9-aad9-4e0d-8aad-ec397c077231")(property "Reference" "#PWRV06" (at 64.26 55.88 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 64.26 60.95 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "18baafc8-3020-419d-a09e-4dbcc2eea355"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV06") (unit 1)))))
-(symbol (lib_id "power:PWR_FLAG") (at 127.00 40.64 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "1c4d4519-b896-4463-b04c-843a318a78a7")(property "Reference" "#FLGV07" (at 130.30 39.37 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "PWR_FLAG" (at 130.30 44.44 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "3d574d65-cb65-4599-8910-57fb323f96ac"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#FLGV07") (unit 1)))))
-(symbol (lib_id "power:+12V") (at 127.00 40.64 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "d3f38027-99e2-4852-a292-13dbfe892cd0")(property "Reference" "#PWRV08" (at 130.30 39.37 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+12V" (at 130.30 44.44 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 127.00 40.64 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "b5463a87-b928-466c-a494-d9b422653228"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/ab8e924e-7475-4e81-a391-fc41873adcba" (reference "#PWRV08") (unit 1)))))
-(text "PWR_FLAG provisoire : a retirer quand le rail +12V (point 3) sera dessine" (exclude_from_sim no) (at 129.54 38.10 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "938e1b11-c3f5-4cf8-860f-8eaa26e5404e")) (embedded_fonts no))
+		)(symbol "khepri:FAN_4P" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "J" (at -2.54 6.35 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "FAN_4P" (at -2.54 -6.35 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Ventilateur 8038 24 V 4 fils XH2.54 (1 rouge +, 2 noir -, 3 jaune tachy, 4 bleu PWM)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "FAN_4P_0_1" (rectangle (start -2.54 5.08) (end 2.54 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "FAN_4P_1_1" (pin passive line (at -5.08 3.81 0) (length 2.54) (name "V+" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 1.27 0) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -1.27 0) (length 2.54) (name "TACH" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -3.81 0) (length 2.54) (name "PWM" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )) (text "VENTILATION - aspiration de l air interieur, rejet au fond de l instrument a travers le dissipateur de la BSR Drive\nVentilateur 8038 (80x80x38) 24 V 4 fils PWM + tachy, connecteur JST XH 4P (J25) en bas de carte, alimente par le +24V interne (U2).\nPWM 25 kHz open-drain par Q15 depuis IO15 (au boot IO15 haut -> PWM bas -> ventilo lent). Tachy (2 impulsions/tour) sur IO39 (entree seule).\nBrochage XH suppose : 1 rouge +24V, 2 noir GND, 3 jaune tachy, 4 bleu PWM - A VERIFIER sur le ventilateur recu." (exclude_from_sim no) (at 20.32 15.24 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "9e2f96f4-63ae-44b4-a6d9-a6e462bfba19"))
+(symbol (lib_id "khepri:FAN_4P") (at 114.30 63.50 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "944c0f02-b6b1-433e-b3cd-aee46ef33615")(property "Reference" "J25" (at 117.60 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "Ventilateur 8038 24V PWM" (at 117.60 64.77 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 114.30 63.50 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "4975e3e6-f1ce-494c-9b7f-930203e3a78b"))(pin "2" (uuid "a78c17c3-3016-4672-8864-79b6884b0a66"))(pin "3" (uuid "3ea567d0-cde1-4d60-b21f-4db676e07a38"))(pin "4" (uuid "617b6ee8-31fe-40c2-a13a-689371c9e627"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "J25") (unit 1)))))
+(wire (pts (xy 109.22 59.69) (xy 106.68 59.69)) (stroke (width 0) (type default)) (uuid "e4d3e1d8-baa8-403f-acaa-7e48d1fbc0be"))
+(symbol (lib_id "power:+24V") (at 106.68 59.69 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "2a1433c7-96ca-401c-9fbd-2922b1004077")(property "Reference" "#PWRV01" (at 109.98 58.42 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 109.98 63.49 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 106.68 59.69 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "d0130812-324d-474c-aab0-ec75a083384c"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV01") (unit 1)))))
+(wire (pts (xy 109.22 62.23) (xy 106.68 62.23)) (stroke (width 0) (type default)) (uuid "65f9192d-25d0-41f3-bfa0-c66847cc3601"))
+(symbol (lib_id "power:GND") (at 106.68 62.23 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "3695a798-b27d-4b02-9318-35f083a60557")(property "Reference" "#PWRV02" (at 109.98 60.96 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 109.98 66.03 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 106.68 62.23 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "571a137c-34f5-447b-b641-2d1c4a58ecbb"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV02") (unit 1)))))
+(wire (pts (xy 109.22 64.77) (xy 106.68 64.77)) (stroke (width 0) (type default)) (uuid "9294e938-0342-426f-b59a-b9104f944617"))
+(label "FAN_TACH_C" (at 106.68 64.77 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "9002b4ec-631b-4715-b601-84b0701c8003"))
+(wire (pts (xy 109.22 67.31) (xy 106.68 67.31)) (stroke (width 0) (type default)) (uuid "52303414-8441-48d0-aa95-9c8d5f71c60b"))
+(label "FAN_PWM_C" (at 106.68 67.31 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "16e19f08-aaa7-48ca-9002-6ad06af9ca19"))
+(symbol (lib_id "Transistor_FET:Q_NMOS_GSD") (at 60.96 76.20 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "96409bbb-8ecd-4e50-9013-04c3022cf1db")(property "Reference" "Q15" (at 64.26 74.93 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "2N7002" (at 64.26 77.47 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Package_TO_SOT_SMD:SOT-23" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "c5e1425b-642b-4c44-8c22-3320b833abb2"))(pin "3" (uuid "2f00d4b3-d652-4fc5-b688-977450122f9b"))(pin "2" (uuid "86b3ab08-1576-4142-b3a7-7f39f11b7236"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "Q15") (unit 1)))))
+(wire (pts (xy 63.50 71.12) (xy 63.50 68.58)) (stroke (width 0) (type default)) (uuid "e3abb71e-13cc-4a56-8799-9b7afd656512"))
+(label "FAN_PWM_C" (at 63.50 68.58 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "7c0a3a72-ecb1-48e7-a6a2-1ac9bac88465"))
+(wire (pts (xy 63.50 81.28) (xy 63.50 83.82)) (stroke (width 0) (type default)) (uuid "16a8e45f-db1a-455a-9427-ed35d474102d"))
+(symbol (lib_id "power:GND") (at 63.50 83.82 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "836f0fe5-526f-4484-b77f-6babf3b7c546")(property "Reference" "#PWRV03" (at 66.80 82.55 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 66.80 87.62 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 63.50 83.82 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "332e3b8f-e882-4109-8894-0ff5acdf3478"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV03") (unit 1)))))
+(wire (pts (xy 55.88 76.20) (xy 53.34 76.20)) (stroke (width 0) (type default)) (uuid "b20500c0-1f7b-4bb2-8090-7c60a5882a7d"))
+(label "FAN_G" (at 53.34 76.20 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "75e41623-da00-4ee4-a8a0-a95925f8a533"))
+(symbol (lib_id "Device:R") (at 35.56 76.20 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "c7c8046d-4324-4ff8-82e8-87d36094b2eb")(property "Reference" "R101" (at 38.86 74.93 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100" (at 38.86 77.47 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 76.20 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "1ca2fa5e-fdd7-4ad0-9c48-4558d60d8c1a"))(pin "2" (uuid "696485e8-ebed-4511-afc0-391b2459f1a4"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "R101") (unit 1)))))
+(wire (pts (xy 35.56 72.39) (xy 35.56 69.85)) (stroke (width 0) (type default)) (uuid "56723ac2-2de9-460c-b76a-30e06f63d73a"))
+(global_label "FAN_PWM" (shape bidirectional) (at 35.56 69.85 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "3872b0ef-6dbe-4cf7-9f4c-426998149030") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 35.56 69.85 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(wire (pts (xy 35.56 80.01) (xy 35.56 82.55)) (stroke (width 0) (type default)) (uuid "c0d3cc85-cb7a-47d5-a235-f17125bb10bc"))
+(label "FAN_G" (at 35.56 82.55 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "1eedb09b-a370-4729-b631-72f113f30d71"))
+(symbol (lib_id "Device:R") (at 45.72 91.44 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "7dd54fd5-65f1-4ca3-aa98-d24c1ad71d25")(property "Reference" "R102" (at 49.02 90.17 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100k" (at 49.02 92.71 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 45.72 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "86c528ea-4530-488b-a535-2e64090d0067"))(pin "2" (uuid "b02c9fa4-0eca-4747-b995-673f9bc9dc05"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "R102") (unit 1)))))
+(wire (pts (xy 45.72 87.63) (xy 45.72 85.09)) (stroke (width 0) (type default)) (uuid "be6ad8fb-e2f4-4d6a-893a-9f77d6481307"))
+(label "FAN_G" (at 45.72 85.09 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "317770b4-1535-4bc3-bcc3-1cf23a55b5d0"))
+(wire (pts (xy 45.72 95.25) (xy 45.72 97.79)) (stroke (width 0) (type default)) (uuid "12060665-3a55-4626-8526-91f74eb35607"))
+(symbol (lib_id "power:GND") (at 45.72 97.79 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "c408ae08-7e7a-471a-b979-0713fba666a0")(property "Reference" "#PWRV04" (at 49.02 96.52 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 49.02 101.59 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 45.72 97.79 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "64768900-dd54-4e56-a025-e2923d2cb06b"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV04") (unit 1)))))
+(symbol (lib_id "Device:R") (at 35.56 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "12705b4e-adb0-4c92-b2d5-f08c4721b0ac")(property "Reference" "R103" (at 38.86 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "10k" (at 38.86 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "4d0423a7-199a-4cae-9245-86b0a4a0710a"))(pin "2" (uuid "8db95fb9-c0e4-4bc9-990f-273eeaf806e7"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "R103") (unit 1)))))
+(wire (pts (xy 35.56 46.99) (xy 35.56 44.45)) (stroke (width 0) (type default)) (uuid "501af589-6177-482c-8a40-3fc5449a1b6c"))
+(symbol (lib_id "power:+3.3V") (at 35.56 44.45 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "357a2bad-31ea-4ce6-ae2b-3a7d9fa91786")(property "Reference" "#PWRV05" (at 38.86 43.18 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 38.86 48.25 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "b9434cf7-bec1-4774-8f6c-8866a85f6317"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV05") (unit 1)))))
+(wire (pts (xy 35.56 54.61) (xy 35.56 57.15)) (stroke (width 0) (type default)) (uuid "b5f73fee-0770-47b2-bf33-231cb525959a"))
+(global_label "FAN_TACH" (shape bidirectional) (at 35.56 57.15 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "acb5cc7c-d084-458f-ab6d-c78aac78400e") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 35.56 57.15 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(symbol (lib_id "Device:R") (at 50.80 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "66c77eed-5f65-4e12-b2bf-d4b028eb74a9")(property "Reference" "R104" (at 54.10 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "1k" (at 54.10 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "20f5beef-66d4-4e9d-a350-d62d12058ce6"))(pin "2" (uuid "ee8a857e-de5f-4f80-a5f1-051d54048ceb"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "R104") (unit 1)))))
+(wire (pts (xy 50.80 46.99) (xy 50.80 44.45)) (stroke (width 0) (type default)) (uuid "7eb3ca4d-813e-423f-8b02-73e42551524a"))
+(global_label "FAN_TACH" (shape bidirectional) (at 50.80 44.45 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "7c7ddfba-2fb1-416f-97a5-8d173c4a4aa4") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 50.80 44.45 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(wire (pts (xy 50.80 54.61) (xy 50.80 57.15)) (stroke (width 0) (type default)) (uuid "f9f75d8a-d7bf-414d-af41-f1a90f3e61db"))
+(label "FAN_TACH_C" (at 50.80 57.15 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "3966bc8b-7bd5-4ab5-ba3e-61edce07d1c0"))
+(symbol (lib_id "Device:C") (at 60.96 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "b58c888b-79bb-451c-937f-4aed566b282e")(property "Reference" "C67" (at 64.26 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "1n" (at 64.26 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Capacitor_SMD:C_0603_1608Metric" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "939b88a4-2cee-44d9-a23b-343083f93435"))(pin "2" (uuid "0ac0c84a-71a3-488f-beb4-d79792acd25f"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "C67") (unit 1)))))
+(wire (pts (xy 60.96 46.99) (xy 60.96 44.45)) (stroke (width 0) (type default)) (uuid "68e8ca13-17be-4dc2-9b9a-0d316dacf39a"))
+(global_label "FAN_TACH" (shape bidirectional) (at 60.96 44.45 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "c3d7701d-ff38-4104-9e96-542be1f98cca") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 60.96 44.45 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(wire (pts (xy 60.96 54.61) (xy 60.96 57.15)) (stroke (width 0) (type default)) (uuid "bfa52625-c69e-41e4-86e2-b3b214364137"))
+(symbol (lib_id "power:GND") (at 60.96 57.15 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "4e09f7a2-2d9a-4973-9f15-5bcbf3065692")(property "Reference" "#PWRV06" (at 64.26 55.88 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 64.26 60.95 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 60.96 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "a7d549bc-443c-4270-8593-df20aad438e4"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/e00b2884-7b6d-47d2-8d0b-7d8f4867c2bb" (reference "#PWRV06") (unit 1))))) (embedded_fonts no))

@@ -93,7 +93,7 @@ routage, seulement le rendu 3D.
   de pastilles SMT de la datasheet Honeywell avant fabrication.
 - Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
   capots et seront à reprendre.
-- `production/khepri_v8.net` : netlist exportée par kicad-cli, de référence.
+- `production/khepri_v9.net` : netlist exportée par kicad-cli, de référence.
 
 ### Points ouverts (à reprendre plus tard)
 
@@ -251,19 +251,37 @@ Conditions indispensables :
 - résistances de freinage : à limiter en logiciel (dissipation continue
   ≪ 100 W).
 
-**Feuille `ventilation.kicad_sch`** : J25 (embase ventilateur 4 broches, bas
-de carte, côté opposé aux capteurs). PWM 25 kHz en drain ouvert (Q15 2N7002)
-depuis IO15, tachy sur IO39 (pull-up 10 k, filtre 1 kΩ / 1 nF). Le +12V n'existe
-pas encore : PWR_FLAG provisoire, rail à créer au point 3. **Polarité** :
-GDSTIME annonce 1 = rouge +, 2 = noir − ; le standard PC est 1 = GND,
-2 = +12 V. À vérifier sur le ventilateur reçu.
+**Ventilateur retenu (achété) : 8038 (80 × 80 × 38) 24 V, 4 fils, JST XH 2,54.**
+Les 38 mm d'épaisseur donnent en général plus de pression statique qu'un 8025,
+ce qui convient au dissipateur dense. Il est alimenté par le +24V interne (U2,
+5 A, largement suffisant). Caractéristiques exactes (courant, CFM, pression)
+à relever sur l'étiquette pour refaire le point de fonctionnement.
 
-**Rail +12V (point 3, à dessiner)** :
-- charges : ventilateur 0,5 A ; électronique des chaussettes ≈ 2 × 0,3 A ;
-  servo RDS51150 9–12,6 V par chaussette, 5 mA au repos, **8 A au
-  blocage à 12 V** ;
-- proposition : convertisseur 48 → 12 V ≈ 10 A depuis le bus (via les tiges),
-  un eFuse par chaussette limité à ≈ 5–6 A et un eFuse de 1 A pour le
-  ventilateur ;
-- le +12V doit passer sur 2 contacts DTM (taille 20, 7,5 A chacun) et le GND
-  sur 2 autres.
+**Feuille `ventilation.kicad_sch`** : J25 JST XH B4B-XH-A (bas de carte, côté
+opposé aux capteurs), brochage supposé 1 rouge +24V, 2 noir GND, 3 jaune
+tachy, 4 bleu PWM (**à vérifier**). PWM en drain ouvert (Q15 2N7002) depuis
+IO15, tachy sur IO39 (pull-up 10 k, filtre 1 kΩ / 1 nF).
+
+**Alimentation des chaussettes (décidé, à dessiner)** : bus **24 V 10 A**
+dédié au faisceau (convertisseur séparé du +24V interne, EN commandé par
+l'ESP32 via l'expandeur I²C **et** par la ligne d'arrêt d'urgence matérielle),
+convertisseurs 24 → 12 V (servo RDS51150, 8 A au blocage) et 3,3 V dans
+chaque chaussette. Connecteur DTM 6 voies : CANH, CANL, 2 × V+, 2 × V−. Un 12 V
+central aurait demandé ≈ 20 A (2 servos bloqués = 16 A).
+
+## Reste à faire
+
+1. **Tiges de puissance** à l'emplacement du XT60 (J17) : diamètre et
+   entraxe, nouveau connecteur pour les « +4 » (CAN vers la BSR Drive).
+2. **Plans cuivre du bas de carte** : les grandes zones +36V F.Cu/B.Cu
+   dataient de l'E-stop (tout le courant moteur traversait la carte). Avec les
+   tiges, la carte ne prend plus que ≈ 8 A sur le bus (U2 plus convertisseur
+   faisceau 24 V / 10 A) : zones à réduire autour des tiges, de U2, du
+   nouveau convertisseur et de la TVS U8, et place récupérée.
+3. **Convertisseur faisceau 24 V / 10 A** avec coupure ESP32 et arrêt d'urgence,
+   DTM 6 voies à la place de J4, terminaison CAN 120 Ω commutable.
+4. **Arrêts d'urgence** (bouton tableau → EN_GATE de la BSR Drive, lecture
+   d'état) plus expandeur I²C PCA9555 pour les commandes qui manquent
+   (plus aucune broche libre sur l'ESP32).
+5. Trous de fixation, routage complet (dont la liaison U2 → diode idéale
+   U36/Q12 et les prises Kelvin de R70), DRC, fichiers de production.
