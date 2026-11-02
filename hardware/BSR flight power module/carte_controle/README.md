@@ -119,4 +119,8 @@ routage, seulement le rendu 3D.
 - **Avertissements ERC restants** : empreinte `L_7.1x6.6mm` (L1, L2) absente
   de KiCad 9, bibliothèque BAT54 de D7 absente, symbole et empreinte XT60 2+4
   de J17 hors bibliothèques.
+- **Repérage des prises de pression** (sérigraphie) : `P-statique` (U24),
+  `P-TE` (U25), `P-tot` / `P-stat` sur les deux ports du HSC (U26, Δp pitot).
+  L'attribution port 1 = P-tot (haute pression) / port 2 = P-stat est supposée
+  et reste à confirmer sur le plan Honeywell du boîtier RR.
 - **Suite prévue** : DRC, routage Freerouting, régénération de `production/`.
