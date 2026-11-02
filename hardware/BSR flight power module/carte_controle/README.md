@@ -76,3 +76,21 @@ cinq restent introuvables : `BZT52C15GW`, `IPB110P06LMATMA1`, `MMBTA42LT1G`,
 Pour que les cinq premiers s'affichent, il faut repointer leur chemin sur
 `${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/`. Cela n'affecte ni le schéma ni le
 routage, seulement le rendu 3D.
+
+## État du placement (02/11/2026)
+
+- Connecteurs E-dolly retirés (J3, J5, J6, J7, J16, Q1, Q2, R1, R2, R4, R6).
+  **J4 est conservé** : c'est le connecteur CAN externe (CANH/CANL/GND).
+- Bloc capteurs placé en haut de carte (zone libérée par l'ancien E-stop) :
+  deux zones de capot étanche de 11 × 12 mm (`CAPOT_STATIQUE`, `CAPOT_TE`),
+  matérialisées en sérigraphie et en zones d'interdiction de vias ; seul le
+  MS5611 se trouve dans chaque zone. Le HSC (pitot) est à droite, ports vers
+  le bord haut. Les LDO, ferrites et condensateurs sont sur une rangée sous
+  les capots.
+- Le plan +36V en B.Cu, qui remontait jusqu'au haut de carte pour l'E-stop,
+  est rogné à y ≥ 118 mm. **Zones à remplir (touche B) avant DRC.**
+- Empreinte `Honeywell_HSC_SMT_RR_PROVISOIRE` : **à vérifier** contre le plan
+  de pastilles SMT de la datasheet Honeywell avant fabrication.
+- Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
+  capots et seront à reprendre.
+- `production/khepri_v5.net` : netlist exportée par kicad-cli, de référence.
