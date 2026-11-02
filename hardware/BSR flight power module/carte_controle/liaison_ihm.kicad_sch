@@ -1,4 +1,128 @@
-(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "dbb5a403-3a11-4160-80d8-ba5d8d5413b3") (paper "A4")(title_block (title "Liaison IHM facade") (company "Blue Smart Robotics"))(lib_symbols (symbol "Device:R"
+(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "dbb5a403-3a11-4160-80d8-ba5d8d5413b3") (paper "A4")(title_block (title "Liaison IHM facade") (company "Blue Smart Robotics"))(lib_symbols (symbol "khepri:+VSYS"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+VSYS"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+VSYS\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+VSYS_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+VSYS_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		) (symbol "Device:R"
 			(pin_numbers
 				(hide yes)
 			)
@@ -541,7 +665,7 @@
 					(hide yes)
 				)
 			)
-			(property "Value" "+24V"
+			(property "Value" "+VSYS"
 				(at 0 3.556 0)
 				(effects
 					(font
@@ -1157,17 +1281,17 @@
 		)(symbol "khepri:AP63205WU" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -6.35 6.35 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "AP63205WU" (at -6.35 -6.35 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Package_TO_SOT_SMD:TSOT-23-6" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP63200-AP63201-AP63203-AP63205.pdf" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Buck synchrone 2 A, sortie fixe 5 V, VIN 3.8-32 V" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "AP63205WU_0_1" (rectangle (start -6.35 5.08) (end 6.35 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "AP63205WU_1_1" (pin power_in line (at -8.89 2.54 0) (length 2.54) (name "VIN" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin input line (at -8.89 -2.54 0) (length 2.54) (name "EN" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at 8.89 2.54 180) (length 2.54) (name "BST" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27))))) (pin power_out line (at 8.89 0.00 180) (length 2.54) (name "SW" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin input line (at 8.89 -2.54 180) (length 2.54) (name "FB" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin power_in line (at 0.00 -7.62 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )(symbol "khepri:TPD4E05U06DQA" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -3.81 7.62 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "TPD4E05U06DQA" (at -3.81 -7.62 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Package_SON:USON-10_2.5x1.0mm_P0.5mm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "https://www.ti.com/lit/ds/symlink/tpd4e05u06.pdf" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Protection ESD 4 voies, flow-through (6,7,9,10 NC)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "TPD4E05U06DQA_0_1" (rectangle (start -3.81 6.35) (end 3.81 -6.35) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "TPD4E05U06DQA_1_1" (pin passive line (at -6.35 3.81 0) (length 2.54) (name "D1" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 1.27 0) (length 2.54) (name "D2" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -1.27 0) (length 2.54) (name "D3" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -3.81 0) (length 2.54) (name "D4" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin passive line (at -1.27 -8.89 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin passive line (at 1.27 -8.89 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )(symbol "khepri:JST_GH_12" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "J" (at -3.81 17.78 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "JST_GH_12" (at -3.81 -17.78 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Connector_JST:JST_GH_SM12B-GHS-TB_1x12-1MP_P1.25mm_Horizontal" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Liaison carte IHM facade (smart knob STM32 + ecran 1.64 ESP32-S3)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "JST_GH_12_0_1" (rectangle (start -3.81 16.51) (end 3.81 -16.51) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "JST_GH_12_1_1" (pin passive line (at -6.35 13.97 0) (length 2.54) (name "P1" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 11.43 0) (length 2.54) (name "P2" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 8.89 0) (length 2.54) (name "P3" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 6.35 0) (length 2.54) (name "P4" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 3.81 0) (length 2.54) (name "P5" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 1.27 0) (length 2.54) (name "P6" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -1.27 0) (length 2.54) (name "P7" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -3.81 0) (length 2.54) (name "P8" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -6.35 0) (length 2.54) (name "P9" (effects (font (size 1.27 1.27)))) (number "9" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -8.89 0) (length 2.54) (name "P10" (effects (font (size 1.27 1.27)))) (number "10" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -11.43 0) (length 2.54) (name "P11" (effects (font (size 1.27 1.27)))) (number "11" (effects (font (size 1.27 1.27))))) (pin passive line (at -6.35 -13.97 0) (length 2.54) (name "P12" (effects (font (size 1.27 1.27)))) (number "12" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )) (text "LIAISON IHM FACADE - instrument KHEPRI\nUne seule nappe JST-GH 12 voies vers la carte facade (smart knob STM32 + ecran 1.64 ESP32-S3 fusionnes).\nL ecran 1.75 est raccorde a la carte facade, pas ici. L ESP32 de cette carte reste la reference.\nUART1 (IO18 TX / IO34 RX) <-> STM32 haptique ; UART2 (IO19 TX / IO35 RX) <-> ESP32-S3 facade.\nIO21 = NRST STM32 (open-drain), IO14 = BOOT0 STM32 (reflash via bootloader UART), IO13 = coupure alim facade." (exclude_from_sim no) (at 25.40 20.32 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "1549f057-1bfb-4000-b577-1260b7f96a91"))
 (symbol (lib_id "Device:C") (at 25.40 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "66613c51-6426-4a9c-8fa3-97424c41742e")(property "Reference" "C41" (at 28.70 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "10u 50V" (at 28.70 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Capacitor_SMD:C_1206_3216Metric" (at 25.40 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 25.40 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 25.40 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bd5dac8c-433b-4c54-9b54-256f7120541c"))(pin "2" (uuid "8d1263b9-9a6b-4b79-9cf0-bab2884d7e2b"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "C41") (unit 1)))))
 (wire (pts (xy 25.40 57.15) (xy 25.40 54.61)) (stroke (width 0) (type default)) (uuid "9cb0bc3c-134d-4a1b-8ad0-ead2863ed827"))
-(symbol (lib_id "power:+24V") (at 25.40 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "2445bfec-b27c-4a8b-9e5c-e092f813eb25")(property "Reference" "#PWR0201" (at 28.70 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 28.70 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "48615ddf-306f-4288-ba81-5e87c8c1754e"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0201") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 25.40 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "2445bfec-b27c-4a8b-9e5c-e092f813eb25")(property "Reference" "#PWR0201" (at 28.70 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 28.70 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 25.40 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "48615ddf-306f-4288-ba81-5e87c8c1754e"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0201") (unit 1)))))
 (wire (pts (xy 25.40 64.77) (xy 25.40 67.31)) (stroke (width 0) (type default)) (uuid "91e546ea-1195-47ab-92be-ab3411857b1f"))
 (symbol (lib_id "power:GND") (at 25.40 67.31 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "9ca2394b-9a31-4cd8-a560-fb5b8b0f5740")(property "Reference" "#PWR0202" (at 28.70 66.04 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 28.70 71.11 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 25.40 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 25.40 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 25.40 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "247a13b5-90a1-4837-8d1e-06ba9074b1ba"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0202") (unit 1)))))
 (symbol (lib_id "Device:C") (at 35.56 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "f13341d1-104f-4bd9-8cba-7dc98bea9b9a")(property "Reference" "C42" (at 38.86 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100n 50V" (at 38.86 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Capacitor_SMD:C_0603_1608Metric" (at 35.56 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "0ef9f7e5-18b3-417a-8e02-5a66acf455a6"))(pin "2" (uuid "ce030da2-f274-4d0f-ac3b-49cfeabf5899"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "C42") (unit 1)))))
 (wire (pts (xy 35.56 57.15) (xy 35.56 54.61)) (stroke (width 0) (type default)) (uuid "51f7a661-cd87-41a9-a614-96560719762c"))
-(symbol (lib_id "power:+24V") (at 35.56 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "67db8bc6-e1f8-4eb6-9731-03c08c925b57")(property "Reference" "#PWR0203" (at 38.86 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 38.86 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bcb97202-c590-4369-9ab8-134692adfa31"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0203") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 35.56 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "67db8bc6-e1f8-4eb6-9731-03c08c925b57")(property "Reference" "#PWR0203" (at 38.86 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 38.86 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bcb97202-c590-4369-9ab8-134692adfa31"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0203") (unit 1)))))
 (wire (pts (xy 35.56 64.77) (xy 35.56 67.31)) (stroke (width 0) (type default)) (uuid "95f11dca-8582-4558-9d3b-4c1a11bfa9e8"))
 (symbol (lib_id "power:GND") (at 35.56 67.31 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "0970a538-1d7c-4adf-94cc-07d4fa8655df")(property "Reference" "#PWR0204" (at 38.86 66.04 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 38.86 71.11 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "b3080e7a-ba1b-463e-af8c-1ff674161de4"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0204") (unit 1)))))
 (symbol (lib_id "khepri:AP63205WU") (at 63.50 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "aa16b4a7-2926-4664-916b-ba54de15b3c9")(property "Reference" "U30" (at 66.80 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "AP63205WU-7" (at 66.80 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Package_TO_SOT_SMD:TSOT-23-6" (at 63.50 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP63200-AP63201-AP63203-AP63205.pdf" (at 63.50 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 63.50 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "3" (uuid "65b2cf58-98db-4772-8d3d-369654e5f944"))(pin "2" (uuid "f43bf5d3-7d80-49c1-908a-1da1fa13e04c"))(pin "6" (uuid "b7cd8285-fc4f-4181-a8cc-c7427011d96b"))(pin "5" (uuid "7628e18d-fc05-4c92-b6dc-1f2387fe124d"))(pin "1" (uuid "52b69135-ef4b-4512-b44a-981cb4c367d5"))(pin "4" (uuid "0eee315b-b398-45c3-9ea5-e5205ebcd48f"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "U30") (unit 1)))))
 (wire (pts (xy 54.61 58.42) (xy 52.07 58.42)) (stroke (width 0) (type default)) (uuid "7536aca4-9dca-4d9d-9e6b-7c523ddde6d7"))
-(symbol (lib_id "power:+24V") (at 52.07 58.42 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "4e022b00-c1fa-4065-9230-3a8e68a57e18")(property "Reference" "#PWR0205" (at 55.37 57.15 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 55.37 62.22 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "a42d8084-d1fd-49df-abe9-2b62b4d7c41a"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0205") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 52.07 58.42 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "4e022b00-c1fa-4065-9230-3a8e68a57e18")(property "Reference" "#PWR0205" (at 55.37 57.15 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 55.37 62.22 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 52.07 58.42 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "a42d8084-d1fd-49df-abe9-2b62b4d7c41a"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0205") (unit 1)))))
 (wire (pts (xy 54.61 63.50) (xy 52.07 63.50)) (stroke (width 0) (type default)) (uuid "e8735013-c591-4542-9f80-148671b6321e"))
 (label "IHM_EN" (at 52.07 63.50 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "0771bfaa-475e-4784-9114-a5d4509fbecf"))
 (wire (pts (xy 63.50 68.58) (xy 63.50 71.12)) (stroke (width 0) (type default)) (uuid "e9ae6f88-8d6d-47b2-9a4e-d731639b84a0"))
@@ -1202,7 +1326,7 @@
 (label "+5V_IHM" (at 132.08 53.34 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "f04e9d88-97c7-4ce3-924f-da7d057b1186"))
 (symbol (lib_id "Device:R") (at 35.56 91.44 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "1a309c03-c578-467a-ba1a-ff6b891c4335")(property "Reference" "R52" (at 38.86 90.17 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "100k" (at 38.86 92.71 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 35.56 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "60fba94b-cc9c-42b4-ad4d-6c79a2bce26a"))(pin "2" (uuid "7ebd4d1a-a939-4253-b8d3-159d95b9acf2"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "R52") (unit 1)))))
 (wire (pts (xy 35.56 87.63) (xy 35.56 85.09)) (stroke (width 0) (type default)) (uuid "259e4c4d-6187-481e-a945-e2135a3bbbf0"))
-(symbol (lib_id "power:+24V") (at 35.56 85.09 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "ef165521-d930-4499-a1ef-332ae678decf")(property "Reference" "#PWR0210" (at 38.86 83.82 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 38.86 88.89 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "07095568-1abd-4081-bd93-84ed4d90744c"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0210") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 35.56 85.09 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "ef165521-d930-4499-a1ef-332ae678decf")(property "Reference" "#PWR0210" (at 38.86 83.82 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 38.86 88.89 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 35.56 85.09 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "07095568-1abd-4081-bd93-84ed4d90744c"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "#PWR0210") (unit 1)))))
 (wire (pts (xy 35.56 95.25) (xy 35.56 97.79)) (stroke (width 0) (type default)) (uuid "f8641b45-8dab-4c4e-b478-22eb25c3cfe0"))
 (label "IHM_EN" (at 35.56 97.79 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "39ebfdae-b862-49b5-aae7-15016d35137a"))
 (symbol (lib_id "Transistor_FET:Q_NMOS_GSD") (at 50.80 91.44 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "a6f71501-202b-4138-bd46-3095741f9b9f")(property "Reference" "Q10" (at 54.10 90.17 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "2N7002" (at 54.10 92.71 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Package_TO_SOT_SMD:SOT-23" (at 50.80 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 50.80 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 50.80 91.44 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "a71f856d-391f-41a5-a343-7bee51498c01"))(pin "3" (uuid "18efdff9-ec3c-4812-8286-515f75ab85dc"))(pin "2" (uuid "3ff501ee-c53f-41f0-9f81-38b13cda2783"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/6b0387d2-d734-4408-bf2c-c55c62fe318c" (reference "Q10") (unit 1)))))

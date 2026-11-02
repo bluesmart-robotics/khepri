@@ -1,0 +1,1028 @@
+(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "70ed7dc8-28ff-4795-a839-b5266d52df9e") (paper "A3")(title_block (title "Interface carte de charge USB-C EPR") (company "Blue Smart Robotics"))(lib_symbols (symbol "Device:C"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "C_0_1"
+				(polyline
+					(pts
+						(xy -2.032 0.762) (xy 2.032 0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
+					)
+					(stroke
+						(width 0.508)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "Device:L"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "L"
+				(at -1.27 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "L"
+				(at 1.905 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Inductor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "inductor choke coil reactor magnetic"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "L_0_1"
+				(arc
+					(start 0 2.54)
+					(mid 0.6323 1.905)
+					(end 0 1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0 1.27)
+					(mid 0.6323 0.635)
+					(end 0 0)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0 0)
+					(mid 0.6323 -0.635)
+					(end 0 -1.27)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(arc
+					(start 0 -1.27)
+					(mid 0.6323 -1.905)
+					(end 0 -2.54)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "L_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "power:+24V"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+24V"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+24V\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+24V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+24V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "power:+3.3V"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+3.3V"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+3.3V\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+3.3V_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+3.3V_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "power:GND"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "GND"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "GND_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 -1.27) (xy 1.27 -1.27) (xy 0 -2.54) (xy -1.27 -1.27) (xy 0 -1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "GND_1_1"
+				(pin power_in line
+					(at 0 0 270)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "khepri:+VSYS"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+VSYS"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+VSYS\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+VSYS_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+VSYS_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)(symbol "khepri:JST_PH_6" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "J" (at -2.54 8.89 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "JST_PH_6" (at -2.54 -8.89 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "JST_PH_6_0_1" (rectangle (start -2.54 7.62) (end 2.54 -7.62) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "JST_PH_6_1_1" (pin passive line (at -5.08 6.35 0) (length 2.54) (name "1" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 3.81 0) (length 2.54) (name "2" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 1.27 0) (length 2.54) (name "3" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -1.27 0) (length 2.54) (name "4" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -3.81 0) (length 2.54) (name "5" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin passive line (at -5.08 -6.35 0) (length 2.54) (name "6" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )) (text "INTERFACE CARTE DE CHARGE (PMP41115, USB-C PD EPR 240 W) - signaux seulement\nLa puissance passe par les deux tiges traversantes (emplacement de l ancien XT60), pas par ce connecteur.\nJ24 PH2.0 6 voies, serigraphie to USB-C EPR. I2C sur le canal 0 du TCA9548A.\nINT_PWR : ligne d interruption commune (open-drain) PMP + chargeur + jauge + TMP117 + INA226 -> IO36 (SENSOR_VP, entree seule).\nPMP_CHG_EN : IO12 (broche de config au boot : doit rester basse au demarrage -> R84 pull-down)." (exclude_from_sim no) (at 20.32 15.24 0) (effects (font (size 1.27 1.27)) (justify left top)) (uuid "cfbac14f-9fd0-4025-80f0-e3d9c5e6d8a1"))
+(symbol (lib_id "khepri:JST_PH_6") (at 50.80 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "b1e2194d-e7d8-482b-991d-84cea334ab5a")(property "Reference" "J24" (at 54.10 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "to USB-C EPR" (at 54.10 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Connector_JST:JST_PH_S6B-PH-SM4-TB_1x06-1MP_P2.00mm_Horizontal" (at 50.80 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 50.80 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 50.80 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "8d4a2d1d-e40d-4086-91bf-ca51f94574b2"))(pin "2" (uuid "eb7887f5-632e-4e7a-b860-bbaf8a08589d"))(pin "3" (uuid "78b2adfe-a0ad-40f0-bc2a-cfeefcd55c49"))(pin "4" (uuid "ecc9bea6-1fcc-4a26-b7f7-f7b13fef1436"))(pin "5" (uuid "ae997763-b517-48dd-82fd-ec21b563c2e4"))(pin "6" (uuid "acef441d-2a66-4670-addf-91f7ca051a1e"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "J24") (unit 1)))))
+(wire (pts (xy 45.72 54.61) (xy 43.18 54.61)) (stroke (width 0) (type default)) (uuid "8dff2980-e099-45b1-b63f-550a91b7d90a"))
+(symbol (lib_id "power:GND") (at 43.18 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "c8d82462-7226-4d79-9f8f-94ecd3344929")(property "Reference" "#PWRP01" (at 46.48 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 46.48 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 43.18 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 43.18 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 43.18 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "99654786-fd51-445e-8a94-e04f1f50b2fa"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP01") (unit 1)))))
+(wire (pts (xy 45.72 57.15) (xy 43.18 57.15)) (stroke (width 0) (type default)) (uuid "8acf9530-6d20-4814-8754-51986c489d4f"))
+(symbol (lib_id "power:+3.3V") (at 43.18 57.15 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "3b87aea9-ed4d-476e-88e2-33046c1dafe6")(property "Reference" "#PWRP02" (at 46.48 55.88 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 46.48 60.95 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 43.18 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 43.18 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 43.18 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "30fe64f5-5ae2-4a0b-83b0-3404742110eb"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP02") (unit 1)))))
+(wire (pts (xy 45.72 59.69) (xy 43.18 59.69)) (stroke (width 0) (type default)) (uuid "51bdc54e-e289-4778-9b49-c1b880800bda"))
+(global_label "I2C_PMP_SDA" (shape bidirectional) (at 43.18 59.69 180) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify right)) (uuid "bd342283-be5b-43dc-869a-34124b840a89") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 43.18 59.69 0) (effects (font (size 1.27 1.27)) (justify right) (hide yes))))
+(wire (pts (xy 45.72 62.23) (xy 43.18 62.23)) (stroke (width 0) (type default)) (uuid "f1bf37d1-c2df-46df-93e5-2a2b75f1a131"))
+(global_label "I2C_PMP_SCL" (shape bidirectional) (at 43.18 62.23 180) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify right)) (uuid "97f45cd0-8989-443e-9fd6-2f1e725b2b94") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 43.18 62.23 0) (effects (font (size 1.27 1.27)) (justify right) (hide yes))))
+(wire (pts (xy 45.72 64.77) (xy 43.18 64.77)) (stroke (width 0) (type default)) (uuid "cc49b7d7-e55d-4e9d-8bfa-0bf8540cfdbf"))
+(global_label "INT_PWR" (shape bidirectional) (at 43.18 64.77 180) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify right)) (uuid "38f6fa51-61fe-498d-beed-202406712570") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 43.18 64.77 0) (effects (font (size 1.27 1.27)) (justify right) (hide yes))))
+(wire (pts (xy 45.72 67.31) (xy 43.18 67.31)) (stroke (width 0) (type default)) (uuid "c4511fb8-ecd9-469a-ab1a-0ee8d664cb5e"))
+(global_label "PMP_CHG_EN" (shape bidirectional) (at 43.18 67.31 180) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify right)) (uuid "8be9e342-b46a-4130-a0e4-b92b24a11c2c") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 43.18 67.31 0) (effects (font (size 1.27 1.27)) (justify right) (hide yes))))
+(symbol (lib_id "Device:R") (at 101.60 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "c861a63a-4017-4e2b-81c6-3e368057fc92")(property "Reference" "R82" (at 104.90 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "4.7k" (at 104.90 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 101.60 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 101.60 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 101.60 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "bd9662b8-f8c8-4fcb-91c8-de675953f72c"))(pin "2" (uuid "c3677ffa-75a6-42c9-84e1-e61bd814af75"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "R82") (unit 1)))))
+(wire (pts (xy 101.60 57.15) (xy 101.60 54.61)) (stroke (width 0) (type default)) (uuid "09904033-f9a5-43d1-a512-2c7ddef319e1"))
+(symbol (lib_id "power:+3.3V") (at 101.60 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "2f7bf2ca-525a-4c4f-b377-84f4512dc09e")(property "Reference" "#PWRP03" (at 104.90 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 104.90 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 101.60 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 101.60 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 101.60 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "4bd246e7-d8fd-49b1-b0ba-31beb6b391fe"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP03") (unit 1)))))
+(wire (pts (xy 101.60 64.77) (xy 101.60 67.31)) (stroke (width 0) (type default)) (uuid "189a55f5-de5f-41b2-aece-61c894bc99a7"))
+(global_label "I2C_PMP_SDA" (shape bidirectional) (at 101.60 67.31 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "702b69c2-75d4-4a65-91f3-f450ea7f7325") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 101.60 67.31 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(symbol (lib_id "Device:R") (at 111.76 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "ef8dbb61-76ad-429f-85b3-0534206863a4")(property "Reference" "R83" (at 115.06 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "4.7k" (at 115.06 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 111.76 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 111.76 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 111.76 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "d1b95c2f-6ce0-4fd5-a08c-0f9a739f84ee"))(pin "2" (uuid "0c16a150-b85c-4ab9-88fd-d715cd7a693e"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "R83") (unit 1)))))
+(wire (pts (xy 111.76 57.15) (xy 111.76 54.61)) (stroke (width 0) (type default)) (uuid "c4fc033e-a45c-4e1f-b343-30e2d89ea50d"))
+(symbol (lib_id "power:+3.3V") (at 111.76 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "6dcf5751-318b-4ff8-987a-fc10e9216eb6")(property "Reference" "#PWRP04" (at 115.06 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 115.06 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 111.76 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 111.76 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 111.76 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "60b6c5fa-ee3e-4e15-b139-7ed8c1b7cf75"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP04") (unit 1)))))
+(wire (pts (xy 111.76 64.77) (xy 111.76 67.31)) (stroke (width 0) (type default)) (uuid "f13ba780-5aff-485a-82d9-d9b1d2a071ea"))
+(global_label "I2C_PMP_SCL" (shape bidirectional) (at 111.76 67.31 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "55f7f467-7c40-4015-88a3-8228993d5a7c") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 111.76 67.31 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(symbol (lib_id "Device:R") (at 121.92 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "fe7d3d2f-b3cd-4c5d-a586-7e77120b9af2")(property "Reference" "R84" (at 125.22 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "10k" (at 125.22 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 121.92 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 121.92 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 121.92 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "5a220e04-6ef7-47d8-b7ff-430b11bfa83e"))(pin "2" (uuid "cd7c30f0-f834-4386-ad77-c1f62c95f317"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "R84") (unit 1)))))
+(wire (pts (xy 121.92 57.15) (xy 121.92 54.61)) (stroke (width 0) (type default)) (uuid "2359f826-d7d0-4b44-a08d-746ca3150979"))
+(global_label "PMP_CHG_EN" (shape bidirectional) (at 121.92 54.61 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "68aa6e95-681b-4994-9aaf-df9b7560a83f") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 121.92 54.61 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+(wire (pts (xy 121.92 64.77) (xy 121.92 67.31)) (stroke (width 0) (type default)) (uuid "fd101a2e-173c-4058-bad5-58519b2ec857"))
+(symbol (lib_id "power:GND") (at 121.92 67.31 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "1db07d16-d995-4cb3-aa5e-39f41584545a")(property "Reference" "#PWRP05" (at 125.22 66.04 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 125.22 71.11 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 121.92 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 121.92 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 121.92 67.31 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "13dfcbb6-65e5-4cfc-b550-602f6a2bf0e5"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP05") (unit 1)))))
+(symbol (lib_id "Device:R") (at 132.08 60.96 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "37fd12cb-512e-42f5-877e-4567e677e0fa")(property "Reference" "R85" (at 135.38 59.69 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "10k" (at 135.38 62.23 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Resistor_SMD:R_0603_1608Metric" (at 132.08 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 132.08 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 132.08 60.96 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "cf156e15-b461-470f-b155-3f40733ae163"))(pin "2" (uuid "98cf4be3-201f-44cc-a76d-815bc8bf3ffd"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "R85") (unit 1)))))
+(wire (pts (xy 132.08 57.15) (xy 132.08 54.61)) (stroke (width 0) (type default)) (uuid "fc348fe7-0ff9-4728-97f8-397a16bc1516"))
+(symbol (lib_id "power:+3.3V") (at 132.08 54.61 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "6d93ee6a-a390-4ad4-84d6-68738954ce20")(property "Reference" "#PWRP06" (at 135.38 53.34 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+3.3V" (at 135.38 58.41 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 132.08 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 132.08 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 132.08 54.61 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "7fca5644-c518-4d15-a4a1-4094f525f25c"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/309c939b-903d-4243-b999-8ea9c4bf0112" (reference "#PWRP06") (unit 1)))))
+(wire (pts (xy 132.08 64.77) (xy 132.08 67.31)) (stroke (width 0) (type default)) (uuid "6f9c6fee-8baf-45a1-99d3-4ad5b06e14ae"))
+(global_label "INT_PWR" (shape bidirectional) (at 132.08 67.31 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "6683c981-009c-4daf-a910-b973771c1f81") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 132.08 67.31 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))) (embedded_fonts no))

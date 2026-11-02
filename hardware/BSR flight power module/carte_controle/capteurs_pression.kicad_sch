@@ -1,4 +1,128 @@
-(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "e4b1567c-7d0c-4775-9a0a-5cff0eb625d5") (paper "A4")(title_block (title "Capteurs de pression") (company "Blue Smart Robotics"))(lib_symbols (symbol "Device:R"
+(kicad_sch (version 20250114) (generator "eeschema") (generator_version "9.0") (uuid "e4b1567c-7d0c-4775-9a0a-5cff0eb625d5") (paper "A4")(title_block (title "Capteurs de pression") (company "Blue Smart Robotics"))(lib_symbols (symbol "khepri:+VSYS"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+VSYS"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+VSYS\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+VSYS_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+VSYS_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		) (symbol "Device:R"
 			(pin_numbers
 				(hide yes)
 			)
@@ -541,7 +665,7 @@
 					(hide yes)
 				)
 			)
-			(property "Value" "+24V"
+			(property "Value" "+VSYS"
 				(at 0 3.556 0)
 				(effects
 					(font
@@ -746,12 +870,12 @@
 			(embedded_fonts no)
 		)(symbol "khepri:MS5611-01BA03" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -7.62 7.62 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "MS5611-01BA03" (at -7.62 -7.62 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Package_LGA:LGA-8_3x5mm_P1.25mm" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Barometre 24 bits, I2C (PS=VDD), adresse 0x76 si CSB=VDD, 0x77 si CSB=GND" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "MS5611-01BA03_0_1" (rectangle (start -7.62 6.35) (end 7.62 -6.35) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "MS5611-01BA03_1_1" (pin power_in line (at 0.00 8.89 270) (length 2.54) (name "VDD" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin power_in line (at 0.00 -8.89 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin input line (at -10.16 2.54 0) (length 2.54) (name "PS" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin input line (at -10.16 0.00 0) (length 2.54) (name "CSB" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin input line (at -10.16 -2.54 0) (length 2.54) (name "CSB" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin bidirectional line (at 10.16 2.54 180) (length 2.54) (name "SDI/SDA" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27))))) (pin input line (at 10.16 0.00 180) (length 2.54) (name "SCLK" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27))))) (pin output line (at 10.16 -2.54 180) (length 2.54) (name "SDO" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )(symbol "khepri:HSCMRRN001PD2A3" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -7.62 7.62 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "HSCMRRN001PD2A3" (at -7.62 -7.62 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Honeywell HSC SMT, differentiel +/-1 psi, I2C 0x28, 3.3 V - EMPREINTE A CREER" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "HSCMRRN001PD2A3_0_1" (rectangle (start -7.62 6.35) (end 7.62 -6.35) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "HSCMRRN001PD2A3_1_1" (pin power_in line (at 0.00 8.89 270) (length 2.54) (name "VS" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) (pin power_in line (at 0.00 -8.89 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin bidirectional line (at 10.16 1.27 180) (length 2.54) (name "SDA" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin input line (at 10.16 -1.27 180) (length 2.54) (name "SCL" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin no_connect line (at -10.16 3.81 0) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin no_connect line (at -10.16 1.27 0) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27))))) (pin no_connect line (at -10.16 -1.27 0) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27))))) (pin no_connect line (at -10.16 -3.81 0) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )(symbol "khepri:LP5907MFX-3.3" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -5.08 5.08 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "LP5907MFX-3.3" (at -5.08 -5.08 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Package_TO_SOT_SMD:SOT-23-5" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "LDO faible bruit 250 mA, 3.3 V" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "LP5907MFX-3.3_0_1" (rectangle (start -5.08 3.81) (end 5.08 -3.81) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "LP5907MFX-3.3_1_1" (pin power_in line (at -7.62 1.27 0) (length 2.54) (name "IN" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin input line (at -7.62 -1.27 0) (length 2.54) (name "EN" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin power_out line (at 7.62 1.27 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27))))) (pin no_connect line (at 7.62 -1.27 180) (length 2.54) (name "NC" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27))))) (pin power_in line (at 0.00 -6.35 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )(symbol "khepri:L78L05_SOT89" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes) (property "Reference" "U" (at -5.08 3.81 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Value" "L78L05_SOT89" (at -5.08 -3.81 0) (effects (font (size 1.27 1.27)) (justify left top))) (property "Footprint" "Package_TO_SOT_SMD:SOT-89-3" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (property "Description" "Regulateur 5 V 100 mA, Vin max 30 V (SOT-89 : 1=VO 2=GND 3=VI)" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes))) (symbol "L78L05_SOT89_0_1" (rectangle (start -5.08 2.54) (end 5.08 -2.54) (stroke (width 0.254) (type default)) (fill (type background)))) (symbol "L78L05_SOT89_1_1" (pin power_in line (at -7.62 0.00 0) (length 2.54) (name "VI" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27))))) (pin power_out line (at 7.62 0.00 180) (length 2.54) (name "VO" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27))))) (pin power_in line (at 0.00 -5.08 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27))))) ) (embedded_fonts no) )) (symbol (lib_id "Device:C") (at 27.94 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "afdb4aeb-a3b5-4872-8acc-6ff614764c36")(property "Reference" "C30" (at 31.24 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "330n 50V" (at 31.24 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Capacitor_SMD:C_0603_1608Metric" (at 27.94 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 27.94 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 27.94 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "e8a9a762-08ba-42cb-8c7e-621efab2f249"))(pin "2" (uuid "a6b9a02f-6bc6-4fe9-9f88-d45569f9b173"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "C30") (unit 1)))))
 (wire (pts (xy 27.94 46.99) (xy 27.94 44.45)) (stroke (width 0) (type default)) (uuid "a3e65b46-9abc-4d40-a12b-1d03f22fbf0e"))
-(symbol (lib_id "power:+24V") (at 27.94 44.45 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "38e4e6e8-af31-4666-ae96-73f6da9ef265")(property "Reference" "#PWR0101" (at 31.24 43.18 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 31.24 48.25 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "e3343ba8-036d-46d3-b901-ca45eb78c550"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "#PWR0101") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 27.94 44.45 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "38e4e6e8-af31-4666-ae96-73f6da9ef265")(property "Reference" "#PWR0101" (at 31.24 43.18 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 31.24 48.25 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 27.94 44.45 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "e3343ba8-036d-46d3-b901-ca45eb78c550"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "#PWR0101") (unit 1)))))
 (wire (pts (xy 27.94 54.61) (xy 27.94 57.15)) (stroke (width 0) (type default)) (uuid "9c575e66-16df-440c-b344-4fccae9eb6b9"))
 (symbol (lib_id "power:GND") (at 27.94 57.15 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "f4f0473c-a2d6-4e89-b10a-6a26382d4b31")(property "Reference" "#PWR0102" (at 31.24 55.88 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "GND" (at 31.24 60.95 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 27.94 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 27.94 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 27.94 57.15 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "d3b60984-1869-4b35-9c90-b4110960aebf"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "#PWR0102") (unit 1)))))
 (symbol (lib_id "khepri:L78L05_SOT89") (at 50.80 50.80 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (uuid "1a66fd3c-2d5b-43b0-92ec-dfb2fa51213c")(property "Reference" "U20" (at 54.10 49.53 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Value" "L78L05ACUTR" (at 54.10 52.07 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "Package_TO_SOT_SMD:SOT-89-3" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 50.80 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "3" (uuid "e43fc2e2-82e4-4512-b1a7-c936730469fe"))(pin "1" (uuid "5b61bb5f-add2-4ad3-819f-64e20ccd0f36"))(pin "2" (uuid "b5140dab-3f44-4273-8146-95a86af55066"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "U20") (unit 1)))))
 (wire (pts (xy 43.18 50.80) (xy 40.64 50.80)) (stroke (width 0) (type default)) (uuid "b3e6e69a-cca7-4317-8a87-5ea6618673fb"))
-(symbol (lib_id "power:+24V") (at 40.64 50.80 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "4aea84ab-81ae-4669-a0ba-70db56fecd93")(property "Reference" "#PWR0103" (at 43.94 49.53 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+24V" (at 43.94 54.60 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "0db74a46-5bef-46f0-b417-3863761bd5de"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "#PWR0103") (unit 1)))))
+(symbol (lib_id "khepri:+VSYS") (at 40.64 50.80 0) (unit 1) (exclude_from_sim no) (in_bom no) (on_board no) (dnp no) (uuid "4aea84ab-81ae-4669-a0ba-70db56fecd93")(property "Reference" "#PWR0103" (at 43.94 49.53 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes)))(property "Value" "+VSYS" (at 43.94 54.60 0) (effects (font (size 1.27 1.27)) (justify left)))(property "Footprint" "" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Datasheet" "~" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(property "Description" "" (at 40.64 50.80 0) (effects (font (size 1.27 1.27)) (hide yes)))(pin "1" (uuid "0db74a46-5bef-46f0-b417-3863761bd5de"))(instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b/1629e472-0862-44e8-a277-1868ed7c136d" (reference "#PWR0103") (unit 1)))))
 (wire (pts (xy 58.42 50.80) (xy 60.96 50.80)) (stroke (width 0) (type default)) (uuid "5841bb32-4aa1-4a9d-83bb-9ca3e8e454ea"))
 (label "+5V_SENS" (at 60.96 50.80 0) (effects (font (size 1.27 1.27)) (justify left bottom)) (uuid "9fd5dbbb-f053-40ff-b49b-01c7e8fba86f"))
 (wire (pts (xy 50.80 55.88) (xy 50.80 58.42)) (stroke (width 0) (type default)) (uuid "a4532d78-ef9c-4340-bcb4-9da95a87541c"))

@@ -93,7 +93,7 @@ routage, seulement le rendu 3D.
   de pastilles SMT de la datasheet Honeywell avant fabrication.
 - Routage du bloc capteurs non fait ; d'anciennes pistes traversent encore les
   capots et seront à reprendre.
-- `production/khepri_v6.net` : netlist exportée par kicad-cli, de référence.
+- `production/khepri_v7.net` : netlist exportée par kicad-cli, de référence.
 
 ### Points ouverts (à reprendre plus tard)
 
@@ -146,13 +146,59 @@ Feuille `liaison_ihm.kicad_sch` :
 | BOOT0 STM32 (reflash par bootloader UART) | IO14 | 10 |
 | Coupure du 5V_IHM | IO13 | — |
 
-- 5V_IHM : buck AP63205WU (U30) depuis le +24V, L13 6,8 µH SRN6045TA,
+- 5V_IHM : buck AP63205WU (U30) depuis le +VSYS, L13 6,8 µH SRN6045TA,
   séparé du +5V_SENS des capteurs. EN tiré au +24V (R52), Q10 2N7002 le force
   à la masse quand IO13 est haut : façade alimentée par défaut, redémarrage
   à froid possible par l'ESP32.
 - Lignes : 100 Ω en série (R54–R59), pull-up 10 k sur les RX (IO34/35 n'en
   ont pas, R60/R61), pull-down 10 k sur BOOT0 (R62), ESD TPD4E05U06 (U31, U32).
 - UART0 reste réservé au CP2102N (programmation, console).
-- Placement : J20 sur le bord droit, ouverture vers l'extérieur, buck juste
-  en dessous (zone de l'ancien J7). **Côté de sortie de la nappe à confirmer**
+- Placement : J20 sur le bord droit (décalé de +15 mm avec le passage à 80 mm),
+  ouverture vers l'extérieur, buck juste en dessous. **Côté de sortie de la nappe à confirmer**
   selon la position de la carte façade.
+
+## Passage en 80 × 150 mm, alimentation de secours, carte de charge (02/11/2026)
+
+Contour élargi de 15 mm de chaque côté (x 104 → 184), J17 et le bloc central
+inchangés. Le plan GND (In1) couvre toute la carte ; les autres plans restent
+sur l'ancienne largeur.
+
+**Arbre d'alimentation.** Le +24V (sortie de U2) n'alimente plus directement
+la carte : il passe par une diode idéale vers `VSYS_OR`, en OU avec la batterie
+de secours, puis par le shunt R70 vers **+VSYS**. +VSYS alimente U1 (3,3 V),
+le 5V capteurs (U20) et le 5V IHM (U30). Le plan In2 ex-+24V est renommé
++VSYS : **la liaison entre U2 et la diode U36/Q12 est à router** (le DRC
+signalera le cuivre +VSYS encore relié aux pastilles +24V autour de U2).
+
+**Feuille `alim_secours.kicad_sch`** (bande gauche) :
+- 2 cellules Li-ion **en série (2S, 6,0–8,4 V)** : J21 à gauche = cellule
+  basse, J22 à droite = cellule haute (PH2.0 2P, 1 = −, 2 = +). Choix série :
+  l'OU se fait directement sur +VSYS sans convertisseur boost, et toutes les
+  alims en aval acceptent 6 V. Cellules protégées (PCM) obligatoires.
+- F1 PTC 1812 sur le + de la pile, R71 10 mΩ côté −.
+- Chargeur **BQ25887** (boost 2S, équilibrage, I²C 0x6B) alimenté par un 5 V
+  dédié (U34 AP63205 depuis le +24V bus) : il ne charge que quand le bus est
+  présent. ILIM 1,27 kΩ → 1 A d'entrée max, CBSET 100 Ω.
+- Jauge **MAX17205** (ModelGauge m5, SOC, tension de chaque cellule, I²C
+  0x36/0x0B), CELL1/CELL2 reliés au point milieu.
+- J23 : interrupteur de tableau de bord ; fermé = secours connecté (PMOS Q14).
+- Diodes idéales LM74700 + SI2318 (U36/Q12 bus, U37/Q13 secours).
+- I²C sur le canal 1 du TCA9548A.
+
+**Feuille `mesures_env.kicad_sch`** (en haut à gauche, à côté des capteurs de
+pression) : TMP117 (température d'air, 0x48) et INA226 (courant et tension
++VSYS, 0x40, shunt R70). I²C sur le canal 3. Les prises Kelvin du shunt R70
+(en bas à gauche) vers U41 sont à router en paire.
+
+**Feuille `interface_pmp.kicad_sch`** : J24 PH2.0 6P « to USB-C EPR » (1 GND,
+2 +3,3 V, 3 SDA, 4 SCL, 5 INT, 6 CHG_EN), I²C canal 0. La puissance passera
+par les deux tiges traversantes à l'emplacement du XT60 (à dessiner).
+
+**Broches ESP32** : INT_PWR (interruption commune PMP, chargeur, jauge,
+TMP117, INA226) sur IO36 (entrée seule) ; PMP_CHG_EN sur IO12 avec pull-down
+(broche de configuration au démarrage, doit rester basse). Restent libres :
+IO15 et IO39.
+
+**À vérifier** : pastille exposée du BQ25887 (empreinte RGE0024C choisie),
+câblage AIN2/CELLX du MAX17205 (mis à GND, à confirmer avec la config nPack),
+TH1/TH2 à placer au plus près des cellules si possible.

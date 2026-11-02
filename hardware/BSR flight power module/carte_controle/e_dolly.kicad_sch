@@ -11,6 +11,131 @@
 		(company "Blue Smart Robotics")
 	)
 	(lib_symbols
+		(symbol "khepri:+VSYS"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#PWR"
+				(at 0 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "+VSYS"
+				(at 0 3.556 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Power symbol creates a global label with name \"+VSYS\""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "global power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "+VSYS_0_1"
+				(polyline
+					(pts
+						(xy -0.762 1.27) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 2.54)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "+VSYS_1_1"
+				(pin power_in line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "2026-02-07_18-19-04:MP2565DQ-Z"
 			(pin_names
 				(offset 0.254)
@@ -9341,10 +9466,6 @@
 		(uuid "235a91f4-7657-4e3b-ad9e-5ac0c4b62d65")
 	)
 	(no_connect
-		(at 226.06 251.46)
-		(uuid "24d4c912-3c4d-4795-b52a-319cd3e0d653")
-	)
-	(no_connect
 		(at 312.42 190.5)
 		(uuid "259937a0-9fcb-485c-8358-bb5d2cc3c4a7")
 	)
@@ -9457,10 +9578,6 @@
 		(uuid "ababedfb-4924-4ce8-8a8e-d42fbe1802ce")
 	)
 	(no_connect
-		(at 226.06 254)
-		(uuid "b381a8c4-e1f8-46d1-91a4-d99ea525c426")
-	)
-	(no_connect
 		(at 226.06 259.08)
 		(uuid "b69e59e2-5aae-4c6c-b91f-5b07c6495b0a")
 	)
@@ -9479,10 +9596,6 @@
 	(no_connect
 		(at 312.42 226.06)
 		(uuid "e86711a4-56d6-4868-9a18-d4a9ca9c2f60")
-	)
-	(no_connect
-		(at 237.49 38.1)
-		(uuid "ef287de3-7894-4889-8b8b-cb58029fe2bc")
 	)
 	(no_connect
 		(at 312.42 193.04)
@@ -16595,7 +16708,7 @@
 		)
 	)
 	(symbol
-		(lib_id "power:+24V")
+		(lib_id "khepri:+VSYS")
 		(at 175.26 231.14 270)
 		(unit 1)
 		(exclude_from_sim no)
@@ -16613,7 +16726,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "+24V"
+		(property "Value" "+VSYS"
 			(at 179.07 231.1399 90)
 			(effects
 				(font
@@ -34174,32 +34287,12 @@
 		)
 	)
 	(no_connect
-		(at 267.97 48.26)
-		(uuid "34ec70df-3bab-4d30-a641-bb4a36e2d4ab")
-	)
-	(no_connect
 		(at 267.97 55.88)
 		(uuid "d06a2c6c-295c-4c45-8ff1-5972bb050b5b")
 	)
 	(global_label "I2C_PRES_SDA" (shape bidirectional) (at 231.14 248.92 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "9d3c9c2d-5c23-4250-b9e2-7f6c5419a50a") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 248.92 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(global_label "I2C_PRES_SCL" (shape bidirectional) (at 231.14 246.38 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "01e591b4-4837-4b99-944b-a4eeacb152d0") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 246.38 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(sheet (at 80.01 40.64) (size 38.1 12.7) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "1629e472-0862-44e8-a277-1868ed7c136d") (property "Sheetname" "Capteurs pression" (at 80.01 39.93 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "capteurs_pression.kicad_sch" (at 80.01 53.93000000000001 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "2")))))
-	(no_connect
-		(at 226.06 238.76)
-		(uuid "f2d5a920-bb9a-40f4-9755-6f1e2518e3e4")
-	)
-	(no_connect
-		(at 226.06 236.22)
-		(uuid "3aa76604-c479-4816-9782-cde5a1105708")
-	)
-	(no_connect
-		(at 226.06 241.3)
-		(uuid "914dc2d3-18af-481c-81d8-c3520b51e31a")
-	)
-	(no_connect
-		(at 226.06 243.84)
-		(uuid "274f9121-46eb-43f1-a836-6cc8e64f790c")
-	)
 	(wire (pts (xy 267.97 63.50) (xy 273.05 63.50)) (stroke (width 0) (type default)) (uuid "1fed1314-f3fe-4bb0-8ebc-7ad2b26b034e"))
 	(global_label "IHM_TX1" (shape bidirectional) (at 273.05 63.50 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "c5d799e9-1d58-4739-99dd-7cb07fbd8f26") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 63.50 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(wire (pts (xy 267.97 88.90) (xy 273.05 88.90)) (stroke (width 0) (type default)) (uuid "0e3788be-ab53-495a-afa1-2d4f0fba80d4"))
@@ -34215,6 +34308,25 @@
 	(wire (pts (xy 267.97 50.80) (xy 273.05 50.80)) (stroke (width 0) (type default)) (uuid "0d097e2a-0ad7-45f9-a255-c68e04fe6ef9"))
 	(global_label "IHM_PWR_OFF" (shape bidirectional) (at 273.05 50.80 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "5a0f0d76-d7ee-4c69-ab1c-d1d00920fa4c") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 50.80 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
 	(sheet (at 80.01 60.96) (size 38.1 12.7) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "6b0387d2-d734-4408-bf2c-c55c62fe318c") (property "Sheetname" "Liaison IHM" (at 80.01 60.25 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "liaison_ihm.kicad_sch" (at 80.01 74.25 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "3")))))
+	(wire (pts (xy 226.06 238.76) (xy 231.14 238.76)) (stroke (width 0) (type default)) (uuid "48d90cfa-3418-4fc6-a574-4c31efb83c22"))
+	(global_label "I2C_PMP_SDA" (shape bidirectional) (at 231.14 238.76 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "be502a54-8a21-4663-a8f2-fc72bb718f1b") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 238.76 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 226.06 236.22) (xy 231.14 236.22)) (stroke (width 0) (type default)) (uuid "53ad335c-e1dd-442b-a3fd-dbbd70e97f10"))
+	(global_label "I2C_PMP_SCL" (shape bidirectional) (at 231.14 236.22 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "5f230ffa-060a-4e9e-b70f-27980e6fcd73") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 236.22 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 226.06 243.84) (xy 231.14 243.84)) (stroke (width 0) (type default)) (uuid "dd02e171-d4e7-4397-a4a8-1a940f21f0bb"))
+	(global_label "I2C_PWR_SDA" (shape bidirectional) (at 231.14 243.84 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "737783d2-a505-400a-bfb9-fd32e473d1ad") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 243.84 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 226.06 241.30) (xy 231.14 241.30)) (stroke (width 0) (type default)) (uuid "d41ef4bd-2bf7-403e-a8c6-cc0310364e03"))
+	(global_label "I2C_PWR_SCL" (shape bidirectional) (at 231.14 241.30 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "42e3b4a3-335f-4fa3-b3ae-941791746c4c") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 241.30 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 226.06 254.00) (xy 231.14 254.00)) (stroke (width 0) (type default)) (uuid "4d99f997-760d-4219-9144-cdc45ac8b7fd"))
+	(global_label "I2C_ENV_SDA" (shape bidirectional) (at 231.14 254.00 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "d12a79e3-1f09-4911-8c9e-08f3023618db") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 254.00 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 226.06 251.46) (xy 231.14 251.46)) (stroke (width 0) (type default)) (uuid "92926ecb-2ab1-49c6-af40-be5bb5bc4790"))
+	(global_label "I2C_ENV_SCL" (shape bidirectional) (at 231.14 251.46 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "011b9b62-896d-4ccd-810a-c9a3d3ae35b3") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 231.14 251.46 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 237.49 38.10) (xy 242.57 38.10)) (stroke (width 0) (type default)) (uuid "f2faf5b9-453c-4084-a730-2b6bcd337cfd"))
+	(global_label "INT_PWR" (shape bidirectional) (at 242.57 38.10 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "1c779a75-d27b-4328-91e4-df6e228eeb52") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 242.57 38.10 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(wire (pts (xy 267.97 48.26) (xy 273.05 48.26)) (stroke (width 0) (type default)) (uuid "096c2ca7-2cd0-4e5e-957b-c7f3f4a8479c"))
+	(global_label "PMP_CHG_EN" (shape bidirectional) (at 273.05 48.26 0) (fields_autoplaced yes) (effects (font (size 1.27 1.27)) (justify left)) (uuid "ed9eb458-cf40-4aca-a365-244ad6a90e48") (property "Intersheetrefs" "${INTERSHEET_REFS}" (at 273.05 48.26 0) (effects (font (size 1.27 1.27)) (justify left) (hide yes))))
+	(sheet (at 80.01 81.28) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "93ffcfd3-fc60-4070-9410-95dc8c71179d") (property "Sheetname" "Alimentation secours" (at 80.01 80.57000000000001 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "alim_secours.kicad_sch" (at 80.01 92.03 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "4")))))
+	(sheet (at 80.01 96.52) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "ae5be68b-eb9d-47bc-ac69-3133c3f7c784") (property "Sheetname" "Mesures env" (at 80.01 95.81 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "mesures_env.kicad_sch" (at 80.01 107.27 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "5")))))
+	(sheet (at 80.01 111.76) (size 38.1 10.16) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced yes) (stroke (width 0.1524) (type solid)) (fill (color 0 0 0 0.0000)) (uuid "309c939b-903d-4243-b999-8ea9c4bf0112") (property "Sheetname" "Interface PMP41115" (at 80.01 111.05000000000001 0) (effects (font (size 1.27 1.27)) (justify left bottom))) (property "Sheetfile" "interface_pmp.kicad_sch" (at 80.01 122.51 0) (effects (font (size 1.27 1.27)) (justify left top))) (instances (project "e_dolly" (path "/24f972fb-293c-4f12-be82-724e412ef80b" (page "6")))))
 	(sheet_instances
 		(path "/"
 			(page "1")
