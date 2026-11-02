@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "edolly_empreinte")(type "KiCad")(uri "${KIPRJMOD}/Bibliotheque_kicad/edolly_empreinte.pretty")(options "")(descr "Empreintes BSR"))
+)

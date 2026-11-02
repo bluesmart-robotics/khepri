@@ -31,10 +31,11 @@ récupère ici par un `git submodule update --remote`.
 
 `carte_controle/` est une **copie**, prise du dépôt E-dolly (`hardware/pcb_controle/`)
 au commit `20ab2e3`. E-dolly étant privé et ce dépôt public, un sous-module
-n'était pas possible. Conséquence à garder en tête : les deux copies peuvent
-diverger. Toute modification de cette carte doit être reportée à la main dans
-l'autre dépôt, ou bien la carte doit être sortie dans son propre dépôt et
-sous-modulée depuis les deux projets.
+n'était pas possible. Depuis novembre 2026, les deux copies ont **volontairement
+divergé** : la version KHEPRI a perdu l'E-stop, les contacteurs et les entrées
+de puissance, et gagné le bloc capteurs de pression (détails dans
+[`carte_controle/README.md`](carte_controle/README.md)). Ne pas reporter ces
+changements dans E-dolly, qui a besoin de son E-stop.
 
 ## Sous-modules
 
