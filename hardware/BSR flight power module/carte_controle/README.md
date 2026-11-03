@@ -16,7 +16,7 @@ dérive), 4 couches, **80 × 150 mm**.
 ## 1. Vue d'ensemble
 
 ```
-                tiges de puissance H1/H2 (bus pack 42-51 V, ex-XT60 J17)
+                XT60 2+4 J17 vers la BSR Drive (bus pack 42-51 V)
                                    │
           ┌────────────────────────┴───────────────────────────┐
           │  TVS U8 ─ U2 TPS54560 ─► +24V ─┬─► ventilateur J25  │
@@ -53,7 +53,7 @@ proposer des consignes, que l'ESP32 valide.
 | `mesures_env.kicad_sch` | température d'air, courant et tension consommés par l'instrument |
 | `interface_pmp.kicad_sch` | liaison vers la carte de charge USB-C EPR (PMP41115) |
 | `ventilation.kicad_sch` | commande du ventilateur de la BSR Drive |
-| `faisceau_au.kicad_sch` | tiges de puissance, trous de fixation, liaison BSR Drive, faisceau chaussettes 24 V, arrêt d'urgence, expandeur I²C |
+| `faisceau_au.kicad_sch` | XT60 J17, trous de fixation, liaison BSR Drive, faisceau chaussettes 24 V, arrêt d'urgence, expandeur I²C |
 
 ---
 
@@ -61,7 +61,7 @@ proposer des consignes, que l'ESP32 valide.
 
 | Rail | Produit par | Depuis | Alimente |
 |---|---|---|---|
-| **+36V** (nom historique) | — | bus du pack 42–51 V via la tige H1 | U2, U43, mesure bus (R41–R43), TVS U8 SMCJ58A, C24 100 µF |
+| **+36V** (nom historique) | — | bus du pack 42–51 V via la XT60 J17 | U2, U43, mesure bus (R41–R43), TVS U8 SMCJ58A, C24 100 µF |
 | **+24V_EXT** (≈ 24,3 V, 10 A) | U43 LM5146 + Q18/Q19 NTMFS6H800NL, L16 10 µH XAL1510 | +36V | faisceau des chaussettes (J26), coupable |
 | **+24V** (≈ 25 V) | U2 TPS54560, L2 15,4 µH, D2 | +36V | diode idéale bus (U36/Q12), 5V_CHG (U34), ventilateur J25 |
 | **VSYS_OR** | OU de U36/Q12 (bus) et U37/Q13 (secours) | +24V ou cellules 2S | shunt R70 |
@@ -245,7 +245,7 @@ pression) :
 | 6 | CHG_EN (IO12, pull-down R84) |
 
 La puissance de charge (240 W) ne passe pas par ce connecteur mais par les
-tiges de puissance.
+XT60 et du bus.
 
 ---
 
@@ -272,7 +272,7 @@ en logiciel.
 
 ---
 
-## 9. Tiges, fixation, faisceau et arrêt d'urgence (`faisceau_au.kicad_sch`)
+## 9. XT60, fixation, faisceau et arrêt d'urgence (`faisceau_au.kicad_sch`)
 
 **Alignement sur la BSR Drive.** Les positions viennent du fichier Altium de
 la BSR Drive (`bsr-drive/hardware/bsr-drive-v3.7/PCB.PcbDoc`, lu par script).
