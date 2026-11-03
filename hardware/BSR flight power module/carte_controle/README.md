@@ -244,8 +244,8 @@ pression) :
 | 5 | INT (ligne commune INT_PWR, drain ouvert, pull-up R85) |
 | 6 | CHG_EN (IO12, pull-down R84) |
 
-La puissance de charge (240 W) ne passe pas par ce connecteur mais par les
-XT60 et du bus.
+La puissance de charge (240 W) ne passe pas par ce connecteur : elle va directement
+sur le bus du pack.
 
 ---
 
