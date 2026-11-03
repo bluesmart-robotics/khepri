@@ -1,0 +1,3 @@
+[submodule "hardware/BSR flight power module/bsr-drive"]
+	path = hardware/BSR flight power module/bsr-drive
+	url = https://github.com/bluesmart-robotics/bsr-drive
