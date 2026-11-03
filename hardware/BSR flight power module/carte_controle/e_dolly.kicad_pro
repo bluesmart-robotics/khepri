@@ -60,22 +60,6 @@
       ],
       "drc_exclusions": [
         [
-          "silk_edge_clearance|119000000|162590000|3ea0882f-137d-4e94-a56f-6d20fe0b56f5|c8805ade-cbf6-41f6-aa49-bb552aa11b6e",
-          ""
-        ],
-        [
-          "silk_edge_clearance|119000000|178310000|3ea0882f-137d-4e94-a56f-6d20fe0b56f5|f95c190c-01a3-4567-bccc-64a95091f87a",
-          ""
-        ],
-        [
-          "silk_edge_clearance|169000000|162590000|3ea0882f-137d-4e94-a56f-6d20fe0b56f5|5343abeb-43cb-44dc-ba20-1f44ae4df2f7",
-          ""
-        ],
-        [
-          "silk_edge_clearance|169000000|178310000|3ea0882f-137d-4e94-a56f-6d20fe0b56f5|4e41ee30-5f59-49e4-bb5f-fdf663d27a12",
-          ""
-        ],
-        [
           "silk_over_copper|137509561|175400000|47a1e854-4bbf-4825-87da-b2ec3c17fb73|00000000-0000-0000-0000-000000000000",
           ""
         ],
@@ -296,7 +280,7 @@
       ],
       [
         "pin_to_pin|1587500|698500|ab39ae6e-bb32-4b1d-aa4c-3ecc1c9ecdf9|e7cbdf3b-7ee5-4540-939d-33a3015a2a61|/24f972fb-293c-4f12-be82-724e412ef80b|/24f972fb-293c-4f12-be82-724e412ef80b|/24f972fb-293c-4f12-be82-724e412ef80b",
-        "INT2 reliée à GND intentionnellement"
+        "INT2 reli\u00e9e \u00e0 GND intentionnellement"
       ],
       [
         "pin_to_pin|3035300|762000|53d90e71-876f-41d0-b60c-aace7ec71d82|36d82ef9-13bd-4f17-8696-a90f291c56ac|/24f972fb-293c-4f12-be82-724e412ef80b|/24f972fb-293c-4f12-be82-724e412ef80b|/24f972fb-293c-4f12-be82-724e412ef80b",
@@ -613,6 +597,24 @@
         "priority": 0,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.15
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.25,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "Puissance",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.8,
+        "via_diameter": 0.8,
+        "via_drill": 0.4,
+        "wire_width": 6
       }
     ],
     "meta": {

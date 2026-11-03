@@ -283,41 +283,10 @@ la BSR Drive (`bsr-drive/hardware/bsr-drive-v3.7/PCB.PcbDoc`, lu par script).
 - **Débord :** la BSR Drive dépasse de ≈ 9,5 mm au-dessus du bord haut de cette
   carte, et cette carte dépasse de ≈ 19 mm sous la BSR Drive.
 
-**Tiges de puissance**
-- **H1** (+BUS) et **H2** (GND) : trous métallisés M5 avec couronne de vias, à
-  l'emplacement de l'ancienne XT60, **entraxe 14 mm** (au lieu de 7,2 mm entre
-  les broches XT60, pour laisser passer écrous et rondelles).
-- La carte ne prélève que ≈ 8 A sur le bus. Le courant moteur (≈ 150 A) reste
-  dans les tiges.
-- **Diamètre et entraxe sont à confirmer**, et la BSR Drive doit recevoir les
-  mêmes perçages.
-
-**Trous de fixation M3 alignés sur ceux de la BSR Drive**
-
-| Trou | Position carte (mm) | Trou BSR Drive |
-|---|---|---|
-| H3 | (166,5 ; 157,3) | H10 |
-| H4 | (124,5 ; 104,8) | H7 |
-| H5 | (124,5 ; 66,3) | H6 |
-| H6 | (148,1 ; 147,3) | H12 (C24 décalé de 1 mm pour le dégager) |
-
-- Les autres trous de la BSR Drive sont soit hors de cette carte (H1, H4, H5, H9),
-  soit sous l'ESP32 ou l'alimentation 3,3 V (H2, H3), soit sous la TVS U8 (H8).
-- Les bornes M3 à cosse de la BSR Drive (phases et bus, en
-  x_carte ≈ 123,5) doivent rester sous cette carte sans toucher : prévoir
-  des entretoises assez hautes.
-
-**J28 vers la BSR Drive** (JST PH 4 vertical), remplace les « +4 » de la XT60.
-
-| J28 | Signal |
-|---|---|
-| 1 | GND |
-| 2 | CANH |
-| 3 | CANL |
-| 4 | ESTOP_OK (3,3 V = marche) |
-
-Côté BSR Drive, ESTOP_OK doit couper EN_GATE en matériel (ET logique avec la
-commande du STM32).
+**Liaison à la BSR Drive : XT60 2+4 J17, inchangée** (même empreinte que la
+BSR Drive, sous la carte). P = +BUS, N = GND, 1 = CANL, 2 = CANH, 3 = GND,
+4 = ESTOP_OK via R121 (0 Ω, à ne monter que si la broche 4 est câblée côté BSR
+Drive pour couper EN_GATE).
 
 **Faisceau des chaussettes : U43 LM5146 + Q18/Q19, +24V_EXT 10 A**
 - Valeurs de base :
@@ -353,17 +322,29 @@ commande du STM32).
 - Son ~INT est sur la ligne commune INT_PWR.
 - IO0_4–7 et IO1_x sont libres : les configurer en sorties dans le logiciel.
 
-**Connecteurs** : tous les connecteurs de cette carte sont maintenant
-**verticaux** (J20 GH 12, J21–J24 PH CMS, J25 XH, J26 Micro-Fit, J27/J28 PH).
+**Connecteurs** : tous verticaux et repérés en sérigraphie :
+
+| Réf. | Sérigraphie | Va vers |
+|---|---|---|
+| J14 | USB PROG | prise USB-C de programmation |
+| J17 (dessous) | XT60 -> BSR DRIVE | BSR Drive (bus + CAN) |
+| J20 | VERS FACADE | carte façade (smart knob + écran 1,64) |
+| J21 / J22 | CELL GAUCHE / CELL DROITE 1- 2+ | cellules de secours |
+| J23 | INTER SECOURS | interrupteur de secours du tableau |
+| J24 | to USB-C EPR (PMP) | carte de charge |
+| J25 | FAN 24V PWM | ventilateur 8038 |
+| J26 | FAISCEAU CHAUSSETTES 24V+CAN | DTM 6 voies |
+| J27 | ARRET URGENCE (NF) | bouton du tableau |
+| JP1 | TERM CAN | cavalier de terminaison |
 
 ## 10. Plans de cuivre
 
 | Couche | Contenu |
 |---|---|
-| F.Cu | GND sur toute la carte (priorité 0) ; +36V autour de la tige H1 ; anciennes petites zones locales des alimentations conservées. La zone de sortie de U2 est renommée +24V. |
+| F.Cu | GND sur toute la carte (priorité 0) ; +36V autour de la broche P de J17 ; anciennes petites zones locales des alimentations conservées. La zone de sortie de U2 est renommée +24V. |
 | In1.Cu | GND sur toute la carte |
 | In2.Cu | +3.3V (haut, y < 107,5) et +VSYS (bas) sur toute la largeur de 80 mm |
-| B.Cu | GND sur toute la carte ; +36V en bande y 147 → 165 de la tige H1 jusqu'au convertisseur U43, prolongée jusqu'à U2 |
+| B.Cu | GND sur toute la carte ; +36V en bande y 147 → 165 de J17 jusqu'au convertisseur U43, prolongée jusqu'à U2 |
 
 - Les anciennes grandes zones +36V, de l'époque de l'E-stop, sont supprimées.
 - Les 52 vias +36V qui les cousaient sont supprimés aussi.
@@ -372,7 +353,8 @@ commande du STM32).
 
 ## 11. Ce qui reste à faire
 
-1. **Routage complet**, dont :
+1. **Routage complet** (pas encore fait : l'export Specctra DSN plante le
+   serveur KiCad de Claude ; à lancer depuis KiCad, Freerouting), dont :
    - +36V → U43/Q18 ;
    - +24V U2 → diode idéale U36/Q12 ;
    - prises Kelvin de R70 vers U41 ;
@@ -381,9 +363,8 @@ commande du STM32).
 2. **Calculer R117 (ILIM) et la compensation de U43**, vérifier la dissipation
    de Q18/Q19 à 10 A.
 3. **Confirmer** :
-   - diamètre et entraxe des tiges ;
-   - perçages identiques sur la BSR Drive ;
-   - câblage d'ESTOP_OK côté BSR Drive (EN_GATE).
+   - câblage de la broche 4 de la XT60 côté BSR Drive (ESTOP_OK → EN_GATE),
+     sinon laisser R121 non monté.
 4. **Fichiers de production** (`production/` contient encore ceux de
    l'ancienne carte, sauf la netlist).
 
@@ -392,7 +373,7 @@ commande du STM32).
 **Ce qui a été vérifié automatiquement**
 - ERC KiCad 9.0.6 : **0 erreur**, 9 avertissements connus (voir plus bas).
 - Chaque pastille du `.kicad_pcb` porte le net de la netlist exportée par
-  kicad-cli (`production/khepri_v10.net`), contrôle par script.
+  kicad-cli (`production/khepri_v11.net`), contrôle par script.
 - Pas de chevauchement de courtyard entre les composants ajoutés.
 
 **Ce qui n'a pas été fait** : routage des nouveaux blocs, remplissage des
@@ -435,7 +416,7 @@ absente, deux conflits de type de broche hérités de l'E-dolly. ERC : 0 erreur,
 | `*.kicad_sch` | feuilles listées au § 1 |
 | `fp-lib-table`, `sym-lib-table` | bibliothèques du projet, chemins `${KIPRJMOD}` |
 | `Bibliotheque_kicad/` | symboles, empreintes et modèles 3D maison ; `khepri_Symboles/khepri.kicad_sym` regroupe les symboles créés pour KHEPRI |
-| `production/khepri_v10.net` | netlist de référence (kicad-cli) |
+| `production/khepri_v11.net` | netlist de référence (kicad-cli) |
 | `production/` (reste) | fichiers de l'**ancienne** carte, à régénérer |
 | `bom.csv`, `e_dolly.csv`, `layout.png`, `apercu-3d.png` | anciens, de la carte E-dolly |
 
