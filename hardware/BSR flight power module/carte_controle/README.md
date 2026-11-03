@@ -16,7 +16,7 @@ dérive), 4 couches, **80 × 150 mm**.
 ## 1. Vue d'ensemble
 
 ```
-                     tiges de puissance (bus pack 42-51 V, ex-XT60 J17)
+                tiges de puissance H1/H2 (bus pack 42-51 V, ex-XT60 J17)
                                    │
           ┌────────────────────────┴───────────────────────────┐
           │  TVS U8 ─ U2 TPS54560 ─► +24V ─┬─► ventilateur J25  │
@@ -28,9 +28,10 @@ dérive), 4 couches, **80 × 150 mm**.
           │             ├─► U20 L78L05 ─► +5V_SENS ─► 3 LDO capteurs
           │             └─► U30 AP63205 ─► +5V_IHM ─► façade (J20)
           │                                                     │
-          │  ESP32 U6 ── CAN (U3) ── J17 (BSR Drive) / J4 (fuselage)
+          │  +36V ─ U43 LM5146 ─► +24V_EXT 10 A ─► J26 faisceau     │
+          │  ESP32 U6 ── CAN (U3) ── J28 (BSR Drive) / J26 (faisceau)
           │      ├── I²C ─ TCA9548A U5 ─ ch0 PMP / ch1 secours /  │
-          │      │                       ch2 pression / ch3 env.   │
+          │      │            ch2 pression / ch3 env. / ch4 PCA9555│
           │      ├── SPI ─ IMU U4                                  │
           │      ├── UART1/UART2 ─ façade (J20)                    │
           │      └── PWM/tachy ─ ventilateur (J25)                 │
@@ -52,6 +53,7 @@ proposer des consignes, que l'ESP32 valide.
 | `mesures_env.kicad_sch` | température d'air, courant et tension consommés par l'instrument |
 | `interface_pmp.kicad_sch` | liaison vers la carte de charge USB-C EPR (PMP41115) |
 | `ventilation.kicad_sch` | commande du ventilateur de la BSR Drive |
+| `faisceau_au.kicad_sch` | tiges de puissance, trous de fixation, liaison BSR Drive, faisceau chaussettes 24 V, arrêt d'urgence, expandeur I²C |
 
 ---
 
@@ -59,7 +61,8 @@ proposer des consignes, que l'ESP32 valide.
 
 | Rail | Produit par | Depuis | Alimente |
 |---|---|---|---|
-| **+36V** (nom historique) | — | bus du pack 42–51 V via J17 (futures tiges) | U2, mesure bus (R41–R43), TVS U8 SMCJ58A, C24 100 µF |
+| **+36V** (nom historique) | — | bus du pack 42–51 V via la tige H1 | U2, U43, mesure bus (R41–R43), TVS U8 SMCJ58A, C24 100 µF |
+| **+24V_EXT** (≈ 24,3 V, 10 A) | U43 LM5146 + Q18/Q19 NTMFS6H800NL, L16 10 µH XAL1510 | +36V | faisceau des chaussettes (J26), coupable |
 | **+24V** (≈ 25 V) | U2 TPS54560, L2 15,4 µH, D2 | +36V | diode idéale bus (U36/Q12), 5V_CHG (U34), ventilateur J25 |
 | **VSYS_OR** | OU de U36/Q12 (bus) et U37/Q13 (secours) | +24V ou cellules 2S | shunt R70 |
 | **+VSYS** | R70 20 mΩ | VSYS_OR | U1, U20, U30. Vaut ≈ 25 V sur bus, 6–8,4 V sur secours |
@@ -112,15 +115,15 @@ Valeurs à recontrôler : U2 sortie = 0,8 V × (1 + R21/R22) = 0,8 × (1 + 100k/
 | IO15 | 23 | PWM ventilateur | FAN_PWM | Q15 |
 | IO39 (SENSOR_VN) | 5 | tachymètre ventilateur (entrée seule) | FAN_TACH | J25 |
 
-**Plus aucune broche libre.** Les ajouts futurs (arrêts d'urgence, coupure du
-faisceau chaussettes) passeront par un expandeur I²C.
+**Plus aucune broche libre.** Les commandes ajoutées ensuite (faisceau,
+arrêt d'urgence) passent par l'expandeur PCA9555 (§ 9).
 
 ### CAN — U3 SN65HVD230
 
-- Relié à la BSR Drive par J17 (broches 1 = CANL, 2 = CANH, 3 = GND) et au
-  fuselage par J4 (JST PH 3 : 1 = CANH, 2 = CANL, 3 = GND, sérigraphie
-  « GND / CAN H / CAN L »).
-- R19 120 Ω : terminaison **fixe** (à rendre commutable, voir § 9).
+- Relié à la BSR Drive par J28 et au faisceau des chaussettes par J26 (§ 9).
+  L'ancienne XT60 J17 et l'ancien connecteur J4 sont supprimés.
+- Terminaison 120 Ω (R112) **commutable** par le cavalier JP1 « TERM CAN ».
+  L'ancienne terminaison fixe R19 est supprimée.
 - R15 10 k sur Rs : mode pente contrôlée.
 
 ### I²C — multiplexeur TCA9548A (U5, 0x70)
@@ -131,7 +134,8 @@ faisceau chaussettes) passeront par un expandeur I²C.
 | 1 | I2C_PWR | BQ25887 (0x6B), MAX17205 (0x36 et 0x0B) | R99/R100 4,7 k |
 | 2 | I2C_PRES | MS5611 statique (0x76), MS5611 TE (0x77), HSC (0x28) | R50/R51 4,7 k (sur +3V3_STAT) |
 | 3 | I2C_ENV | TMP117 (0x48), INA226 (0x40) | R80/R81 4,7 k |
-| 4–7 | — | libres | — |
+| 4 | I2C_X | PCA9555 (0x20) | R107/R108 4,7 k |
+| 5–7 | — | libres | — |
 
 ### Autres
 
@@ -256,7 +260,11 @@ tiges de puissance.
   Sert à détecter une panne du ventilateur et brider les moteurs.
 
 Dimensionnement (détail des hypothèses dans l'historique ci-dessous) :
-≈ 100 W de pertes dans la BSR Drive à 6 kW, dimensionné à 125 W. Avec un
+≈ 100 W de pertes dans la BSR Drive à 6 kW, dimensionné à 125 W. **Mise à jour** :
+la nomenclature de la BSR Drive donne 28 × NTMFS6H800NL (80 V), soit
+probablement **2 MOSFET en parallèle par interrupteur**. La conduction par moteur
+tomberait alors vers ≈ 15–20 W, et le total vers ≈ 60–70 W, d'où une marge
+confortable. À confirmer avec le R_DS(on) de la fiche technique. Avec un
 dissipateur 80 × 39 mm coupé à 150 mm et ≈ 22 CFM réels, le dissipateur monte
 ≈ 22 K au-dessus de l'air entrant (≈ 24 K à 3000 m). Conditions : carénage qui
 force tout l'air entre les ailettes, et puissance de freinage dissipée limitée
@@ -264,33 +272,127 @@ en logiciel.
 
 ---
 
-## 9. Ce qui reste à faire
+## 9. Tiges, fixation, faisceau et arrêt d'urgence (`faisceau_au.kicad_sch`)
 
-1. **Tiges de puissance** à la place du XT60 J17 (diamètre et entraxe à
-   fournir), et nouveau connecteur pour les 4 signaux CAN vers la BSR Drive.
-2. **Plans de cuivre du bas** : les grandes zones +36V datent de l'E-stop,
-   quand tout le courant moteur traversait la carte. La carte ne prend plus
-   que ≈ 8 A sur le bus : réduire ces zones autour des tiges, de U2, du futur
-   convertisseur et de U8.
-3. **Faisceau chaussettes** : convertisseur dédié **24 V / 10 A** coupable par
-   l'ESP32 (via expandeur I²C) et par l'arrêt d'urgence matériel ; connecteur
-   Deutsch DTM 6 voies (CANH, CANL, 2 × V+, 2 × V−) à la place de J4 ;
-   terminaison CAN 120 Ω commutable. Dans chaque chaussette : 24 → 12 V pour
-   le servo RDS51150 (8 A au blocage) et 3,3 V pour l'ESP32.
-4. **Arrêts d'urgence** : bouton du tableau → EN_GATE de la BSR Drive (via les
-   « +4 » du XT60 aujourd'hui), lecture d'état ; expandeur I²C PCA9555.
-5. **Finitions** : trous de fixation (aucun dans le fichier), routage complet,
-   DRC, fichiers de production (`production/` contient encore ceux de
-   l'ancienne carte du 17/10/2026, sauf la netlist).
+**Alignement sur la BSR Drive.** Les positions viennent du fichier Altium de
+la BSR Drive (`bsr-drive/hardware/bsr-drive-v3.7/PCB.PcbDoc`, lu par script).
+- **Correspondance de repère :** x_carte = y_BSR + 91,5 ; y_carte = 186,3 − x_BSR.
+- **Calage :** la largeur de 50 mm de la BSR Drive retombe exactement sur
+  l'ancienne largeur de cette carte (x 119 → 169), et sa XT60 J9 sur l'ancienne
+  J17.
+- **Débord :** la BSR Drive dépasse de ≈ 9,5 mm au-dessus du bord haut de cette
+  carte, et cette carte dépasse de ≈ 19 mm sous la BSR Drive.
 
----
+**Tiges de puissance**
+- **H1** (+BUS) et **H2** (GND) : trous métallisés M5 avec couronne de vias, à
+  l'emplacement de l'ancienne XT60, **entraxe 14 mm** (au lieu de 7,2 mm entre
+  les broches XT60, pour laisser passer écrous et rondelles).
+- La carte ne prélève que ≈ 8 A sur le bus. Le courant moteur (≈ 150 A) reste
+  dans les tiges.
+- **Diamètre et entraxe sont à confirmer**, et la BSR Drive doit recevoir les
+  mêmes perçages.
 
-## 10. Comment vérifier ce travail
+**Trous de fixation M3 alignés sur ceux de la BSR Drive**
+
+| Trou | Position carte (mm) | Trou BSR Drive |
+|---|---|---|
+| H3 | (166,5 ; 157,3) | H10 |
+| H4 | (124,5 ; 104,8) | H7 |
+| H5 | (124,5 ; 66,3) | H6 |
+| H6 | (148,1 ; 147,3) | H12 (C24 décalé de 1 mm pour le dégager) |
+
+- Les autres trous de la BSR Drive sont soit hors de cette carte (H1, H4, H5, H9),
+  soit sous l'ESP32 ou l'alimentation 3,3 V (H2, H3), soit sous la TVS U8 (H8).
+- Les bornes M3 à cosse de la BSR Drive (phases et bus, en
+  x_carte ≈ 123,5) doivent rester sous cette carte sans toucher : prévoir
+  des entretoises assez hautes.
+
+**J28 vers la BSR Drive** (JST PH 4 vertical), remplace les « +4 » de la XT60.
+
+| J28 | Signal |
+|---|---|
+| 1 | GND |
+| 2 | CANH |
+| 3 | CANL |
+| 4 | ESTOP_OK (3,3 V = marche) |
+
+Côté BSR Drive, ESTOP_OK doit couper EN_GATE en matériel (ET logique avec la
+commande du STM32).
+
+**Faisceau des chaussettes : U43 LM5146 + Q18/Q19, +24V_EXT 10 A**
+- Valeurs de base :
+  - FB R115/R116 = 130 k / 4,42 k → 24,3 V ;
+  - RT 40,2 k → 250 kHz ;
+  - L16 10 µH XAL1510 ;
+  - 3 × 2,2 µF 100 V en entrée, 4 × 22 µF 50 V en sortie.
+- **R117 (ILIM) et la compensation R114/C70/C71 sont à calculer** avec le
+  « LM5146 Quickstart Calculator » de TI.
+- **Validation :** EN = ESTOP_OK **ET** EXT_ON (U44 74LVC1G08, R118/R119).
+  Sécurité positive : sans 3,3 V, ou bouton ouvert, ou EXT_ON bas par défaut
+  (R109), le faisceau est coupé.
+- **J26 Micro-Fit 3.0 2 × 3 vertical** (vers le DTM 6 voies) : 1–2 +24V_EXT,
+  3–4 GND, 5 CANH, 6 CANL.
+- Dans chaque chaussette : 24 → 12 V pour le servo RDS51150, 3,3 V pour l'ESP32.
+
+**Arrêt d'urgence**
+- **J27** (JST PH 2 vertical) : bouton du tableau à **contact normalement
+  fermé**, qui relie le +3,3 V (via R105 1 k) à ESTOP_OK.
+- **Ouvert ou câble arraché** → ESTOP_OK tiré bas par R106. La BSR Drive (J28.4)
+  et le faisceau sont alors coupés, même si l'ESP32 est planté.
+- **Arrêt logiciel :** Q16 (SOFT_STOP) force ESTOP_OK bas.
+
+**Expandeur U42 PCA9555** (0x20, canal 4) :
+
+| Broche | Fonction |
+|---|---|
+| IO0_0 | EXT_ON (sortie, pull-down) |
+| IO0_1 | SOFT_STOP (sortie, pull-down) |
+| IO0_2 | lecture ESTOP_OK |
+| IO0_3 | lecture EXT_PGOOD |
+
+- Son ~INT est sur la ligne commune INT_PWR.
+- IO0_4–7 et IO1_x sont libres : les configurer en sorties dans le logiciel.
+
+**Connecteurs** : tous les connecteurs de cette carte sont maintenant
+**verticaux** (J20 GH 12, J21–J24 PH CMS, J25 XH, J26 Micro-Fit, J27/J28 PH).
+
+## 10. Plans de cuivre
+
+| Couche | Contenu |
+|---|---|
+| F.Cu | GND sur toute la carte (priorité 0) ; +36V autour de la tige H1 ; anciennes petites zones locales des alimentations conservées. La zone de sortie de U2 est renommée +24V. |
+| In1.Cu | GND sur toute la carte |
+| In2.Cu | +3.3V (haut, y < 107,5) et +VSYS (bas) sur toute la largeur de 80 mm |
+| B.Cu | GND sur toute la carte ; +36V en bande y 147 → 165 de la tige H1 jusqu'au convertisseur U43, prolongée jusqu'à U2 |
+
+- Les anciennes grandes zones +36V, de l'époque de l'E-stop, sont supprimées.
+- Les 52 vias +36V qui les cousaient sont supprimés aussi.
+- **Toutes les zones sont non remplies dans le fichier : faire B (remplir)
+  avant le DRC.**
+
+## 11. Ce qui reste à faire
+
+1. **Routage complet**, dont :
+   - +36V → U43/Q18 ;
+   - +24V U2 → diode idéale U36/Q12 ;
+   - prises Kelvin de R70 vers U41 ;
+   - les nouveaux blocs.
+   Puis DRC.
+2. **Calculer R117 (ILIM) et la compensation de U43**, vérifier la dissipation
+   de Q18/Q19 à 10 A.
+3. **Confirmer** :
+   - diamètre et entraxe des tiges ;
+   - perçages identiques sur la BSR Drive ;
+   - câblage d'ESTOP_OK côté BSR Drive (EN_GATE).
+4. **Fichiers de production** (`production/` contient encore ceux de
+   l'ancienne carte, sauf la netlist).
+
+## 12. Comment vérifier ce travail
 
 **Ce qui a été vérifié automatiquement**
 - ERC KiCad 9.0.6 : **0 erreur**, 9 avertissements connus (voir plus bas).
 - Chaque pastille du `.kicad_pcb` porte le net de la netlist exportée par
-  kicad-cli (`production/khepri_v9.net`), contrôle par script.
+  kicad-cli (`production/khepri_v10.net`), contrôle par script.
 - Pas de chevauchement de courtyard entre les composants ajoutés.
 
 **Ce qui n'a pas été fait** : routage des nouveaux blocs, remplissage des
@@ -299,7 +401,7 @@ nouvelles zones.
 
 **À vérifier par un humain, dans cet ordre**
 1. Ouvrir le projet, remplir les zones (B), lancer le DRC. Erreurs attendues :
-   - cuivre +VSYS (ex-plan +24V) encore relié aux pastilles +24V autour de U2
+   - anciennes pistes +VSYS/+24V autour de U2
      → la liaison U2 → U36/Q12 est à router ;
    - pistes et vias dans les capots ;
    - composants non routés.
@@ -309,7 +411,8 @@ nouvelles zones.
    - MS5611 sur `LGA-8_3x5mm_P1.25mm` ;
    - BQ25887 sur `Texas_RGE0024C` (taille de la pastille exposée à confirmer) ;
    - MAX17205 : AIN2 et CELLX mis à la masse (à confirmer avec la config
-     nPackCfg).
+     nPackCfg) ;
+   - LM5146 sur `Texas_RGY_R-PVQFN-N20` et NTMFS6H800NL sur `ONSemi_SO-8FL_488AA`.
 3. Brochages des connecteurs externes : J21/J22 (1 = −), J25 (ventilateur),
    J20 (croisement TX/RX côté façade), J24.
 4. Valeurs : ILIM du BQ25887 (R88), CBSET (R91), pont de mesure bus
@@ -319,12 +422,12 @@ nouvelles zones.
 
 **Avertissements ERC connus** (sans effet sur le circuit) : empreinte
 `L_7.1x6.6mm` (L1, L2) absente de KiCad 9, bibliothèque BAT54 de D7
-absente, symbole et empreinte XT60 2+4 de J17 hors bibliothèques standard,
-deux conflits de type de broche hérités de l'E-dolly.
+absente, deux conflits de type de broche hérités de l'E-dolly. ERC : 0 erreur,
+7 avertissements.
 
 ---
 
-## 11. Fichiers et bibliothèques
+## 13. Fichiers et bibliothèques
 
 | Fichier | Rôle |
 |---|---|
@@ -332,7 +435,7 @@ deux conflits de type de broche hérités de l'E-dolly.
 | `*.kicad_sch` | feuilles listées au § 1 |
 | `fp-lib-table`, `sym-lib-table` | bibliothèques du projet, chemins `${KIPRJMOD}` |
 | `Bibliotheque_kicad/` | symboles, empreintes et modèles 3D maison ; `khepri_Symboles/khepri.kicad_sym` regroupe les symboles créés pour KHEPRI |
-| `production/khepri_v9.net` | netlist de référence (kicad-cli) |
+| `production/khepri_v10.net` | netlist de référence (kicad-cli) |
 | `production/` (reste) | fichiers de l'**ancienne** carte, à régénérer |
 | `bom.csv`, `e_dolly.csv`, `layout.png`, `apercu-3d.png` | anciens, de la carte E-dolly |
 
@@ -346,7 +449,7 @@ KiCad reste sûre.
 
 ---
 
-## 12. Historique des modifications (novembre 2026)
+## 14. Historique des modifications (novembre 2026)
 
 - **Retiré de la carte E-dolly** : E-stop à MOSFET tête-bêche et précharge
   (Q5–Q9, D5, D6, R28, R29, R32, R35–R40), commande des contacteurs (J1, J2,
