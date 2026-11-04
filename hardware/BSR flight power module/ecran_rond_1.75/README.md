@@ -32,7 +32,7 @@ nets, netclasses et placement optimisé sur les deux faces (DRC sans erreur). Ro
 | `audio.kicad_sch` | ES8311, NS4150B, connecteur haut-parleur MX1.25 |
 | `peripheriques.kicad_sch` | TCA9554, PCF85063 + 32,768 kHz, microSD, LC76G + té de polarisation antenne, trous M2 |
 | `ecran_rond_1.75.kicad_pcb` | PCB Ø46 mm, 4 couches (F.Cu / In1 GND / In2 GND / B.Cu), 1,0 mm, ENIG |
-| `lib/` | Symboles propres (ES8311, NS4150B, LC76G) et empreinte LC76G (courtyard réduit au module) |
+| `lib/` | Symboles propres (ES8311, NS4150B, LC76G), empreinte LC76G (courtyard réduit au module) et `ecran_rond.3dshapes/` : modèles STEP simplifiés aux cotes constructeur pour les 5 boîtiers absents de la bibliothèque KiCad (LC76G, USB-C HRO TYPE-C-31-M-12, inductance NR4018, QFN-20 3×3 de l'ES8311, DFN-10 2,6×2,6 du PCF85063), générés par `generateur/models3d.py` |
 | `bom.csv` | Nomenclature (`;` comme séparateur) |
 | `netlist.txt`, `placement.csv` | Netlist de référence (vérifiée identique à celle exportée par KiCad) et placement v0.1 |
 | `doc/schema.pdf`, `doc/placement_v0.2.png` | Schéma imprimé, aperçu du placement (faces F et B) |

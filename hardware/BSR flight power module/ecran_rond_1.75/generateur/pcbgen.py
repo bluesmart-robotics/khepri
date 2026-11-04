@@ -180,7 +180,17 @@ for layer in ('In1.Cu', 'In2.Cu', 'B.Cu', 'F.Cu'):
     (polygon (pts (xy {CX - 24} {CY - 24}) (xy {CX + 24} {CY - 24}) (xy {CX + 24} {CY + 24}) (xy {CX - 24} {CY + 24}))))''')
 L.append('  (embedded_fonts no)')
 L.append(')')
-open(os.path.join(OUT, d['project'] + '.kicad_pcb'), 'w', encoding='utf-8').write('\n'.join(L) + '\n')
+# modèles 3D absents de la bibliothèque KiCad : versions simplifiées du projet (models3d.py)
+MODEL_REMAP = {
+    '${KICAD9_3DMODEL_DIR}/RF_GPS.3dshapes/Quectel_L76.step': 'Quectel_LC76G.step',
+    '${KICAD9_3DMODEL_DIR}/Connector_USB.3dshapes/USB_C_Receptacle_HRO_TYPE-C-31-M-12.step': 'USB_C_Receptacle_HRO_TYPE-C-31-M-12.step',
+    '${KICAD9_3DMODEL_DIR}/Inductor_SMD.3dshapes/L_Taiyo-Yuden_NR-40xx.step': 'L_Taiyo-Yuden_NR-40xx.step',
+    '${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/QFN-20-1EP_3x3mm_P0.4mm_EP1.65x1.65mm.step': 'QFN-20-1EP_3x3mm_P0.4mm_EP1.65x1.65mm.step',
+    '${KICAD9_3DMODEL_DIR}/Package_DFN_QFN.3dshapes/DFN-10-1EP_2.6x2.6mm_P0.5mm_EP1.3x2.2mm.step': 'DFN-10-1EP_2.6x2.6mm_P0.5mm_EP1.3x2.2mm.step'}
+_txt = '\n'.join(L) + '\n'
+for _a, _b in MODEL_REMAP.items():
+    _txt = _txt.replace(_a, '${KIPRJMOD}/lib/ecran_rond.3dshapes/' + _b)
+open(os.path.join(OUT, d['project'] + '.kicad_pcb'), 'w', encoding='utf-8').write(_txt)
 
 # récapitulatif placement
 with open(os.path.join(OUT, 'placement.csv'), 'w', encoding='utf-8') as f:
