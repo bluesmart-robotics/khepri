@@ -353,28 +353,49 @@ Drive pour couper EN_GATE).
 
 ## 11. Ce qui reste à faire
 
-1. **Finir le routage.** L'autoroutage Freerouting a été importé le 04/11/2026
-   (1 748 segments, 303 vias). Un contrôle de connectivité par script
-   (pistes, vias et contours de zones, zones non remplies) trouve encore
-   **39 liaisons manquantes sur 11 nets** :
-   - +36V (16 îlots) : J17.P, U2, U43, Q18, U8 et leurs condensateurs ;
-   - +24V (10 îlots) : U2/L2 → Q12, U36, U34, J25, R98 ;
-   - +VSYS : le bloc U1 n'est pas relié au reste ;
-   - +3.3V : L1/R18/C8 isolés du reste ;
-   - EXT_FB (contre-réaction de U43) ;
-   - CHG_MID, GAUGE_AIN, GAUGE_REG2 (U35/U38) ;
-   - I2C_ENV_SCL, I2C_PWR_SCL, I2C_PWR_SDA.
-   Ce sont surtout des nets de puissance : à router à la main en pistes
-   larges (classe « Puissance », 0,8 mm) ou à relier par vias aux plans.
-   Puis remplir les zones (B) et lancer le DRC : aucun DRC n'a encore été
-   passé sur la version routée.
+1. **Finir le routage : 16 liaisons manquantes** (état du 04/11/2026, 16 h 20).
+   Travail fait ce jour-là :
+   - second passage Freerouting en gardant les pistes existantes, après
+     suppression des 54 bouts de piste trop près du bord (< 0,5 mm) ou
+     rétrécis (0,10–0,12 mm) : ces erreurs DRC ont disparu ;
+   - vias de couture vers les plans (GND → In1, +3.3V/+VSYS → In2, +36V →
+     bande B.Cu) et petites pistes ajoutées par script, avec contrôle
+     d'isolation ; 18 de ces vias sont **dans la pastille** (petits
+     condensateurs, R12, U31.8, J20.4, U36.2, L1.1, U2.2) : à boucher
+     (via-in-pad rempli) ou à décaler avant fabrication ;
+   - vias 0,45/0,2 mm : les règles du projet sont abaissées à
+     diamètre 0,45 mm / perçage 0,2 mm (accepté par JLCPCB en 4 couches) ;
+   - pastille centrale (21) de U43 (LM5146) mise à GND dans le PCB : elle
+     n'avait pas de net. **À corriger aussi dans le schéma**, sinon F8 la
+     remettra sans net ;
+   - zone GND F.Cu de U2 passée en priorité 1 (chevauchement de zones).
+
+   Liaisons qui restent, toutes autour de boîtiers à pas fin bloqués par
+   des pistes existantes (à faire au routeur interactif, avec
+   pousser-écarter) :
+   - GND (7) : C50/C51, C60/U41.1-2, U40.2-4-7, U5.9, U41.7, C17.1, U35
+     (broches 3, 19, 20, 24, 25) ;
+   - I2C_PWR_SDA (U38.12, U35.4), I2C_PWR_SCL (U38.11), I2C_ENV_SDA (U40.6) ;
+   - GAUGE_REG2 (U38.3), GAUGE_AIN (U38.9), CHG_MID (U35.9) ;
+   - EXT_FB (U43.5), +36V (U43.20).
+
+   **DRC (KiCad 9, zones remplies)** : plus aucune erreur d'isolation, de
+   bord, de largeur ou de court-circuit. Restent 45 « frein thermique
+   incomplet » (1 seul rayon au lieu de 2, surtout zone GND F.Cu), 13
+   bouts de piste en l'air (warnings, dont des tronçons Freerouting sur
+   In1/In2 près du bord gauche, à supprimer) et les avertissements de
+   sérigraphie. Le DRC du serveur MCP ne compte pas les liaisons non
+   routées : les 16 ci-dessus viennent d'un contrôle de connectivité par
+   script (pistes, vias, zones remplies).
+
 2. **Calculer R117 (ILIM) et la compensation de U43**, vérifier la dissipation
    de Q18/Q19 à 10 A.
 3. **Confirmer** :
    - câblage de la broche 4 de la XT60 côté BSR Drive (ESTOP_OK → EN_GATE),
      sinon laisser R121 non monté.
 4. **Fichiers de production** (`production/` contient encore ceux de
-   l'ancienne carte, sauf la netlist).
+   l'ancienne carte, sauf la netlist) : pas générés tant que les 16
+   liaisons ne sont pas faites.
 
 ## 12. Comment vérifier ce travail
 
