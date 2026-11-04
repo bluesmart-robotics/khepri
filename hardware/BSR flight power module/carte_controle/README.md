@@ -428,9 +428,14 @@ absente, deux conflits de type de broche hérités de l'E-dolly. ERC : 0 erreur,
 | `production/` (reste) | fichiers de l'**ancienne** carte, à régénérer |
 | `bom.csv`, `e_dolly.csv`, `layout.png`, `apercu-3d.png` | anciens, de la carte E-dolly |
 
-Les chemins des modèles 3D hérités pointent vers un autre poste
-(`C:/Users/tayfu/...`). Les repointer vers
-`${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/` pour le rendu 3D.
+Modèles 3D (04/11/2026) : D7, U4 et U8 pointent maintenant vers
+`${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/` (modèles KiCad génériques :
+SOT-323, LGA-14 3×2,5 mm, boîtier SMC). Sur le poste d'Antoine, les modèles
+absents de la bibliothèque KiCad 9 (JST PH SMD, SO-8FL, TDFN-14, fusible 1812,
+ESP32-WROOM-32UE, R-PDSO-G8) ont été remplacés par des équivalents de même
+boîtier, copiés sous le nom attendu dans le dossier 3D de KiCad. Restent sans
+modèle : J26 (Micro-Fit 2×3, aucun modèle KiCad), U1 (MP2565) et J17
+(XT60 2+4) dont les STEP sont sur l'ancien poste (`C:/Users/tayfu/...`).
 
 **Ne pas utiliser** la mise à jour schéma → PCB du serveur KiCad MCP
 (`sync_schematic_to_board`) : elle coupait des nets en deux. La touche F8 de

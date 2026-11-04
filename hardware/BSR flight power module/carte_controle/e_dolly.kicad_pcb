@@ -33008,7 +33008,7 @@
 			(uuid "7c8622ff-8b3e-4ba7-95b1-7cde93ea9030")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/tayfu/OneDrive - ESTACA/Desktop/pcb_e-dolly - Copie/Bibliotheque_kicad/edolly_3D/SOT-323-3_2P2X1P35_ONS.step"
+		(model "${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/SOT-323-3_2P2X1P35_ONS.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -38118,15 +38118,15 @@
 			(uuid "f59b0e0b-1bf9-4fc8-aaf6-91de40b2207b")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/tayfu/OneDrive - ESTACA/Desktop/pcb_e-dolly/Bibliotheque_kicad/edolly_3D/ICM-42688-P.step"
+		(model "${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/ICM-42688-P.step"
 			(offset
-				(xyz 0.1 0 0)
+				(xyz 0 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -90 -0 -0)
+				(xyz 0 0 0)
 			)
 		)
 	)
@@ -58570,7 +58570,7 @@
 			(uuid "b7bfc473-30a4-4c35-8cd0-890caac586a7")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/tayfu/OneDrive - ESTACA/Desktop/pcb_e-dolly/Bibliotheque_kicad/edolly_3D/SMCJ58A.step"
+		(model "${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/SMCJ58A.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -58578,7 +58578,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz -90 -0 -0)
+				(xyz 0 0 0)
 			)
 		)
 	)
