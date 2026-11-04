@@ -353,13 +353,21 @@ Drive pour couper EN_GATE).
 
 ## 11. Ce qui reste à faire
 
-1. **Routage complet** (pas encore fait : l'export Specctra DSN plante le
-   serveur KiCad de Claude ; à lancer depuis KiCad, Freerouting), dont :
-   - +36V → U43/Q18 ;
-   - +24V U2 → diode idéale U36/Q12 ;
-   - prises Kelvin de R70 vers U41 ;
-   - les nouveaux blocs.
-   Puis DRC.
+1. **Finir le routage.** L'autoroutage Freerouting a été importé le 04/11/2026
+   (1 748 segments, 303 vias). Un contrôle de connectivité par script
+   (pistes, vias et contours de zones, zones non remplies) trouve encore
+   **39 liaisons manquantes sur 11 nets** :
+   - +36V (16 îlots) : J17.P, U2, U43, Q18, U8 et leurs condensateurs ;
+   - +24V (10 îlots) : U2/L2 → Q12, U36, U34, J25, R98 ;
+   - +VSYS : le bloc U1 n'est pas relié au reste ;
+   - +3.3V : L1/R18/C8 isolés du reste ;
+   - EXT_FB (contre-réaction de U43) ;
+   - CHG_MID, GAUGE_AIN, GAUGE_REG2 (U35/U38) ;
+   - I2C_ENV_SCL, I2C_PWR_SCL, I2C_PWR_SDA.
+   Ce sont surtout des nets de puissance : à router à la main en pistes
+   larges (classe « Puissance », 0,8 mm) ou à relier par vias aux plans.
+   Puis remplir les zones (B) et lancer le DRC : aucun DRC n'a encore été
+   passé sur la version routée.
 2. **Calculer R117 (ILIM) et la compensation de U43**, vérifier la dissipation
    de Q18/Q19 à 10 A.
 3. **Confirmer** :
