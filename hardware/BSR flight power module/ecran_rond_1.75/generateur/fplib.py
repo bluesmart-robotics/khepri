@@ -35,7 +35,7 @@ def courtyard(lib_id):
                 xs.extend([float(c[1]) - r, float(c[1]) + r]); ys.extend([float(c[2]) - r, float(c[2]) + r])
                 return
             for x in e:
-                if _is(x, 'start') or _is(x, 'end') or _is(x, 'center'):
+                if _is(x, 'start') or _is(x, 'end') or _is(x, 'center') or _is(x, 'mid'):
                     xs.append(float(x[1])); ys.append(float(x[2]))
                 if _is(x, 'pts'):
                     for p in x[1:]:

@@ -8,7 +8,7 @@ d = json.load(open(os.path.join(OUT, 'design_export.json'), encoding='utf-8'))
 CX, CY = 100.0, 100.0          # centre de la carte dans la feuille
 RADIUS = 23.0                  # Ø46
 EDGE_MARGIN = 0.6
-CLEAR = 0.5                    # espace entre courtyards
+CLEAR = 0.25                   # espace entre courtyards
 
 comps = {}
 for sh in d['sheets']:
@@ -22,16 +22,10 @@ net_idx = {n: i + 1 for i, n in enumerate(net_names)}
 
 # ---- placement fixe : (x, y, rot, face) ; coordonnées relatives au centre, y vers le bas
 # Face F = côté composants (dos de l'instrument), face B = côté écran (composants bas sous la dalle)
-FIXED = {
-    # face F
-    'E1': (0, -21.1, 0, 'F'), 'J4': (-7, -17.5, 0, 'F'), 'J2': (2, -16, 0, 'F'), 'J5': (-12.5, -11.8, 0, 'F'),
-    'U1': (-3, -5, 0, 'F'), 'U5': (-13, -4.5, 0, 'F'), 'J1': (19.2, 0, 90, 'F'),
-    'SW1': (-17, 6, 90, 'F'), 'SW2': (-13, 13, 0, 'F'), 'BT1': (6, 9, 0, 'F'), 'U2': (11, -7, 0, 'F'),
-    'H1': (18.5, -9, 0, 'F'), 'H2': (-20.3, -3.5, 0, 'F'), 'H3': (6, 19.5, 0, 'F'),
-    # face B (sous l'écran)
-    'J3': (0, -0.5, 0, 'B'), 'U8': (-11, -10, 0, 'B'), 'J7': (-2, -17, 0, 'B'), 'U3': (-7, 9.5, 0, 'B'),
-    'J6': (10.8, 3.5, 0, 'B'), 'U4': (6, -9, 0, 'B'), 'U6': (-14, 2, 90, 'B'), 'U7': (-1, 15, 0, 'B'),
-}
+PLACEMENT_JSON = sys.argv[2] if len(sys.argv) > 2 else '/home/claude/work/out/placement_big.json'
+_pb = json.load(open(PLACEMENT_JSON))
+_pb = _pb.get('placement', _pb)
+FIXED = {r: tuple(v) for r, v in _pb.items()}
 EDGE_OK = {'J1', 'H1', 'H2', 'H3'}      # peuvent dépasser le cercle (connecteur en bord)
 SIDE = {}
 # ancre (ref ou position) pour les autres, et face
@@ -48,8 +42,8 @@ near(['R13', 'C28', 'C29', 'C30', 'C31', 'C32', 'C33', 'C34', 'C35', 'C36', 'C37
 near(['R16', 'R17', 'C39', 'C40', 'C41', 'C42'], 'U5', 'F')
 near(['D5', 'C9'], 'BT1', 'F')
 near(['C25', 'C26', 'C27'], 'J3', 'B')
-near(['C43', 'TP5', 'TP6', 'TP7', 'TP8', 'TP9', 'TP10'], 'U6', 'B')
-near(['Y2', 'C44', 'C45', 'C46', 'R18'], 'U7', 'B')
+near(['C43', 'TP5', 'TP6', 'TP7', 'TP8', 'TP9', 'TP10'], 'U6', 'F')
+near(['Y2', 'C44', 'C45', 'C46', 'R18'], 'U7', 'F')
 near(['R19', 'R20', 'R21', 'C47', 'C48'], 'J6', 'B')
 near(['R22', 'C49', 'C50', 'R23', 'C51', 'R24', 'C52', 'C53', 'L2', 'TP11', 'TP12', 'TP13'], 'U8', 'B')
 
@@ -81,15 +75,24 @@ for ref, (x, y, rot, side) in FIXED.items():
     if not inside(b) and ref not in EDGE_OK: print('ATTENTION hors contour :', ref, [round(v, 1) for v in b])
     for r2, (_, _, _, b2, s2) in placed.items():
         if s2 == side and overlap(b, b2) and not ref.startswith('H') and not r2.startswith('H'): print('ATTENTION chevauchement :', ref, r2)
-    for h in ('H1', 'H2', 'H3'):
-        if h in FIXED and h != ref and not ref.startswith('H'):
-            hx, hy = FIXED[h][0], FIXED[h][1]
-            if overlap(b, (hx - 2.6, hy - 2.6, hx + 2.6, hy + 2.6)): print('ATTENTION trou :', ref, h)
     placed[ref] = (x, y, rot, b, side)
 # les trous traversent : les ajouter sur les deux faces pour les collisions
-for h in ('H1', 'H2', 'H3', 'J1', 'J2', 'BT1'):    # trous traversants : occupent les deux faces
+for h in ('J1', 'J2', 'BT1'):    # trous traversants : occupent les deux faces
     x, y, rot, b, side = placed[h]
     placed[h] = (x, y, rot, b, 'both')
+
+# ---- trous de fixation M2 : 3 trous vers r = 19.5 mm, angles 90 / 210 / 330 deg, aux deux faces
+for h, a0 in (('H1', 330), ('H2', 210), ('H3', 90)):
+    done = False
+    for da in [0, 5, -5, 10, -10, 15, -15, 20, -20, 25, -25, 30, -30, 40, -40, 50, -50, 60, -60, 70, -70, 80, -80]:
+        for rr in (19.5, 19.0, 20.0, 18.5, 20.5):
+            a = math.radians(a0 + da)
+            x, y = round(rr * math.cos(a), 2), round(rr * math.sin(a), 2)
+            hb = (x - 2.6, y - 2.6, x + 2.6, y + 2.6)
+            if any(overlap(hb, b2) for (_, _, _, b2, s2) in placed.values()): continue
+            placed[h] = (x, y, 0, hb, 'both'); done = True; break
+        if done: break
+    if not done: print('IMPOSSIBLE de placer le trou', h); placed[h] = (0, 0, 0, (-2.6, -2.6, 2.6, 2.6), 'both')
 
 def anchor_pos(ref):
     a = ANCHOR.get(ref, 'U1')
@@ -103,7 +106,7 @@ def area(c):
 def collides(b, side):
     return any((s2 == side or s2 == 'both') and overlap(b, b2) for (_, _, _, b2, s2) in placed.values())
 
-rest = [c for r, c in comps.items() if r not in FIXED]
+rest = [c for r, c in comps.items() if r not in FIXED and r not in placed]
 rest.sort(key=lambda c: -area(c))
 for c in rest:
     ax, ay = anchor_pos(c['ref']); side = SIDE.get(c['ref'], 'F')
@@ -163,7 +166,7 @@ for ref, (x, y, rot, b, side) in placed.items():
 
 # contour + zone de dégagement antenne + sérigraphie
 L.append(f'  (gr_circle (center {CX} {CY}) (end {CX + RADIUS} {CY}) (stroke (width 0.1) (type default)) (fill no) (layer "Edge.Cuts") (uuid "{uuid.uuid4()}"))')
-L.append(f'  (gr_text "KHEPRI ecran rond 1.75 v0.1" (at {CX} {CY + 24.5} 0) (layer "F.SilkS") (uuid "{uuid.uuid4()}") (effects (font (size 1 1) (thickness 0.15))))')
+L.append(f'  (gr_text "KHEPRI ecran rond 1.75 v0.2" (at {CX} {CY + 24.5} 0) (layer "F.SilkS") (uuid "{uuid.uuid4()}") (effects (font (size 1 1) (thickness 0.15))))')
 # zone keepout sous l'antenne céramique (pas de cuivre)
 ax, ay = CX + FIXED['E1'][0], CY + FIXED['E1'][1]
 L.append(f'''  (zone (net 0) (net_name "") (layers "F&B.Cu" "In1.Cu" "In2.Cu") (uuid "{uuid.uuid4()}") (name "keepout_antenne") (hatch edge 0.5)

@@ -8,7 +8,7 @@ C0603 = 'Capacitor_SMD:C_0603_1608Metric'
 C0805 = 'Capacitor_SMD:C_0805_2012Metric'
 L0603 = 'Inductor_SMD:L_0603_1608Metric'
 L0402 = 'Inductor_SMD:L_0402_1005Metric'
-TP = 'TestPoint:TestPoint_Pad_1.5x1.5mm'
+TP = 'TestPoint:TestPoint_Pad_1.0x1.0mm'
 
 def R(ref, val, a, b, fp=R0402, dnp=False, desc=''):
     return Comp(ref, 'Device:R', val, fp, {'1': a, '2': b}, desc, dnp)
