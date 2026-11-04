@@ -1,5 +1,27 @@
 menu "KHEPRI - ecran rond 1.75 (regime moteur)"
 
+    choice KHEPRI_BOARD
+        prompt "Carte"
+        default KHEPRI_BOARD_WAVESHARE
+        help
+            Waveshare : carte ESP32-S3-Touch-AMOLED-1.75(-G) du commerce (AXP2101, bouton PWR
+            lu sur le TCA9554, accelerometre QMI8658).
+            BSR : carte ecran rond KHEPRI (hardware/BSR flight power module/ecran_rond_1.75) :
+            pas de PMU ni d'accelerometre, bouton = BOOT (GPIO0), UART1 vers la carte facade
+            sur GPIO17 (TX) / GPIO18 (RX).
+
+        config KHEPRI_BOARD_WAVESHARE
+            bool "Waveshare ESP32-S3-Touch-AMOLED-1.75"
+        config KHEPRI_BOARD_BSR
+            bool "Carte ecran rond KHEPRI (BSR)"
+    endchoice
+
+    config KHEPRI_FACADE_UART_BAUD
+        int "UART facade : vitesse (bauds)"
+        depends on KHEPRI_BOARD_BSR
+        range 9600 2000000
+        default 115200
+
     config KHEPRI_DEMO_DEFAULT
         bool "Simulation locale active au premier demarrage"
         default y

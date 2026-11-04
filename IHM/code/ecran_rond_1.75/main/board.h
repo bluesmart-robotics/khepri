@@ -5,6 +5,7 @@
 #pragma once
 
 #include "driver/gpio.h"
+#include "driver/uart.h"
 
 /* Écran AMOLED 1,75" 466×466, contrôleur CO5300 en QSPI */
 #define PIN_LCD_CS    GPIO_NUM_12
@@ -29,5 +30,12 @@
 #define I2C_ADDR_CST9217 0x5A
 
 /* Extenseur TCA9554 */
-#define EXIO_PWR_BTN  4 /* P4 : SYS_OUT, haut tant que PWR est appuyé */
-#define EXIO_GPS_RST  7 /* P7 : reset du LC76G (version -G) */
+#define EXIO_PWR_BTN  4 /* P4 : SYS_OUT, haut tant que PWR est appuyé (Waveshare seulement) */
+#define EXIO_GPS_RST  7 /* P7 : reset du LC76G (version -G, et carte BSR) */
+
+/* Carte BSR (hardware/BSR flight power module/ecran_rond_1.75) : bouton BOOT en guise de bouton
+ * utilisateur, UART1 vers la carte façade sur le connecteur JST J2 (5 V, GND, TX, RX) */
+#define PIN_BTN_BOOT      GPIO_NUM_0  /* actif bas, pull-up externe */
+#define PIN_FACADE_TX     GPIO_NUM_17
+#define PIN_FACADE_RX     GPIO_NUM_18
+#define FACADE_UART_NUM   UART_NUM_1

@@ -434,8 +434,12 @@ static void input_task(void *arg)
 #endif
     };
     knob_init(&s_knob, &kc);
+#ifdef CONFIG_KHEPRI_BOARD_BSR
+    bool imu = false; /* pas d'accéléromètre sur la carte BSR : la consigne viendra du bouton haptique */
+#else
     bool imu = qmi8658_init();
     if (!imu) ESP_LOGW(TAG, "QMI8658 absent : pas de gestes");
+#endif
     bool btn_prev = false;
     TickType_t last = xTaskGetTickCount();
     for (;;) {
@@ -536,6 +540,7 @@ void app_main(void)
     I2C_master_Init();
     kh_touch_init();
     kh_expander_init();
+    kh_facade_uart_init(); /* carte BSR : UART1 vers la façade ; sans effet sur la Waveshare */
 
     /* ── PARTIE 2 : LVGL ── */
     lv_init();

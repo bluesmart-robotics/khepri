@@ -63,6 +63,18 @@ zone morte / plage / vitesse et sens du roulis. Les réglages communs aux deux �
 ESP-NOW, puissance de référence, batterie, solaire, palier, nœuds CANSimple, OTA) sont dans
 « KHEPRI - commun aux ecrans ».
 
+## Carte BSR (écran rond propre à KHEPRI)
+
+`idf.py menuconfig` → « KHEPRI - ecran rond 1.75 » → *Carte* = **Carte ecran rond KHEPRI (BSR)**
+pour la carte de [`hardware/BSR flight power module/ecran_rond_1.75`](../../../hardware/BSR%20flight%20power%20module/ecran_rond_1.75).
+Différences gérées par ce choix :
+
+- pas d'AXP2101 : le « bouton PWR » devient le bouton **BOOT** (GPIO0) ;
+- pas de QMI8658 : aucun geste, la consigne de régime viendra du bouton haptique par la façade ;
+- **UART1** vers la carte façade sur GPIO17 (TX) / GPIO18 (RX), 115200 bauds par défaut
+  (`kh_facade_uart_*` dans `kh_board.c`). Seul le transport est en place : la liaison avec le maître
+  reste en ESP-NOW tant que le protocole façade n'est pas porté dessus.
+
 ## Compiler
 
 ```
