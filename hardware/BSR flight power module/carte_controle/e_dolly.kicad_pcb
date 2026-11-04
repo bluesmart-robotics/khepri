@@ -6730,7 +6730,7 @@
 			(uuid "aa243e6d-583e-4278-8164-8385d44df167")
 		)
 		(embedded_fonts no)
-		(model "C:/Users/tayfu/OneDrive - ESTACA/Desktop/pcb_e-dolly/Bibliotheque_kicad/edolly_3D/QFN10_MP2565_MNP.step"
+		(model "${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/QFN10_MP2565_MNP.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -38120,13 +38120,13 @@
 		(embedded_fonts no)
 		(model "${KIPRJMOD}/Bibliotheque_kicad/edolly_3D/ICM-42688-P.step"
 			(offset
-				(xyz 0 0 0)
+				(xyz 0.1 0 0)
 			)
 			(scale
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz -90 -0 -0)
 			)
 		)
 	)
@@ -58578,7 +58578,7 @@
 				(xyz 1 1 1)
 			)
 			(rotate
-				(xyz 0 0 0)
+				(xyz -90 -0 -0)
 			)
 		)
 	)
