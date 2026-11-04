@@ -353,41 +353,7 @@ Drive pour couper EN_GATE).
 
 ## 11. Ce qui reste à faire
 
-1. **Finir le routage : 16 liaisons manquantes** (état du 04/11/2026, 16 h 20).
-   Travail fait ce jour-là :
-   - second passage Freerouting en gardant les pistes existantes, après
-     suppression des 54 bouts de piste trop près du bord (< 0,5 mm) ou
-     rétrécis (0,10–0,12 mm) : ces erreurs DRC ont disparu ;
-   - vias de couture vers les plans (GND → In1, +3.3V/+VSYS → In2, +36V →
-     bande B.Cu) et petites pistes ajoutées par script, avec contrôle
-     d'isolation ; 18 de ces vias sont **dans la pastille** (petits
-     condensateurs, R12, U31.8, J20.4, U36.2, L1.1, U2.2) : à boucher
-     (via-in-pad rempli) ou à décaler avant fabrication ;
-   - vias 0,45/0,2 mm : les règles du projet sont abaissées à
-     diamètre 0,45 mm / perçage 0,2 mm (accepté par JLCPCB en 4 couches) ;
-   - pastille centrale (21) de U43 (LM5146) mise à GND dans le PCB : elle
-     n'avait pas de net. **À corriger aussi dans le schéma**, sinon F8 la
-     remettra sans net ;
-   - zone GND F.Cu de U2 passée en priorité 1 (chevauchement de zones).
-
-   Liaisons qui restent, toutes autour de boîtiers à pas fin bloqués par
-   des pistes existantes (à faire au routeur interactif, avec
-   pousser-écarter) :
-   - GND (7) : C50/C51, C60/U41.1-2, U40.2-4-7, U5.9, U41.7, C17.1, U35
-     (broches 3, 19, 20, 24, 25) ;
-   - I2C_PWR_SDA (U38.12, U35.4), I2C_PWR_SCL (U38.11), I2C_ENV_SDA (U40.6) ;
-   - GAUGE_REG2 (U38.3), GAUGE_AIN (U38.9), CHG_MID (U35.9) ;
-   - EXT_FB (U43.5), +36V (U43.20).
-
-   **DRC (KiCad 9, zones remplies)** : plus aucune erreur d'isolation, de
-   bord, de largeur ou de court-circuit. Restent 45 « frein thermique
-   incomplet » (1 seul rayon au lieu de 2, surtout zone GND F.Cu), 13
-   bouts de piste en l'air (warnings, dont des tronçons Freerouting sur
-   In1/In2 près du bord gauche, à supprimer) et les avertissements de
-   sérigraphie. Le DRC du serveur MCP ne compte pas les liaisons non
-   routées : les 16 ci-dessus viennent d'un contrôle de connectivité par
-   script (pistes, vias, zones remplies).
-
+1. **Finir le routage** : voir la section 11 bis, étape par étape.
 2. **Calculer R117 (ILIM) et la compensation de U43**, vérifier la dissipation
    de Q18/Q19 à 10 A.
 3. **Confirmer** :
@@ -397,6 +363,103 @@ Drive pour couper EN_GATE).
    l'ancienne carte, sauf la netlist) : pas générés tant que les 16
    liaisons ne sont pas faites.
 
+## 11 bis. Reprise par l'ingénieur : quoi toucher, dans quel ordre
+
+État au 04/11/2026 : carte routée à environ 99 %, DRC sans erreur d'isolation,
+de bord, de largeur de piste ni de court-circuit. Elle **n'est pas encore
+fabricable** : 16 liaisons manquent. Tout se fait dans KiCad 9 (éditeur de PCB).
+Coordonnées en mm, origine KiCad (carte de x 104 à 184, y 28,85 à 178,85).
+
+Avant de commencer : ouvrir `e_dolly.kicad_pcb`, remplir les zones (touche B),
+lancer Inspecter > DRC en cochant « Tester les connexions non routées ».
+KiCad doit afficher les mêmes 16 liaisons que ci-dessous.
+
+### Étape 1 : router les 16 liaisons manquantes (bloquant)
+
+Toutes sont au pied de boîtiers à pas fin, coincées par des pistes de
+l'autoroutage. Utiliser le routeur interactif (X) en mode « pousser-écarter »,
+ou déplacer/supprimer les pistes gênantes puis re-router.
+
+| Net | Broche à relier | Position | Remarque |
+|---|---|---|---|
+| I2C_PWR_SDA | U38.12 et U35.4 | (108,4 ; 90,0) et (105,4 ; 99,0) | bus I2C jauge/chargeur → U5 |
+| I2C_PWR_SCL | U38.11 | (108,4 ; 90,4) | idem |
+| GAUGE_REG2 | U38.3 → C58 | (105,4 ; 90,0) | découplage REG2 du MAX17205 |
+| GAUGE_AIN | U38.9 → R95/TH2 | (108,4 ; 91,2) | thermistance |
+| CHG_MID | U35.9 → R92 | (107,1 ; 100,7) | BQ25887, mesure point milieu |
+| I2C_ENV_SDA | U40.6 | (106,6 ; 30,1) | capteur d'environnement |
+| /Faisceau AU tiges/EXT_FB | U43.5 | (178,9 ; 140,4) | contre-réaction LM5146 |
+| +36V | U43.20 | (181,3 ; 138,5) | alim VIN du LM5146 : piste ≥ 0,5 mm ou via vers la bande +36V B.Cu |
+| GND | C50.2 / C51.2 | (111,2 ; 96,8) | via vers In1 (plan GND) |
+| GND | C60.2, U41.1, U41.2 | (108,2 ; 30,1) | idem |
+| GND | U40.2, U40.4, U40.7 | (104,8 ; 30,7) | idem |
+| GND | U41.7 | (114,7 ; 31,7) | idem |
+| GND | U5.9 | (144,6 ; 96,1) | relier à la pastille centrale de U5 |
+| GND | C17.1 | (140,3 ; 83,4) | via vers In1 |
+| GND | U35 broches 3, 19, 20, 24, 25 | (106,1 ; 96,8) | relier à la pastille centrale de U35 |
+
+Zone la plus dense : U35/U38 en bas à gauche (x 104–112, y 88–101), 8 des 16
+liaisons. Il peut être plus simple d'y supprimer les pistes de l'autoroutage
+et de tout refaire à la main.
+
+### Étape 2 : nettoyer (non bloquant, mais à faire)
+
+1. **13 bouts de piste en l'air** (avertissement DRC « piste non connectée »),
+   restes du second autoroutage, à supprimer :
+   - (112,2 ; 36,1) : +3.3V sur F.Cu ;
+   - (104,6 ; 100,8) : BAT_P sur In1.Cu ;
+   - (104,9 ; 112,4) : CHG_TS sur F.Cu ;
+   - (105,5 ; 94,2) : GAUGE_VB sur F.Cu ;
+   - (104,9 ; 133,6) : OR_VCAP_U37 sur F.Cu ;
+   - (109,2 ; 29,8) : I2C_ENV_SDA sur F.Cu ;
+   - (104,6 ; 98,7) et (104,7 ; 99,2) : I2C_PWR_SCL sur F.Cu ;
+   - (104,6 ; 96,2) : I2C_PWR_SCL sur In1.Cu ;
+   - (110,8 ; 29,7) : INT_PWR sur F.Cu ;
+   - (110,6 ; 29,5) : INT_PWR sur In1.Cu et In2.Cu ;
+   - (151,9 ; 169,3) : Net-(U2-EN) sur F.Cu ;
+   Freerouting a aussi posé quelques pistes de signal sur In1/In2 (plans) :
+   les déplacer sur F.Cu/B.Cu si possible, pour ne pas découper les plans.
+2. **45 erreurs « frein thermique incomplet »** : pastilles reliées à une zone
+   par un seul rayon (40 sur la zone GND F.Cu, 5 sur B.Cu). Ajouter une courte
+   piste ou un via à côté de la pastille, ou réduire le minimum de rayons dans
+   les propriétés de la zone.
+3. **18 vias posés dans une pastille** (ajoutés par script pour relier les
+   plans). Soit commander des vias bouchés (via-in-pad rempli), soit les
+   décaler à côté de la pastille avec une courte piste :
+   R12.2 (145,8 ; 115,6), C53.2 (115,2 ; 102,6), C46.2 (110,1 ; 117,0), C52.2 (112,8 ; 102,6), U31.8 (175,3 ; 84,6 — pastille de 0,3 mm, à décaler en priorité), C60.2 (108,2 ; 30,1), C1.1 (135,8 ; 112,2), C8.2 (148,3 ; 101,1), C10.1 (149,2 ; 111,7), C76.2 (167,2 ; 146,1), C25.1 (147,0 ; 88,7), J20.4 (182,7 ; 91,1), C66.2 (105,6 ; 138,2), C18.1 (122,3 ; 117,5), U36.2 (105,3 ; 130,2), L1.1 (153,8 ; 105,6), C10.2 (149,2 ; 109,8), U2.2 (150,8 ; 170,7).
+4. **Avertissements de sérigraphie** (≈ 250) : textes qui se chevauchent ou
+   débordent sur le cuivre ; à ranger avant fabrication.
+
+### Étape 3 : corriger le schéma (sinon F8 défait le PCB)
+
+- **U43 (LM5146), pastille centrale 21** : sans net dans le schéma. Elle a été
+  mise à GND directement dans le PCB. Ajouter la broche EP/PGND au symbole et
+  la relier à GND, sinon la mise à jour schéma → PCB (F8) la remet sans net
+  et les pistes GND qui la traversent deviennent des courts-circuits.
+
+### Étape 4 : règles et choix à valider
+
+- **Vias** : les vias ajoutés font 0,45 mm / perçage 0,2 mm. Les règles du
+  projet ont été abaissées à ce minimum (Carte > Configuration > Contraintes).
+  Accepté par JLCPCB en 4 couches ; vérifier avec le fabricant choisi.
+- **Isolation au bord** : 0,5 mm (règle du projet), respectée partout.
+- **Netclasses** : +36V à 3 mm et +24V à 1,5 mm dans la DSN ; plusieurs
+  liaisons de puissance passent en 0,5 mm ou par les zones. Vérifier les
+  courants (U43 → Q18/Q19 à 10 A) et élargir si besoin.
+
+### Étape 5 : fichiers de fabrication (quand le DRC est propre)
+
+Fichiers > Fabrication : Gerbers (F.Cu, In1.Cu, In2.Cu, B.Cu, masques,
+sérigraphies, Edge.Cuts), perçage Excellon (PTH/NPTH séparés), fichier de
+placement, BOM. Les remplacer dans `production/` (qui contient encore ceux
+de l'ancienne carte E-dolly).
+
+### Rendu 3D
+
+Modèles absents : J26 (Micro-Fit 2×3, aucun modèle KiCad) et J17 (XT60 2+4,
+STEP resté sur l'ancien poste `C:/Users/tayfu/...`). Sans effet sur la
+fabrication.
+
 ## 12. Comment vérifier ce travail
 
 **Ce qui a été vérifié automatiquement**
@@ -405,9 +468,8 @@ Drive pour couper EN_GATE).
   kicad-cli (`production/khepri_v11.net`), contrôle par script.
 - Pas de chevauchement de courtyard entre les composants ajoutés.
 
-**Ce qui n'a pas été fait** : routage des nouveaux blocs, remplissage des
-zones, DRC. Les anciennes pistes sont restées, certaines traversent les
-nouvelles zones.
+**Ce qui n'a pas été fait** : 16 liaisons non routées, nettoyage et
+fichiers de fabrication (voir § 11 bis).
 
 **À vérifier par un humain, dans cet ordre**
 1. Ouvrir le projet, remplir les zones (B), lancer le DRC. Erreurs attendues :
