@@ -454,6 +454,14 @@ sérigraphies, Edge.Cuts), perçage Excellon (PTH/NPTH séparés), fichier de
 placement, BOM. Les remplacer dans `production/` (qui contient encore ceux
 de l'ancienne carte E-dolly).
 
+### Trous de fixation communs avec la BSR Drive
+
+Les trous M3 H3 à H6 de cette carte sont déjà sur des trous de la BSR Drive.
+Les trois autres trous BSR qui tombent dans le contour, (148,13 ; 66,30),
+(148,13 ; 104,80) et (124,53 ; 147,30), sont occupés par U6 (ESP32), le bloc
+U1/L1/D1 et la TVS U8 : pas percés. Pour les ajouter, déplacer ces composants
+et re-router localement. Positions de toute la pile : `hardware/models 3d/README.md`.
+
 ### Rendu 3D
 
 Modèles absents : J26 (Micro-Fit 2×3, aucun modèle KiCad) et J17 (XT60 2+4,

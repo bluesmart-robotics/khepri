@@ -18,6 +18,10 @@ dissipateur.
   inertielle ICM-42688-P, multiplexeur I²C TCA9548A, deux abaisseurs MP2565 et
   TPS54560. Projet KiCad 9 avec sa nomenclature, ses gerbers et sa
   bibliothèque.
+- **`carte_pmp/`** — carte de charge USB-C EPR 240 W (PMP41115), copie KiCad
+  empilable du dépôt `batterie`, au-dessus de la carte de contrôle : XT60 dans
+  l'axe de celle de la BSR Drive, trous M3 communs, liaison I²C par JST PH 6.
+  Modèles 3D des trois cartes dans [`../models 3d/`](../models%203d/).
 - **Alimentation de secours** — une ou deux cellules 18650 LiFePO4, pour
   continuer à afficher les erreurs et à journaliser si la batterie du planeur
   défaille.
