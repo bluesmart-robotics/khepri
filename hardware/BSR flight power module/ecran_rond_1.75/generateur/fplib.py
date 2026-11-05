@@ -18,7 +18,12 @@ def load(lib_id):
 
 def _is(e, tag): return isinstance(e, list) and e and e[0] == Symbol(tag)
 
+# courtyards remplacés : celui du module WROOM inclut la zone d'interdiction d'antenne (48 mm de large),
+# gérée à part (zone de keepout) ; ici on ne garde que le module lui-même
+COURTYARD_OVERRIDE = {'RF_Module:ESP32-S3-WROOM-1': (-9.75, -12.9, 9.75, 13.45)}
+
 def courtyard(lib_id):
+    if lib_id in COURTYARD_OVERRIDE: return COURTYARD_OVERRIDE[lib_id]
     """bbox (xmin, ymin, xmax, ymax) du F.CrtYd, sinon de tous les éléments graphiques + pads"""
     s = load(lib_id)
     xs, ys = [], []

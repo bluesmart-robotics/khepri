@@ -21,6 +21,7 @@
         "min_track_width": 0.127,
         "min_via_diameter": 0.45,
         "min_via_drill": 0.2,
+        "min_through_hole_diameter": 0.2,
         "min_hole_clearance": 0.25,
         "min_copper_edge_clearance": 0.3,
         "min_hole_to_hole": 0.25,
@@ -289,27 +290,27 @@
   },
   "sheets": [
     [
-      "c87c73e5-8fa9-44e7-9d13-efd16e9981b7",
+      "7315b642-5c96-4fff-8b44-fdc41a6e7d42",
       "Racine"
     ],
     [
-      "3b3ec5e3-d8d5-4d7b-a38c-d7d3cbb56c25",
+      "a2742214-f6f8-402e-ae2f-3de05c8df498",
       "Alimentation"
     ],
     [
-      "b326a560-facc-4aea-a90a-043a946fdac9",
+      "4e2aa9e4-e115-4d71-bccf-aa3a3e2140bd",
       "MCU"
     ],
     [
-      "42dfc113-ed6c-4cca-9501-1266a09913a5",
+      "f522a7f2-05d4-4fbd-8745-199672e3644b",
       "Ecran"
     ],
     [
-      "2983c74e-95bb-47d5-93c2-8eb86b263f2f",
+      "5905984a-8977-4140-b1b8-2ca169f31272",
       "Audio"
     ],
     [
-      "822a3404-a3fa-4eaa-b944-88fb61c2e686",
+      "e8d7af4b-e060-4e3b-88e2-3ead1fa41202",
       "Peripheriques"
     ]
   ],

@@ -8,7 +8,7 @@ C0603 = 'Capacitor_SMD:C_0603_1608Metric'
 C0805 = 'Capacitor_SMD:C_0805_2012Metric'
 L0603 = 'Inductor_SMD:L_0603_1608Metric'
 L0402 = 'Inductor_SMD:L_0402_1005Metric'
-TP = 'TestPoint:TestPoint_Pad_1.0x1.0mm'
+TP = 'TestPoint:TestPoint_Pad_D1.0mm'
 
 def R(ref, val, a, b, fp=R0402, dnp=False, desc=''):
     return Comp(ref, 'Device:R', val, fp, {'1': a, '2': b}, desc, dnp)
@@ -36,8 +36,8 @@ def alimentation(sh):
     sh.add(Comp('J2', 'Connector_Generic:Conn_01x04', 'IHM : 5V GND TX RX', 'Connector_JST:JST_PH_B4B-PH-K_1x04_P2.00mm_Vertical',
                 {'1': '+5V_IN', '2': 'GND', '3': 'IHM_TX', '4': 'IHM_RX'},
                 'JST PH 2,0 mm vers la carte façade : 1 = +5 V, 2 = GND, 3 = TX (GPIO17, sortie ESP32), 4 = RX (GPIO18)'))
-    sh.add(Comp('D3', 'Device:D_Schottky', 'SS34', 'Diode_SMD:D_SMA', {'2': 'VBUS', '1': '+5V'}, 'OU diode : USB'))
-    sh.add(Comp('D4', 'Device:D_Schottky', 'SS34', 'Diode_SMD:D_SMA', {'2': '+5V_IN', '1': '+5V'}, 'OU diode : connecteur'))
+    sh.add(Comp('D3', 'Device:D_Schottky', 'B5819W', 'Diode_SMD:D_SOD-123', {'2': 'VBUS', '1': '+5V'}, 'OU diode : USB (Schottky 1 A 40 V)'))
+    sh.add(Comp('D4', 'Device:D_Schottky', 'B5819W', 'Diode_SMD:D_SOD-123', {'2': '+5V_IN', '1': '+5V'}, 'OU diode : connecteur (Schottky 1 A 40 V)'))
     sh.add(C('C1', '10uF', '+5V', 'GND', C0805))
     sh.add(C('C2', '100nF', '+5V', 'GND'))
     sh.add(Comp('U2', 'Regulator_Switching:AP63203WU', 'AP63203WU', 'Package_TO_SOT_SMD:TSOT-23-6',
@@ -54,8 +54,8 @@ def alimentation(sh):
     sh.add(C('C8', '100nF', 'A3V3', 'AGND'))
     sh.add(Comp('NT1', 'Device:NetTie_2', 'AGND=GND', 'NetTie:NetTie-2_SMD_Pad0.5mm', {'1': 'GND', '2': 'AGND'}, 'Point de masse unique audio'))
     # sauvegarde RTC / GPS
-    sh.add(Comp('BT1', 'Device:Battery_Cell', 'CR1220', 'Battery:BatteryHolder_Keystone_3001_1x12mm',
-                {'1': 'VBAT_RTC', '2': 'GND'}, 'Pile de sauvegarde RTC + démarrage à chaud GPS'))
+    sh.add(Comp('BT1', 'Device:Battery_Cell', 'CR1220', 'Battery:BatteryHolder_LINX_BAT-HLD-012-SMT',
+                {'1': 'VBAT_RTC', '2': 'GND'}, 'Pile de sauvegarde RTC + démarrage à chaud GPS ; support CMS Linx BAT-HLD-012-SMT, côté écran'))
     sh.add(Comp('D5', 'Diode:BAT54C', 'BAT54C', 'Package_TO_SOT_SMD:SOT-23', {'1': '+3V3', '2': 'VBAT_RTC', '3': 'VCC_RTC'},
                 'OU diode 3,3 V / pile -> VCC_RTC'))
     sh.add(C('C9', '100nF', 'VCC_RTC', 'GND'))
@@ -64,53 +64,32 @@ def alimentation(sh):
 
 # ------------------------------------------------------------------ MCU
 def mcu(sh):
-    sh.text('MCU — ESP32-S3R8 (8 Mo PSRAM), flash 16 Mo, quartz 40 MHz, USB, antenne, boutons BOOT / RESET', 20, 20)
-    sh.add(Comp('U1', 'MCU_Espressif:ESP32-S3', 'ESP32-S3R8', 'Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP4x4mm', {
-        '1': 'LNA_IN', '2': '+3V3', '3': '+3V3', '4': 'CHIP_PU',
-        '5': 'GPIO0', '6': 'SD_CMD', '7': 'SD_CLK', '8': 'SD_D0',
-        '9': 'QSPI_SIO0', '10': 'QSPI_SI1', '11': 'QSPI_SI2', '12': 'QSPI_SI3',
-        '13': 'I2S_DSDIN', '14': 'I2S_SCLK', '15': 'I2S_ASDOUT', '16': 'TP_INT', '17': 'LCD_CS', '18': 'LCD_TE',
-        '19': 'I2C_SCL', '20': '+3V3', '21': 'I2C_SDA', '22': 'GPIO16', '23': 'IHM_TX', '24': 'IHM_RX',
-        '25': 'USB_N_MCU', '26': 'USB_P_MCU', '27': 'GPIO21', '28': None, '29': 'VDD_SPI',
-        '30': 'SPIHD', '31': 'SPIWP', '32': 'SPICS0', '33': 'SPICLK', '34': 'SPIQ', '35': 'SPID',
-        '36': None, '37': None, '38': None, '39': None, '40': None, '41': None, '42': None,
-        '43': 'QSPI_SCL', '44': 'LCD_RESET', '45': 'TP_RESET', '46': '+3V3', '47': 'SDCS', '48': 'I2S_MCLK',
-        '49': 'U0TXD', '50': 'U0RXD', '51': 'I2S_LRCK', '52': 'PA_CTRL', '53': 'XTAL_N', '54': 'XTAL_P',
-        '55': '+3V3', '56': '+3V3', '57': 'GND'},
-        'ESP32-S3R8 : 8 Mo PSRAM octal interne (GPIO33-37 réservés, laissés en l air)'))
-    sh.add(Comp('U3', 'Memory_Flash:W25Q128JVS', 'W25Q128JVSIQ', 'Package_SO:SOIC-8_5.3x5.3mm_P1.27mm',
-                {'1': 'SPICS0', '6': 'SPICLK', '5': 'SPID', '2': 'SPIQ', '3': 'SPIWP', '7': 'SPIHD', '8': 'VDD_SPI', '4': 'GND'},
-                'Flash QSPI 16 Mo'))
-    sh.add(C('C10', '100nF', 'VDD_SPI', 'GND'))
-    sh.add(Comp('#FLG10', 'power:PWR_FLAG', 'PWR_FLAG', '', {'1': 'VDD_SPI'}))
-    sh.add(Comp('Y1', 'Device:Crystal_GND24', '40MHz', 'Crystal:Crystal_SMD_2520-4Pin_2.5x2.0mm',
-                {'1': 'XTAL_P', '3': 'XTAL_N', '2': 'GND', '4': 'GND'}, 'Quartz 40 MHz ±10 ppm, CL 10 pF'))
-    sh.add(C('C11', '15pF', 'XTAL_P', 'GND'))
-    sh.add(C('C12', '15pF', 'XTAL_N', 'GND'))
-    for i in range(13, 18):
-        sh.add(C(f'C{i}', '100nF', '+3V3', 'GND', desc='Découplage ESP32'))
-    sh.add(C('C18', '1uF', '+3V3', 'GND'))
-    sh.add(C('C19', '10uF', '+3V3', 'GND', C0805))
+    sh.text('MCU — module ESP32-S3-WROOM-1-N16R8 (certifié, antenne intégrée, 16 Mo flash, 8 Mo PSRAM octale), USB, boutons BOOT / RESET', 20, 20)
+    sh.add(Comp('U1', 'RF_Module:ESP32-S3-WROOM-1', 'ESP32-S3-WROOM-1-N16R8', 'RF_Module:ESP32-S3-WROOM-1', {
+        '1': 'GND', '2': '+3V3', '3': 'CHIP_PU',
+        '4': 'QSPI_SIO0', '5': 'QSPI_SI1', '6': 'QSPI_SI2', '7': 'QSPI_SI3',
+        '8': 'I2C_SDA', '9': 'GPIO16', '10': 'IHM_TX', '11': 'IHM_RX', '12': 'I2S_DSDIN',
+        '13': 'USB_N_MCU', '14': 'USB_P_MCU', '15': 'SD_D0', '16': 'PA_CTRL',
+        '17': 'I2S_SCLK', '18': 'I2S_ASDOUT', '19': 'TP_INT', '20': 'LCD_CS', '21': 'LCD_TE', '22': 'I2C_SCL',
+        '23': 'GPS_1PPS', '24': None, '25': None, '26': 'I2S_LRCK', '27': 'GPIO0',
+        '28': None, '29': None, '30': None,
+        '31': 'QSPI_SCL', '32': 'LCD_RESET', '33': 'TP_RESET', '34': 'SDCS', '35': 'I2S_MCLK',
+        '36': 'U0RXD', '37': 'U0TXD', '38': 'SD_CLK', '39': 'SD_CMD', '40': 'GND', '41': 'GND'},
+        'Module ESP32-S3-WROOM-1-N16R8 : ESP32-S3R8 + flash 16 Mo, antenne PCB, certifié CE/FCC. '
+        'IO35-37 utilisés par la PSRAM octale (laisser en l air), IO47/48 libres. Antenne au bord de carte, '
+        'zone sans cuivre dessous sur toutes les couches.'))
+    sh.add(C('C13', '100nF', '+3V3', 'GND', desc='Découplage module, au plus près de la broche 2'))
+    sh.add(C('C18', '1uF', '+3V3', 'GND', desc='Découplage module'))
+    sh.add(C('C19', '22uF', '+3V3', 'GND', C0805, desc='Réservoir module (pics d émission Wi-Fi)'))
     sh.add(R('R5', '10k', '+3V3', 'CHIP_PU', desc='Pull-up EN'))
-    sh.add(C('C20', '1uF', 'CHIP_PU', 'GND', desc='Délai reset'))
+    sh.add(C('C20', '1uF', 'CHIP_PU', 'GND', desc='Délai reset (RC recommandé par Espressif)'))
     sh.add(Comp('SW1', 'Switch:SW_Push', 'RESET', 'Button_Switch_SMD:SW_SPST_PTS810', {'1': 'CHIP_PU', '2': 'GND'}, 'Bouton reset'))
     sh.add(R('R6', '10k', '+3V3', 'GPIO0', desc='Pull-up BOOT'))
     sh.add(C('C21', '100nF', 'GPIO0', 'GND'))
     sh.add(Comp('SW2', 'Switch:SW_Push', 'BOOT', 'Button_Switch_SMD:SW_SPST_PTS810', {'1': 'GPIO0', '2': 'GND'}, 'Bouton BOOT (GPIO0)'))
     sh.add(R('R7', '22R', 'USB_N', 'USB_N_MCU'))
     sh.add(R('R8', '22R', 'USB_P', 'USB_P_MCU'))
-    # RF
-    sh.add(C('C22', '2.2pF', 'LNA_IN', 'ANT_FEED', desc='Adaptation antenne (série)'))
-    sh.add(C('C23', '0.75pF', 'ANT_FEED', 'GND', desc='Adaptation antenne (shunt)'))
-    sh.add(C('C24', 'NC', 'LNA_IN', 'GND', desc='Adaptation antenne, non montée'))
-    sh.add(R('R9', '0R', 'ANT_FEED', 'ANT', desc='Vers antenne céramique (monter R9 ou R10)'))
-    sh.add(R('R10', '0R', 'ANT_FEED', 'ANT_EXT', dnp=True, desc='Vers IPEX, non monté'))
-    sh.add(Comp('E1', 'Device:Antenna_Chip', '2450AT18A100', 'RF_Antenna:Johanson_2450AT18x100', {'1': 'ANT', '2': None},
-                'Antenne céramique 2,4 GHz Johanson'))
-    sh.add(Comp('J4', 'Connector:Conn_Coaxial', 'U.FL Wi-Fi', 'Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical', {'1': 'ANT_EXT', '2': 'GND'},
-                'IPEX1 antenne Wi-Fi externe (option)'))
     sh.add(TPt('TP1', 'GPIO16'))
-    sh.add(TPt('TP2', 'GPIO21'))
     sh.add(TPt('TP3', 'U0TXD', 'Console UART0 TX'))
     sh.add(TPt('TP4', 'U0RXD', 'Console UART0 RX'))
 
@@ -168,14 +147,12 @@ def audio(sh):
 
 # ------------------------------------------------------------------ PÉRIPHÉRIQUES
 def peripheriques(sh):
-    sh.text('PÉRIPHÉRIQUES — extenseur TCA9554 (0x20), RTC PCF85063 (0x51), microSD (SDMMC 1 bit), GNSS LC76G (I2C 0x50/0x54)', 20, 20)
+    sh.text('PÉRIPHÉRIQUES — extenseur TCA9554 (0x20), RTC PCF85063 (0x51), microSD (SDMMC 1 bit), connecteur GPS externe (I2C, 1PPS)', 20, 20)
     sh.add(Comp('U6', 'Interface_Expansion:TCA9554PW', 'TCA9554PWR', 'Package_SO:TSSOP-16_4.4x5mm_P0.65mm',
                 {'14': 'I2C_SCL', '15': 'I2C_SDA', '13': None, '1': 'GND', '2': 'GND', '3': 'GND', '16': '+3V3', '8': 'GND',
-                 '4': 'EXIO0', '5': 'EXIO1', '6': 'EXIO2', '7': 'RTC_INT', '9': 'EXIO4', '10': 'EXIO5', '11': 'EXIO6', '12': 'GPS_RST'},
-                'Extenseur E/S : P3 = RTC_INT, P7 = reset GPS ; P0-P2, P4-P6 libres sur points de test'))
+                 '4': None, '5': None, '6': None, '7': 'RTC_INT', '9': None, '10': None, '11': None, '12': 'GPS_RST'},
+                'Extenseur E/S : P3 = RTC_INT, P7 = reset GPS ; P0-P2, P4-P6 non utilisés'))
     sh.add(C('C43', '100nF', '+3V3', 'GND'))
-    for i, n in enumerate(['EXIO0', 'EXIO1', 'EXIO2', 'EXIO4', 'EXIO5', 'EXIO6'], start=5):
-        sh.add(TPt(f'TP{i}', n))
     sh.add(Comp('U7', 'Timer_RTC:PCF85063ATL', 'PCF85063ATL', 'Package_DFN_QFN:DFN-10-1EP_2.6x2.6mm_P0.5mm_EP1.3x2.2mm',
                 {'7': 'I2C_SCL', '6': 'I2C_SDA', '3': 'GND', '1': 'RTC_OSCI', '2': 'RTC_OSCO', '10': 'VCC_RTC', '5': 'GND',
                  '8': None, '4': 'RTC_INT', '9': None}, 'RTC I2C, alimentée par VCC_RTC (3,3 V ou pile)'))
@@ -193,26 +170,11 @@ def peripheriques(sh):
     sh.add(R('R21', '10k', '+3V3', 'SDCS'))
     sh.add(C('C47', '100nF', '+3V3', 'GND'))
     sh.add(C('C48', '2.2uF', '+3V3', 'GND', C0603))
-    sh.add(Comp('U8', 'ecran_rond:LC76G', 'LC76GABMD', 'ecran_rond:LC76G',
-                {'8': '+3V3', '6': 'GPS_VBCKP', '14': 'GPS_VCC_RF', '2': 'GPS_TXD', '3': 'GPS_RXD', '16': 'I2C_SDA', '17': 'I2C_SCL',
-                 '4': 'GPS_1PPS', '5': None, '18': None, '9': 'GPS_RST', '11': 'GPS_RF_IN', '13': None, '7': None, '15': None,
-                 '1': 'GND', '10': 'GND', '12': 'GND'},
-                'GNSS Quectel LC76G, dialogue en I2C ; UART et 1PPS sur points de test'))
-    sh.add(R('R22', '0R', 'VCC_RTC', 'GPS_VBCKP', desc='V_BCKP depuis VCC_RTC (pile)'))
-    sh.add(Comp('#FLG11', 'power:PWR_FLAG', 'PWR_FLAG', '', {'1': 'GPS_VBCKP'}))
-    sh.add(C('C49', '100nF', '+3V3', 'GND'))
-    sh.add(C('C50', '10uF', '+3V3', 'GND', C0805))
-    sh.add(R('R23', '0R', 'GPS_RF_IN', 'GPS_RF'))
-    sh.add(C('C51', '100pF', 'GPS_RF', 'GPS_ANT', desc='Blocage DC antenne'))
-    sh.add(R('R24', '10R', 'GPS_VCC_RF', 'GPS_VANT', desc='Alim antenne active'))
-    sh.add(C('C52', '100pF', 'GPS_VANT', 'GND'))
-    sh.add(C('C53', '100nF', 'GPS_VANT', 'GND'))
-    sh.add(L('L2', '68nH', 'GPS_VANT', 'GPS_ANT', L0402, 'Té de polarisation antenne active'))
-    sh.add(Comp('J7', 'Connector:Conn_Coaxial', 'U.FL GNSS', 'Connector_Coaxial:U.FL_Hirose_U.FL-R-SMT-1_Vertical', {'1': 'GPS_ANT', '2': 'GND'},
-                'IPEX1 antenne GNSS céramique active'))
-    sh.add(TPt('TP11', 'GPS_TXD'))
-    sh.add(TPt('TP12', 'GPS_RXD'))
-    sh.add(TPt('TP13', 'GPS_1PPS'))
+    sh.add(Comp('J7', 'Connector_Generic:Conn_01x06', 'GPS externe', 'Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal',
+                {'1': '+3V3', '2': 'GND', '3': 'I2C_SDA', '4': 'I2C_SCL', '5': 'GPS_RST', '6': 'GPS_1PPS'},
+                'JST-SH 1,0 mm 6P vers module GPS externe (ex. LC76G + antenne) : 1 = 3V3, 2 = GND, 3 = SDA, 4 = SCL, '
+                '5 = RESET (TCA9554 P7), 6 = 1PPS (GPIO21) ; même bus I2C que l ancien LC76G intégré'))
+    sh.add(C('C49', '100nF', '+3V3', 'GND', desc='Découplage alim GPS externe'))
     for i in (1, 2, 3):
         sh.add(Comp(f'H{i}', 'Mechanical:MountingHole', 'M2', 'MountingHole:MountingHole_2.2mm_M2', {}, 'Trou de fixation M2'))
 

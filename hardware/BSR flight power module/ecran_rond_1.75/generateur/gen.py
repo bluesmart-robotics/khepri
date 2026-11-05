@@ -49,7 +49,7 @@ open(os.path.join(OUT, 'fp-lib-table'), 'w').write('(fp_lib_table (version 7)\n 
 # ---- fichier projet
 pro = {
     "board": {"3dviewports": [], "design_settings": {"defaults": {}, "diff_pair_dimensions": [], "drc_exclusions": [],
-              "rules": {"min_clearance": 0.127, "min_track_width": 0.127, "min_via_diameter": 0.45, "min_via_drill": 0.2, "min_hole_clearance": 0.25,
+              "rules": {"min_clearance": 0.127, "min_track_width": 0.127, "min_via_diameter": 0.45, "min_via_drill": 0.2, "min_through_hole_diameter": 0.2, "min_hole_clearance": 0.25,
                         "min_copper_edge_clearance": 0.3, "min_hole_to_hole": 0.25, "min_microvia_diameter": 0.2, "min_microvia_drill": 0.1,
                         "min_resolved_spokes": 2, "min_silk_clearance": 0.0, "min_text_height": 0.8, "min_text_thickness": 0.08, "min_via_annular_width": 0.1,
                         "solder_mask_clearance": 0.0, "solder_mask_min_width": 0.0, "solder_mask_to_copper_clearance": 0.0, "use_height_for_length_calcs": True},

@@ -31,7 +31,7 @@
 
 /* Extenseur TCA9554 */
 #define EXIO_PWR_BTN  4 /* P4 : SYS_OUT, haut tant que PWR est appuyé (Waveshare seulement) */
-#define EXIO_GPS_RST  7 /* P7 : reset du LC76G (version -G, et carte BSR) */
+#define EXIO_GPS_RST  7 /* P7 : reset du LC76G (version -G) ou du GPS externe (carte BSR, J7 broche 5) */
 
 /* Carte BSR (hardware/BSR flight power module/ecran_rond_1.75) : bouton BOOT en guise de bouton
  * utilisateur, UART1 vers la carte façade sur le connecteur JST J2 (5 V, GND, TX, RX) */
@@ -39,3 +39,4 @@
 #define PIN_FACADE_TX     GPIO_NUM_17
 #define PIN_FACADE_RX     GPIO_NUM_18
 #define FACADE_UART_NUM   UART_NUM_1
+#define PIN_GPS_PPS       GPIO_NUM_21 /* carte BSR : 1PPS du module GPS externe (J7 broche 6), GPS en I2C */
